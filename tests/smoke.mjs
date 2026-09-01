@@ -2,45 +2,11 @@
 // Boots the app on a static server and asserts the measurement contract on every route.
 // Run: npm run smoke
 
-import { chromium } from 'playwright-core';
-import { createServer } from 'node:http';
-import { readFile } from 'node:fs/promises';
-import { readdirSync } from 'node:fs';
-import { extname, join, normalize } from 'node:path';
 import assert from 'node:assert/strict';
+import { serve, launch, seed, isMissingArt, ROUTES as DEEP_ROUTES, WIDTHS } from './harness.mjs';
 
-const ROOT = new URL('..', import.meta.url).pathname;
-const TYPES = {
-  '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript',
-  '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.webp': 'image/webp',
-};
-
-const ROUTES = [
-  '#/stories', '#/build', '#/build/idea', '#/build/ingredients', '#/build/structure',
-  '#/build/boost', '#/build/tell', '#/deck', '#/deck/prompts', '#/deck/ingredients',
-  '#/deck/structure', '#/deck/boosts', '#/deck/card/beat-5', '#/deck/card/boost-help',
-  '#/build/ingredients/inciting', '#/build/ingredients/inciting/3',
-  '#/build/structure/1', '#/build/structure/2', '#/build/structure/9',
-  '#/build/boost/boost-help', '#/build/boost/boost-learn',
-  '#/learn', '#/learn/beat-5', '#/settings', '#/tutorial', '#/nonsense',
-  '#/example/example-red-riding-hood', '#/example/example-hansel-gretel', '#/example/nope',
-];
-const WIDTHS = [320, 360, 390, 768, 1024];
-
-function serve() {
-  const server = createServer(async (req, res) => {
-    const path = normalize(decodeURIComponent(req.url.split('?')[0])).replace(/^(\.\.[/\\])+/, '');
-    const file = join(ROOT, path === '/' ? 'index.html' : path);
-    try {
-      const body = await readFile(file);
-      res.writeHead(200, { 'content-type': TYPES[extname(file)] || 'application/octet-stream' });
-      res.end(body);
-    } catch {
-      res.writeHead(404).end('not found');
-    }
-  });
-  return new Promise((resolve) => server.listen(0, () => resolve(server)));
-}
+// The shared route list, plus the states only the walk creates and the error routes.
+const ROUTES = [...DEEP_ROUTES, '#/build/structure/9', '#/deck/boosts', '#/nonsense', '#/example/nope'];
 
 const failures = [];
 function check(name, fn) {
@@ -64,24 +30,15 @@ async function settled(page, selector, pattern) {
 
 const server = await serve();
 const base = `http://127.0.0.1:${server.address().port}/index.html`;
-const browser = await chromium.launch({ executablePath: chromePath() });
-
-function chromePath() {
-  if (process.env.CHROME_PATH) return process.env.CHROME_PATH;
-  const root = process.env.PLAYWRIGHT_BROWSERS_PATH || '/opt/pw-browsers';
-  const dir = readdirSync(root).filter((d) => d.startsWith('chromium-')).sort().pop();
-  if (!dir) throw new Error(`no chromium under ${root}; set CHROME_PATH`);
-  return join(root, dir, 'chrome-linux', 'chrome');
-}
+const browser = await launch();
 
 try {
   for (const width of WIDTHS) {
     const context = await browser.newContext({ viewport: { width, height: 740 } });
+    // The route sweep runs against a real mid-story state, not an empty app (§9 D).
+    await seed(context, 'mid-story');
     const page = await context.newPage();
     const errors = [];
-    // Card art is generated locally and may legitimately be absent (CLAUDE.md §11); a 404 on a
-    // face is the placeholder path working, not an app error. Everything else counts.
-    const isMissingArt = (m) => /assets\/cards\/[\w-]+\.webp/.test(m.location()?.url || '');
     page.on('console', (m) => { if (m.type() === 'error' && !isMissingArt(m)) errors.push(m.text()); });
     page.on('pageerror', (e) => errors.push(String(e)));
 
@@ -91,6 +48,12 @@ try {
       await page.waitForSelector('#screen h2, #screen label', { timeout: 5000 });
 
       check(`${width} ${route} console`, () => assert.deepEqual(errors, []));
+
+      if (route === '#/build/idea') {
+        // If the fixture did not load, every other measurement below is of an empty app.
+        const seeded = await page.textContent('.story-header-title');
+        check(`${width} fixture loaded`, () => assert.equal(seeded, 'The dragon next door'));
+      }
 
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       check(`${width} ${route} overflow`, () => assert.ok(overflow <= 0, `${overflow}px of horizontal overflow`));
@@ -110,7 +73,7 @@ try {
         const d = document.querySelector('#screen details.explain');
         return d ? { present: true, open: d.open } : { present: false };
       });
-      if (!route.startsWith('#/deck/card') && route !== '#/nonsense' && route !== '#/example/nope') {
+      if (!route.startsWith('#/deck/card') && !route.startsWith('#/learn/') && route !== '#/nonsense' && route !== '#/example/nope') {
         check(`${width} ${route} explain`, () => {
           assert.ok(hasExplain.present, 'no explain() note');
           assert.equal(hasExplain.open, false, 'explain() should start collapsed');

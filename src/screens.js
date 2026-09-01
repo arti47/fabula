@@ -148,7 +148,7 @@ export function settingsScreen() {
     },
   }));
 
-  const file = el('input', { type: 'file', accept: 'application/json', class: 'note' });
+  const file = el('input', { type: 'file', id: 'import-file', accept: 'application/json', class: 'note' });
   file.addEventListener('change', async () => {
     const chosen = file.files?.[0];
     if (!chosen) return;
@@ -167,7 +167,7 @@ export function settingsScreen() {
     }
     file.value = '';
   });
-  add(screen, el('h3', { text: 'Load a backup' }), file);
+  add(screen, el('h3', { text: 'Load a backup' }), el('label', { for: 'import-file', text: 'Choose a backup file' }), file);
 
   add(screen, el('h3', { text: 'Your first story' }));
   add(screen, el('p', { class: 'note', text: 'A walk through making one story from beginning to end.' }));

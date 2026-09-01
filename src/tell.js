@@ -86,11 +86,35 @@ export function tellScreen(story, { readOnly = false } = {}) {
 
 function storyMarkup(assembled) {
   const box = el('div');
-  add(box, el('h2', { class: 'told-title', text: assembled.title }));
+  add(box, el('h2', { class: 'told-title', id: 'told-top', text: assembled.title }));
+
+  // A told story is legitimately long, so it gets a jump row rather than losing anything (§6.5).
+  const sections = [
+    assembled.passages.length && { id: 'told-story-text', label: 'The story' },
+    assembled.cast.length && { id: 'told-cast', label: 'Who is in it' },
+    assembled.worlds.length && { id: 'told-worlds', label: 'Where' },
+    assembled.boosts.length && { id: 'told-notes', label: 'Boost notes' },
+  ].filter(Boolean);
+  if (sections.length > 1) {
+    // Buttons, not anchors: an in-page href would be read as a route by the hash router.
+    const jump = el('nav', { class: 'section-nav', 'aria-label': 'Jump to' });
+    for (const section of sections) {
+      add(jump, el('button', {
+        type: 'button', class: 'jump-pill', text: section.label,
+        onclick: () => document.getElementById(section.id)?.scrollIntoView({
+          block: 'start',
+          // No animation for anyone who has asked not to have any.
+          behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+        }),
+      }));
+    }
+    add(box, jump);
+  }
   if (assembled.version === 'before') {
     add(box, el('p', { class: 'note', text: 'This is the draft you had when you started boosting.' }));
   }
   if (assembled.idea) add(box, el('p', { class: 'told-idea', text: `The story of ${assembled.idea}` }));
+  add(box, el('div', { id: 'told-story-text' }));
 
   if (!assembled.passages.length) {
     add(box, el('p', { class: 'empty', text: 'Nothing written yet. Fill in a beat or two and it will appear here.' }));
@@ -112,7 +136,7 @@ function storyMarkup(assembled) {
   }
 
   if (assembled.cast.length) {
-    add(box, el('h3', { text: 'Who is in it' }));
+    add(box, el('h3', { id: 'told-cast', text: 'Who is in it' }));
     const list = el('ul');
     for (const c of assembled.cast) {
       add(list, add(
@@ -126,14 +150,14 @@ function storyMarkup(assembled) {
   }
 
   if (assembled.worlds.length) {
-    add(box, el('h3', { text: 'Where it happens' }));
+    add(box, el('h3', { id: 'told-worlds', text: 'Where it happens' }));
     const list = el('ul');
     for (const w of assembled.worlds) add(list, el('li', { text: w.description }));
     add(box, list);
   }
 
   if (assembled.boosts.length) {
-    add(box, el('h3', { text: 'Notes from the boosts' }));
+    add(box, el('h3', { id: 'told-notes', text: 'Notes from the boosts' }));
     const list = el('ul');
     for (const b of assembled.boosts) {
       add(list, add(el('li'), el('b', { text: `${b.headline} ` }), document.createTextNode(b.answer)));

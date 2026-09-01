@@ -1,0 +1,1193 @@
+{
+  "app": "story-machine",
+  "schemaVersion": 1,
+  "exportedAt": "2026-01-01T00:00:00.000Z",
+  "storytellers": [
+    {
+      "id": "teller-a",
+      "name": "Ada",
+      "emoji": "🐉",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "teller-b",
+      "name": "Bo",
+      "emoji": "🚀",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "teller-c",
+      "name": "Cleo",
+      "emoji": "🌙",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "stories": [
+    {
+      "id": "story-0",
+      "ownerId": "teller-a",
+      "title": "Story number 1",
+      "createdAt": "2026-01-02T00:00:00.000Z",
+      "updatedAt": "2026-01-03T00:00:00.000Z",
+      "schemaVersion": 1,
+      "idea": {
+        "text": "something happens to somebody, somewhere unlikely",
+        "fromPrompt": null,
+        "rolls": []
+      },
+      "cast": [
+        {
+          "id": "s0-hero",
+          "kind": "hero",
+          "origin": "ingredients",
+          "answers": {
+            "name": "Hero 1"
+          }
+        }
+      ],
+      "worlds": [],
+      "inciting": {
+        "answers": {}
+      },
+      "beats": {
+        "1": {
+          "text": "Once, in a place a lot like this one.",
+          "updatedAt": "2026-09-01T13:33:45.867Z"
+        }
+      },
+      "boosts": {},
+      "snapshot": null,
+      "skipped": []
+    },
+    {
+      "id": "story-1",
+      "ownerId": "teller-b",
+      "title": "Story number 2",
+      "createdAt": "2026-01-02T00:00:00.000Z",
+      "updatedAt": "2026-01-03T00:00:00.000Z",
+      "schemaVersion": 1,
+      "idea": {
+        "text": "something happens to somebody, somewhere unlikely",
+        "fromPrompt": null,
+        "rolls": []
+      },
+      "cast": [
+        {
+          "id": "s1-hero",
+          "kind": "hero",
+          "origin": "ingredients",
+          "answers": {
+            "name": "Hero 2"
+          }
+        }
+      ],
+      "worlds": [],
+      "inciting": {
+        "answers": {}
+      },
+      "beats": {
+        "1": {
+          "text": "Once, in a place a lot like this one.",
+          "updatedAt": "2026-09-01T13:33:45.867Z"
+        }
+      },
+      "boosts": {},
+      "snapshot": null,
+      "skipped": []
+    },
+    {
+      "id": "story-2",
+      "ownerId": "teller-c",
+      "title": "Story number 3",
+      "createdAt": "2026-01-02T00:00:00.000Z",
+      "updatedAt": "2026-01-03T00:00:00.000Z",
+      "schemaVersion": 1,
+      "idea": {
+        "text": "something happens to somebody, somewhere unlikely",
+        "fromPrompt": null,
+        "rolls": []
+      },
+      "cast": [
+        {
+          "id": "s2-hero",
+          "kind": "hero",
+          "origin": "ingredients",
+          "answers": {
+            "name": "Hero 3"
+          }
+        }
+      ],
+      "worlds": [],
+      "inciting": {
+        "answers": {}
+      },
+      "beats": {
+        "1": {
+          "text": "Once, in a place a lot like this one.",
+          "updatedAt": "2026-09-01T13:33:45.867Z"
+        }
+      },
+      "boosts": {},
+      "snapshot": null,
+      "skipped": []
+    },
+    {
+      "id": "story-3",
+      "ownerId": "teller-a",
+      "title": "Story number 4",
+      "createdAt": "2026-01-02T00:00:00.000Z",
+      "updatedAt": "2026-01-03T00:00:00.000Z",
+      "schemaVersion": 1,
+      "idea": {
+        "text": "something happens to somebody, somewhere unlikely",
+        "fromPrompt": null,
+        "rolls": []
+      },
+      "cast": [
+        {
+          "id": "s3-hero",
+          "kind": "hero",
+          "origin": "ingredients",
+          "answers": {
+            "name": "Hero 4"
+          }
+        }
+      ],
+      "worlds": [],
+      "inciting": {
+        "answers": {}
+      },
+      "beats": {
+        "1": {
+          "text": "Once, in a place a lot like this one.",
+          "updatedAt": "2026-09-01T13:33:45.867Z"
+        }
+      },
+      "boosts": {},
+      "snapshot": null,
+      "skipped": []
+    },
+    {
+      "id": "story-4",
+      "ownerId": "teller-b",
+      "title": "Story number 5",
+      "createdAt": "2026-01-02T00:00:00.000Z",
+      "updatedAt": "2026-01-03T00:00:00.000Z",
+      "schemaVersion": 1,
+      "idea": {
+        "text": "something happens to somebody, somewhere unlikely",
+        "fromPrompt": null,
+        "rolls": []
+      },
+      "cast": [
+        {
+          "id": "s4-hero",
+          "kind": "hero",
+          "origin": "ingredients",
+          "answers": {
+            "name": "Hero 5"
+          }
+        }
+      ],
+      "worlds": [],
+      "inciting": {
+        "answers": {}
+      },
+      "beats": {
+        "1": {
+          "text": "Once, in a place a lot like this one.",
+          "updatedAt": "2026-09-01T13:33:45.867Z"
+        }
+      },
+      "boosts": {},
+      "snapshot": null,
+      "skipped": []
+    },
+    {
+      "id": "story-5",
+      "ownerId": "teller-c",
+      "title": "Story number 6",
+      "createdAt": "2026-01-02T00:00:00.000Z",
+      "updatedAt": "2026-01-03T00:00:00.000Z",
+      "schemaVersion": 1,
+      "idea": {
+        "text": "something happens to somebody, somewhere unlikely",
+        "fromPrompt": null,
+        "rolls": []
+      },
+      "cast": [
+        {
+          "id": "s5-hero",
+          "kind": "hero",
+          "origin": "ingredients",
+          "answers": {
+            "name": "Hero 6"
+          }
+        }
+      ],
+      "worlds": [],
+      "inciting": {
+        "answers": {}
+      },
+      "beats": {
+        "1": {
+          "text": "Once, in a place a lot like this one.",
+          "updatedAt": "2026-09-01T13:33:45.868Z"
+        }
+      },
+      "boosts": {},
+      "snapshot": null,
+      "skipped": []
+    },
+    {
+      "id": "story-6",
+      "ownerId": "teller-a",
+      "title": "Story number 7",
+      "createdAt": "2026-01-02T00:00:00.000Z",
+      "updatedAt": "2026-01-03T00:00:00.000Z",
+      "schemaVersion": 1,
+      "idea": {
+        "text": "something happens to somebody, somewhere unlikely",
+        "fromPrompt": null,
+        "rolls": []
+      },
+      "cast": [
+        {
+          "id": "s6-hero",
+          "kind": "hero",
+          "origin": "ingredients",
+          "answers": {
+            "name": "Hero 7"
+          }
+        }
+      ],
+      "worlds": [],
+      "inciting": {
+        "answers": {}
+      },
+      "beats": {
+        "1": {
+          "text": "Once, in a place a lot like this one.",
+          "updatedAt": "2026-09-01T13:33:45.868Z"
+        }
+      },
+      "boosts": {},
+      "snapshot": null,
+      "skipped": []
+    },
+    {
+      "id": "story-7",
+      "ownerId": "teller-b",
+      "title": "Story number 8",
+      "createdAt": "2026-01-02T00:00:00.000Z",
+      "updatedAt": "2026-01-03T00:00:00.000Z",
+      "schemaVersion": 1,
+      "idea": {
+        "text": "something happens to somebody, somewhere unlikely",
+        "fromPrompt": null,
+        "rolls": []
+      },
+      "cast": [
+        {
+          "id": "s7-hero",
+          "kind": "hero",
+          "origin": "ingredients",
+          "answers": {
+            "name": "Hero 8"
+          }
+        }
+      ],
+      "worlds": [],
+      "inciting": {
+        "answers": {}
+      },
+      "beats": {
+        "1": {
+          "text": "Once, in a place a lot like this one.",
+          "updatedAt": "2026-09-01T13:33:45.868Z"
+        }
+      },
+      "boosts": {},
+      "snapshot": null,
+      "skipped": []
+    },
+    {
+      "id": "story-8",
+      "ownerId": "teller-c",
+      "title": "Story number 9",
+      "createdAt": "2026-01-02T00:00:00.000Z",
+      "updatedAt": "2026-01-03T00:00:00.000Z",
+      "schemaVersion": 1,
+      "idea": {
+        "text": "something happens to somebody, somewhere unlikely",
+        "fromPrompt": null,
+        "rolls": []
+      },
+      "cast": [
+        {
+          "id": "s8-hero",
+          "kind": "hero",
+          "origin": "ingredients",
+          "answers": {
+            "name": "Hero 9"
+          }
+        }
+      ],
+      "worlds": [],
+      "inciting": {
+        "answers": {}
+      },
+      "beats": {
+        "1": {
+          "text": "Once, in a place a lot like this one.",
+          "updatedAt": "2026-09-01T13:33:45.868Z"
+        }
+      },
+      "boosts": {},
+      "snapshot": null,
+      "skipped": []
+    },
+    {
+      "id": "story-9",
+      "ownerId": "teller-a",
+      "title": "Story number 10",
+      "createdAt": "2026-01-02T00:00:00.000Z",
+      "updatedAt": "2026-01-03T00:00:00.000Z",
+      "schemaVersion": 1,
+      "idea": {
+        "text": "something happens to somebody, somewhere unlikely",
+        "fromPrompt": null,
+        "rolls": []
+      },
+      "cast": [
+        {
+          "id": "s9-hero",
+          "kind": "hero",
+          "origin": "ingredients",
+          "answers": {
+            "name": "Hero 10"
+          }
+        }
+      ],
+      "worlds": [],
+      "inciting": {
+        "answers": {}
+      },
+      "beats": {
+        "1": {
+          "text": "Once, in a place a lot like this one.",
+          "updatedAt": "2026-09-01T13:33:45.868Z"
+        }
+      },
+      "boosts": {},
+      "snapshot": null,
+      "skipped": []
+    },
+    {
+      "id": "story-10",
+      "ownerId": "teller-b",
+      "title": "Story number 11",
+      "createdAt": "2026-01-02T00:00:00.000Z",
+      "updatedAt": "2026-01-03T00:00:00.000Z",
+      "schemaVersion": 1,
+      "idea": {
+        "text": "something happens to somebody, somewhere unlikely",
+        "fromPrompt": null,
+        "rolls": []
+      },
+      "cast": [
+        {
+          "id": "s10-hero",
+          "kind": "hero",
+          "origin": "ingredients",
+          "answers": {
+            "name": "Hero 11"
+          }
+        }
+      ],
+      "worlds": [],
+      "inciting": {
+        "answers": {}
+      },
+      "beats": {
+        "1": {
+          "text": "Once, in a place a lot like this one.",
+          "updatedAt": "2026-09-01T13:33:45.868Z"
+        }
+      },
+      "boosts": {},
+      "snapshot": null,
+      "skipped": []
+    },
+    {
+      "id": "story-11",
+      "ownerId": "teller-c",
+      "title": "Story number 12",
+      "createdAt": "2026-01-02T00:00:00.000Z",
+      "updatedAt": "2026-01-03T00:00:00.000Z",
+      "schemaVersion": 1,
+      "idea": {
+        "text": "something happens to somebody, somewhere unlikely",
+        "fromPrompt": null,
+        "rolls": []
+      },
+      "cast": [
+        {
+          "id": "s11-hero",
+          "kind": "hero",
+          "origin": "ingredients",
+          "answers": {
+            "name": "Hero 12"
+          }
+        }
+      ],
+      "worlds": [],
+      "inciting": {
+        "answers": {}
+      },
+      "beats": {
+        "1": {
+          "text": "Once, in a place a lot like this one.",
+          "updatedAt": "2026-09-01T13:33:45.868Z"
+        }
+      },
+      "boosts": {},
+      "snapshot": null,
+      "skipped": []
+    },
+    {
+      "id": "story-stress",
+      "ownerId": "teller-a",
+      "title": "Everything, all at once",
+      "createdAt": "2026-01-02T00:00:00.000Z",
+      "updatedAt": "2026-01-03T00:00:00.000Z",
+      "schemaVersion": 1,
+      "idea": {
+        "text": "four children, two enemies and three worlds, and one very long road",
+        "fromPrompt": "Q",
+        "rolls": [
+          {
+            "letter": "P",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "M",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "Q",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "G",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "N",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "S",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "P",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "M",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "Q",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "G",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "N",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "S",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "P",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "M",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "Q",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "G",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "N",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "S",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "P",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "M",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "Q",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "G",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "N",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "S",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "P",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "M",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "Q",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "G",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "N",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "S",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "P",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "M",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "Q",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "G",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "N",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "S",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "P",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "M",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "Q",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "G",
+            "ts": "2026-01-02T00:00:00.000Z"
+          }
+        ]
+      },
+      "cast": [
+        {
+          "id": "big-hero-0",
+          "kind": "hero",
+          "origin": "ingredients",
+          "answers": {
+            "name": "The first one",
+            "age": "somewhere between nine and fifteen",
+            "looks": "not much alike, considering",
+            "special": "each of them is good at exactly one thing",
+            "fear": "the same thing, which none of them will say",
+            "want": "to get to the end of the road"
+          }
+        },
+        {
+          "id": "big-hero-1",
+          "kind": "hero",
+          "origin": "ingredients",
+          "answers": {
+            "name": "The second one",
+            "age": "somewhere between nine and fifteen",
+            "looks": "not much alike, considering",
+            "special": "each of them is good at exactly one thing",
+            "fear": "the same thing, which none of them will say",
+            "want": "to get to the end of the road"
+          }
+        },
+        {
+          "id": "big-hero-2",
+          "kind": "hero",
+          "origin": "ingredients",
+          "answers": {
+            "name": "The third one",
+            "age": "somewhere between nine and fifteen",
+            "looks": "not much alike, considering",
+            "special": "each of them is good at exactly one thing",
+            "fear": "the same thing, which none of them will say",
+            "want": "to get to the end of the road"
+          }
+        },
+        {
+          "id": "big-hero-3",
+          "kind": "hero",
+          "origin": "boost:boost-help",
+          "answers": {
+            "name": "The fourth one",
+            "age": "somewhere between nine and fifteen",
+            "looks": "not much alike, considering",
+            "special": "each of them is good at exactly one thing",
+            "fear": "the same thing, which none of them will say",
+            "want": "to get to the end of the road"
+          }
+        },
+        {
+          "id": "big-villain-0",
+          "kind": "villain",
+          "origin": "ingredients",
+          "answers": {
+            "name": "The Collector",
+            "looks": "far too pleased to see them",
+            "want": "what the children are carrying"
+          }
+        },
+        {
+          "id": "big-villain-1",
+          "kind": "villain",
+          "origin": "boost:boost-why-villain",
+          "answers": {
+            "name": "The Quiet Man",
+            "looks": "far too pleased to see them",
+            "want": "what the children are carrying"
+          }
+        }
+      ],
+      "worlds": [
+        {
+          "id": "big-world-0",
+          "answers": {
+            "special": "the first country, where the rules are slightly different",
+            "whereWhen": "later than you would think",
+            "typicalDay": "people work, and watch the road",
+            "peopleDo": "they eat standing up and never say goodbye"
+          }
+        },
+        {
+          "id": "big-world-1",
+          "answers": {
+            "special": "the second country, where the rules are slightly different",
+            "whereWhen": "later than you would think",
+            "typicalDay": "people work, and watch the road",
+            "peopleDo": "they eat standing up and never say goodbye"
+          }
+        },
+        {
+          "id": "big-world-2",
+          "answers": {
+            "special": "the third country, where the rules are slightly different",
+            "whereWhen": "later than you would think",
+            "typicalDay": "people work, and watch the road",
+            "peopleDo": "they eat standing up and never say goodbye"
+          }
+        }
+      ],
+      "inciting": {
+        "answers": {
+          "what": "the road appears where the garden used to be",
+          "goodOrBad": "nobody can agree",
+          "antagonistsFault": "yes, though it takes a long time to find out",
+          "howItChanges": "nothing can be walked back"
+        }
+      },
+      "beats": {
+        "1": {
+          "text": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them.",
+          "updatedAt": "2026-09-01T13:33:45.868Z"
+        },
+        "2": {
+          "text": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them.",
+          "updatedAt": "2026-09-01T13:33:45.868Z"
+        },
+        "3": {
+          "text": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them.",
+          "updatedAt": "2026-09-01T13:33:45.868Z"
+        },
+        "4": {
+          "text": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them.",
+          "updatedAt": "2026-09-01T13:33:45.868Z"
+        },
+        "5": {
+          "text": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them.",
+          "updatedAt": "2026-09-01T13:33:45.868Z"
+        },
+        "6": {
+          "text": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them.",
+          "updatedAt": "2026-09-01T13:33:45.868Z"
+        },
+        "7": {
+          "text": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them.",
+          "updatedAt": "2026-09-01T13:33:45.868Z"
+        },
+        "8": {
+          "text": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them.",
+          "updatedAt": "2026-09-01T13:33:45.868Z"
+        },
+        "9": {
+          "text": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them.",
+          "updatedAt": "2026-09-01T13:33:45.868Z"
+        }
+      },
+      "boosts": {
+        "boost-care": {
+          "answer": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning,(Who do they care for?)",
+          "skipped": false,
+          "spawned": [],
+          "editedBeats": [
+            1
+          ]
+        },
+        "boost-help": {
+          "answer": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning,(Do they get enough help?)",
+          "skipped": false,
+          "spawned": [
+            "big-hero-3"
+          ],
+          "editedBeats": [
+            4,
+            5
+          ]
+        },
+        "boost-why-villain": {
+          "answer": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning,(Why does the antagonist behave like that?)",
+          "skipped": false,
+          "spawned": [
+            "big-villain-1"
+          ],
+          "editedBeats": [
+            6,
+            8
+          ]
+        },
+        "boost-too-easy": {
+          "answer": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning,(Was it too easy?)",
+          "skipped": false,
+          "spawned": [],
+          "editedBeats": [
+            4,
+            5
+          ]
+        },
+        "boost-twist": {
+          "answer": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning,(Have you thought of a plot twist?)",
+          "skipped": false,
+          "spawned": [],
+          "editedBeats": [
+            6,
+            7
+          ]
+        },
+        "boost-background": {
+          "answer": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning,(Have you thought about the characters' background?)",
+          "skipped": false,
+          "spawned": [],
+          "editedBeats": [
+            1
+          ]
+        },
+        "boost-narrator": {
+          "answer": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning,(Who tells the story?)",
+          "skipped": false,
+          "spawned": [],
+          "editedBeats": []
+        },
+        "boost-despair": {
+          "answer": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning,(Is there a moment of despair?)",
+          "skipped": false,
+          "spawned": [],
+          "editedBeats": [
+            5,
+            7
+          ]
+        },
+        "boost-faults": {
+          "answer": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning,(Does the main character have faults?)",
+          "skipped": false,
+          "spawned": [],
+          "editedBeats": [
+            4,
+            5
+          ]
+        },
+        "boost-learn": {
+          "answer": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning,(What do they learn?)",
+          "skipped": false,
+          "spawned": [],
+          "editedBeats": [
+            9
+          ]
+        }
+      },
+      "snapshot": {
+        "takenAt": "2026-09-01T13:33:45.868Z",
+        "beats": {
+          "1": {
+            "text": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them.",
+            "updatedAt": "2026-09-01T13:33:45.868Z"
+          },
+          "2": {
+            "text": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them.",
+            "updatedAt": "2026-09-01T13:33:45.868Z"
+          },
+          "3": {
+            "text": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them.",
+            "updatedAt": "2026-09-01T13:33:45.868Z"
+          },
+          "4": {
+            "text": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them.",
+            "updatedAt": "2026-09-01T13:33:45.868Z"
+          },
+          "5": {
+            "text": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them.",
+            "updatedAt": "2026-09-01T13:33:45.868Z"
+          },
+          "6": {
+            "text": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them.",
+            "updatedAt": "2026-09-01T13:33:45.868Z"
+          },
+          "7": {
+            "text": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them.",
+            "updatedAt": "2026-09-01T13:33:45.868Z"
+          },
+          "8": {
+            "text": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them.",
+            "updatedAt": "2026-09-01T13:33:45.868Z"
+          },
+          "9": {
+            "text": "They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them. They went on, and the road went on with them, past the mill and the flooded field and the place where the fence gives out, and none of it looked the way it had looked that morning, which was the first sign that something had already changed and nobody had told them.",
+            "updatedAt": "2026-09-01T13:33:45.868Z"
+          }
+        },
+        "cast": [
+          {
+            "id": "big-hero-0",
+            "kind": "hero",
+            "origin": "ingredients",
+            "answers": {
+              "name": "The first one",
+              "age": "somewhere between nine and fifteen",
+              "looks": "not much alike, considering",
+              "special": "each of them is good at exactly one thing",
+              "fear": "the same thing, which none of them will say",
+              "want": "to get to the end of the road"
+            }
+          },
+          {
+            "id": "big-hero-1",
+            "kind": "hero",
+            "origin": "ingredients",
+            "answers": {
+              "name": "The second one",
+              "age": "somewhere between nine and fifteen",
+              "looks": "not much alike, considering",
+              "special": "each of them is good at exactly one thing",
+              "fear": "the same thing, which none of them will say",
+              "want": "to get to the end of the road"
+            }
+          },
+          {
+            "id": "big-hero-2",
+            "kind": "hero",
+            "origin": "ingredients",
+            "answers": {
+              "name": "The third one",
+              "age": "somewhere between nine and fifteen",
+              "looks": "not much alike, considering",
+              "special": "each of them is good at exactly one thing",
+              "fear": "the same thing, which none of them will say",
+              "want": "to get to the end of the road"
+            }
+          },
+          {
+            "id": "big-hero-3",
+            "kind": "hero",
+            "origin": "boost:boost-help",
+            "answers": {
+              "name": "The fourth one",
+              "age": "somewhere between nine and fifteen",
+              "looks": "not much alike, considering",
+              "special": "each of them is good at exactly one thing",
+              "fear": "the same thing, which none of them will say",
+              "want": "to get to the end of the road"
+            }
+          },
+          {
+            "id": "big-villain-0",
+            "kind": "villain",
+            "origin": "ingredients",
+            "answers": {
+              "name": "The Collector",
+              "looks": "far too pleased to see them",
+              "want": "what the children are carrying"
+            }
+          },
+          {
+            "id": "big-villain-1",
+            "kind": "villain",
+            "origin": "boost:boost-why-villain",
+            "answers": {
+              "name": "The Quiet Man",
+              "looks": "far too pleased to see them",
+              "want": "what the children are carrying"
+            }
+          }
+        ],
+        "worlds": [
+          {
+            "id": "big-world-0",
+            "answers": {
+              "special": "the first country, where the rules are slightly different",
+              "whereWhen": "later than you would think",
+              "typicalDay": "people work, and watch the road",
+              "peopleDo": "they eat standing up and never say goodbye"
+            }
+          },
+          {
+            "id": "big-world-1",
+            "answers": {
+              "special": "the second country, where the rules are slightly different",
+              "whereWhen": "later than you would think",
+              "typicalDay": "people work, and watch the road",
+              "peopleDo": "they eat standing up and never say goodbye"
+            }
+          },
+          {
+            "id": "big-world-2",
+            "answers": {
+              "special": "the third country, where the rules are slightly different",
+              "whereWhen": "later than you would think",
+              "typicalDay": "people work, and watch the road",
+              "peopleDo": "they eat standing up and never say goodbye"
+            }
+          }
+        ],
+        "inciting": {
+          "answers": {
+            "what": "the road appears where the garden used to be",
+            "goodOrBad": "nobody can agree",
+            "antagonistsFault": "yes, though it takes a long time to find out",
+            "howItChanges": "nothing can be walked back"
+          }
+        },
+        "idea": {
+          "text": "four children, two enemies and three worlds, and one very long road",
+          "fromPrompt": "Q",
+          "rolls": [
+            {
+              "letter": "P",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "M",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "Q",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "G",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "N",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "S",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "P",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "M",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "Q",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "G",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "N",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "S",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "P",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "M",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "Q",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "G",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "N",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "S",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "P",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "M",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "Q",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "G",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "N",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "S",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "P",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "M",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "Q",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "G",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "N",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "S",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "P",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "M",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "Q",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "G",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "N",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "S",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "P",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "M",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "Q",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "G",
+              "ts": "2026-01-02T00:00:00.000Z"
+            }
+          ]
+        }
+      },
+      "skipped": [
+        "ing-world"
+      ]
+    }
+  ]
+}
