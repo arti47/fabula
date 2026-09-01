@@ -242,7 +242,7 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | Module | Responsibility |
 |---|---|
 | `core.js` | Constants, DOM/util helpers (incl. null-safe `add`), `roll()` on `crypto`. No imports |
-| `ui.js` | Modals, toasts, confirms, the collapsible `explain()` note, the pinned action bar, the card component |
+| `ui.js` | Modals, toasts, confirms, the collapsible `explain()` note, the pinned action bar, the card component, the two-column `answerLayout` |
 | `cards.js` | One lookup per kind of thing: `getCard(id)` resolves any card in any group, including nothing else (§10.16) |
 | `store.js` | Storytellers, stories, autosave, `takeSnapshot`/`ensureSnapshot`, JSON export/import, the die-roll log |
 | `derived.js` | Progress counts, "what's still blank", `assemble`/`asPlainText` for the Tell page |
@@ -367,7 +367,7 @@ documented here in the same change. Nothing in the schema is written that no scr
       plain-text export.
 - [x] **Phase 7 — Deck, Learn, Examples, Tutorial.** Card browser; searchable rules library incl.
       the seven drawing tips (D8); the two worked stories as readable stories (D11); the tutorial.
-- [ ] **Phase 8 — Tablet.** The second layout that adds density (D12), at 768 and 1024.
+- [x] **Phase 8 — Tablet.** The second layout that adds density (D12), at 768 and 1024.
 - [ ] **Phase 9 — Hardening.** The three harnesses (§9), accessibility pass, measured layout and
       stress passes, flow walk, audit cycles to a clean cycle.
 - [ ] **Phase 10 — Cloud sync (gated, D6).** Only if asked for: accounts, sync, and the children's
@@ -427,7 +427,7 @@ beats numbered 1–9, unique, none missing; 10 boosts; every card has headline +
 one example; every art path resolves; the die is uniform over 60k rolls within tolerance; export →
 import round-trips a full story byte-identically; an old-shape fixture normalizes.
 
-**B. Browser smoke (`npm run smoke`, ~1 min).** 18 routes × 5 widths (320/360/390/768/1024), run with the card art present and absent. Every route renders with zero console errors; zero
+**B. Browser smoke (`npm run smoke`, ~1 min).** 28 routes × 5 widths (320/360/390/768/1024), seeded mid-story, run with the card art present and absent. Every route renders with zero console errors; zero
 horizontal overflow at 320/360/390 and no stretched layout at 768/1024; no stray
 `null`/`undefined`/`NaN` text; nothing under the fixed tab bar; every screen's primary action above
 the fold; section nav reaches every sibling; no tap target under 40px measured on the wrapping
@@ -508,6 +508,7 @@ rather than a broken image, and the harness must pass with `assets/cards/` empty
 
 | Date | Change | Verification | Cache |
 |---|---|---|---|
+| 2026-09-01 | Phase 8, the tablet: one `answerLayout` puts the card beside the question it asks, at every width — 96px on a phone, 132px from 430, a sticky 200–320px column from 768 — with the reading measure capped and the beat list going two-up at 1024. Measuring it showed the writing field falling below the fold on a phone, so the field now comes before the guidance on every answering screen: what you touch every time sits above what you read once. | `npm test` 62/62; smoke clean over 28 routes × 5 widths with two new contract checks — the field above the fold at every width, and the tablet proved to add density rather than stretch (flattened the grid to one column: 9 failures, restored). Stress probe: the beat screens drop from 2.0 to 1.4 screens at 1024, the nine-beat list from 2.1 to 1.4 | v10 |
 | 2026-09-01 | Phase 9 hardening, first cycle: committed seed fixtures (fresh / mid-story / stress), a shared harness, the layout probe, the interaction audit and the accessibility sweep — and `docs/AUDIT.md`, which records 17 findings across the build. The interaction audit was clean until it was proved not to bite: its route list never entered a step, so it had never clicked the controls that do the work. With the deep routes added it caught a deliberately broken Skip button three times. | `npm test` 62/62; smoke clean over 28 routes × 5 widths, seeded mid-story; interaction audit clean on mid-story and stress, 400 controls each; a11y sweep clean over 24 routes. Fixed on the way: an 11.5-screen Tell page with no jump row, an in-page anchor the hash router would have read as a route, smooth scrolling that ignored reduced motion, an unlabelled file input, two routes where nothing carried `aria-current`, and a smoke sweep that had been measuring an empty app | v9 |
 | 2026-09-01 | Phase 7: the rules library (how it works, the five steps, every card, the seven drawing tips) with search and a link from every card to its entry; both booklet stories as complete story records, read through the same assembly as a kid's own, with Hänsel & Gretel carrying its pre-Boost draft so it is genuinely told twice; and the ten-step first-story walkthrough, linked from the empty shelf and from Settings. | `npm test` 62/62, scan clean; `npm run smoke` clean over 29 routes × 5 widths, three consecutive runs. Findings fixed on the way: a dead `stubScreen` export and its unreachable branch in `build.js` (with `contextLine` and two imports that died with it), and 29 rules-library links at 17px | v9 |
 | 2026-09-01 | Phase 6, Tell: the nine beats assembled into one told story, each passage introduced by its own card phrase; the before/after toggle reading both versions out of the same record; print, save-as-text and copy. Unanswered cards and blank beats are simply left out, with a quiet line saying how many beats are still blank — never a scold (A10). **Milestone reached: a story can be built and read back end to end.** | `npm test` 47/47, scan clean; `npm run smoke` clean over 25 routes × 5 widths, including a browser check that the before-version lacks the beat the boost rewrote | v6 |

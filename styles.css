@@ -334,9 +334,18 @@ input[type="file"] {
 .question-face .card-face, .question-face .card-face-missing { border-radius: var(--radius); border: 1px solid var(--rule); }
 .question-label { font-size: 1.3rem; margin: 0 0 4px; }
 
-@media (min-width: 768px) {
-  .question-face { float: right; max-width: 200px; margin-left: var(--step); }
+/* The answering layout. Even on a phone the card sits beside the question rather than above it —
+   stacked, the field you came to use falls below the fold. The card grows with the screen (D12). */
+.answer-layout {
+  display: grid; gap: var(--step);
+  grid-template-columns: 96px minmax(0, 1fr);
+  align-items: start;
 }
+.answer-face { max-width: 100%; }
+.answer-face .card-face, .answer-face .card-face-missing {
+  border-radius: var(--radius); border: 1px solid var(--rule);
+}
+.answer-body > :first-child { margin-top: 0; }
 
 /* ---------- the nine beats ---------- */
 
@@ -421,10 +430,30 @@ input[type="file"] {
   .screen { padding: calc(var(--step) * 2); max-width: 1100px; }
   .card-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: calc(var(--step) * 1.5); }
   .modal-backdrop { align-items: center; }
+
+  /* The card you are answering stays beside the question instead of scrolling away above it. */
+  .answer-layout {
+    grid-template-columns: minmax(200px, 260px) minmax(0, 1fr);
+    gap: calc(var(--step) * 2);
+  }
+  .answer-face { position: sticky; top: calc(var(--header-h) + 92px); }
+  .answer-body { max-width: 62ch; }
+
+  /* Reading columns stay short enough to scan. */
+  .told-passage, .explain > div, .screen > p { max-width: 70ch; }
+}
+
+@media (min-width: 430px) {
+  .answer-layout { grid-template-columns: 132px minmax(0, 1fr); }
 }
 
 @media (min-width: 1024px) {
   .card-grid { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
+  .answer-layout { grid-template-columns: minmax(240px, 320px) minmax(0, 1fr); }
+
+  /* More of the story visible at once: the nine beats and the shelf go two-up. */
+  .beat-list { display: grid; grid-template-columns: 1fr 1fr; gap: var(--step); }
+  .told-story { column-gap: calc(var(--step) * 3); }
 }
 
 @media (prefers-reduced-motion: reduce) {

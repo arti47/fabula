@@ -169,6 +169,18 @@ export function cardTile(card, { href, sub, blank = false } = {}) {
   );
 }
 
+/**
+ * The answering layout: a card face and the question about it. One column on a phone, two on a
+ * tablet — the card stays visible beside the field instead of scrolling away above it (D12).
+ */
+export function answerLayout(face, body) {
+  return add(
+    el('div', { class: 'answer-layout' }),
+    add(el('div', { class: 'answer-face' }), face),
+    add(el('div', { class: 'answer-body' }), ...body),
+  );
+}
+
 /** Example line, labelling anything this project added rather than Sefirot (§2.2). */
 export function exampleLine(example) {
   return add(

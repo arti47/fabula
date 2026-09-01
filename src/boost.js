@@ -8,11 +8,17 @@
 //                                            control that names what it would discard
 
 import { el, add, debounce, isBlank } from './core.js';
-import { actionBar, cardTile, cardFace, exampleLine, showToast, confirmModal } from './ui.js';
+import { actionBar, cardTile, cardFace, exampleLine, showToast, confirmModal, answerLayout } from './ui.js';
 import { BOOSTS, BEATS, INGREDIENTS, getCard } from '../data.js';
 import { saveStory, ensureSnapshot, takeSnapshot } from './store.js';
 import { addEntry } from './ingredients.js';
 import { renderStoryHeader } from './router.js';
+
+/** Collect nodes for the answer column, skipping nullish ones the way `add` does. */
+function push(list, ...nodes) {
+  for (const node of nodes.flat()) if (node != null && node !== false) list.push(node);
+  return list;
+}
 
 function boostState(story, id) {
   return { answer: '', skipped: false, spawned: [], editedBeats: [], ...(story.boosts?.[id] || {}) };
@@ -103,10 +109,8 @@ export function boostScreen(story, boostId) {
 
   const wrap = el('div');
   add(wrap, el('a', { class: 'back-link', href: '#/build/boost', text: '← All ten boosts' }));
-  add(wrap, el('div', { class: 'question-face' }, cardFace(boost)));
-  add(wrap, el('h2', { class: 'question-label', text: boost.headline }));
-  add(wrap, el('p', { text: boost.guidance }));
-
+  const body = [];
+  push(body, el('h2', { class: 'question-label', text: boost.headline }));
   const state = boostState(current, boost.id);
 
   const field = el('textarea', {
@@ -119,10 +123,11 @@ export function boostScreen(story, boostId) {
     renderStoryHeader();
   }, 400);
   field.addEventListener('input', save);
-  add(wrap, field);
+  push(body, field);
+  push(body, el('p', { text: boost.guidance }));
 
   // P8 — skipping is a control, and it is reversible.
-  add(wrap, el('button', {
+  push(body, el('button', {
     type: 'button', class: 'button secondary',
     text: state.skipped ? 'Bring this one back' : 'Skip this one',
     onclick: () => {
@@ -134,8 +139,8 @@ export function boostScreen(story, boostId) {
 
   // P6 — a boost may invent a new Ingredient card.
   if (boost.canSpawn.length) {
-    add(wrap, el('h3', { text: 'Does this give you somebody new?' }));
-    add(wrap, el('p', { class: 'note', text: 'In the book, this is the card that invents a whole new character — and the story gets better for it. Make one here and it joins your ingredients.' }));
+    push(body, el('h3', { text: 'Does this give you somebody new?' }));
+    push(body, el('p', { class: 'note', text: 'In the book, this is the card that invents a whole new character — and the story gets better for it. Make one here and it joins your ingredients.' }));
     const row = el('div', { class: 'row-actions' });
     for (const kind of boost.canSpawn) {
       const card = INGREDIENTS.find((i) => i.kind === kind);
@@ -151,11 +156,11 @@ export function boostScreen(story, boostId) {
         },
       }));
     }
-    add(wrap, row);
+    push(body, row);
   }
 
   if (state.spawned.length) {
-    add(wrap, el('h3', { text: 'Made from this card' }));
+    push(body, el('h3', { text: 'Made from this card' }));
     const list = el('ul');
     for (const id of state.spawned) {
       const entry = current.cast.find((c) => c.id === id) || current.worlds.find((w) => w.id === id);
@@ -163,12 +168,12 @@ export function boostScreen(story, boostId) {
       const label = entry.answers?.name || (entry.kind === 'villain' ? 'A new antagonist' : 'A new main character');
       add(list, el('li', {}, el('a', { class: 'back-link', href: `#/build/ingredients/${id}`, text: `${label} →` })));
     }
-    add(wrap, list);
+    push(body, list);
   }
 
   // P7 — a boost may send you back to rewrite a beat.
   if (boost.suggestsBeats.length) {
-    add(wrap, el('h3', { text: 'Does a beat need changing?' }));
+    push(body, el('h3', { text: 'Does a beat need changing?' }));
     const row = el('div', { class: 'row-actions' });
     for (const n of boost.suggestsBeats) {
       const beat = BEATS.find((b) => b.n === n);
@@ -182,22 +187,24 @@ export function boostScreen(story, boostId) {
         },
       }));
     }
-    add(wrap, row);
+    push(body, row);
   }
 
   if (state.editedBeats.length) {
-    add(wrap, el('p', {
+    push(body, el('p', {
       class: 'provenance',
       text: `Because of this card you went back to beat${state.editedBeats.length > 1 ? 's' : ''} ${state.editedBeats.join(', ')}.`,
     }));
   }
 
   if (boost.examples?.length) {
-    add(wrap, el('h3', { text: 'How other stories answer it' }));
+    push(body, el('h3', { text: 'How other stories answer it' }));
     const list = el('ul');
     for (const ex of boost.examples) add(list, exampleLine(ex));
-    add(wrap, list);
+    push(body, list);
   }
+
+  add(wrap, answerLayout(cardFace(boost), body));
 
   const index = BOOSTS.findIndex((b) => b.id === boost.id);
   const next = BOOSTS[index + 1];

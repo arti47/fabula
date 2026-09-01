@@ -97,6 +97,36 @@ try {
       });
       check(`${width} ${route} tap targets`, () => assert.deepEqual(small, [], JSON.stringify(small)));
 
+      // On a screen whose whole job is writing, the field is the primary action (§6.3.2) — it
+      // must be reachable without scrolling, at every width.
+      const fieldTop = await page.evaluate(() => {
+        const field = document.querySelector('#screen textarea');
+        return field ? { top: Math.round(field.getBoundingClientRect().top), viewport: window.innerHeight } : null;
+      });
+      if (fieldTop) {
+        check(`${width} ${route} writing field above the fold`, () => {
+          assert.ok(fieldTop.top < fieldTop.viewport, `the field starts ${fieldTop.top}px down a ${fieldTop.viewport}px screen`);
+        });
+      }
+
+      // A tablet must add density, not stretch (§16.2): the card sits beside its question, and
+      // the reading column stays a readable width instead of running the full viewport.
+      if (width >= 768 && (route.includes('/build/structure/') || route.includes('/build/ingredients/') || route.includes('/build/boost/'))) {
+        const layout = await page.evaluate(() => {
+          const face = document.querySelector('.answer-face');
+          const body = document.querySelector('.answer-body');
+          if (!face || !body) return null;
+          const f = face.getBoundingClientRect();
+          const b = body.getBoundingClientRect();
+          return { sideBySide: f.right <= b.left + 1, bodyWidth: b.width, viewport: window.innerWidth };
+        });
+        check(`${width} ${route} tablet adds density`, () => {
+          assert.ok(layout, 'no answer layout on an answering screen');
+          assert.ok(layout.sideBySide, 'the card is stacked above the question rather than beside it');
+          assert.ok(layout.bodyWidth < layout.viewport * 0.8, 'the answer column just stretched to fill the width');
+        });
+      }
+
       const underTabs = await page.evaluate(() => {
         const tabTop = document.querySelector('.tab-bar').getBoundingClientRect().top + window.scrollY;
         const docBottom = document.documentElement.scrollHeight;
