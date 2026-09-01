@@ -90,8 +90,19 @@ Checked, found sound, and not to be re-litigated without a reason:
   under the fixed tab bar; the primary action above the fold on every screen that has one; the
   writing field above the fold on every answering screen; the tablet measurably denser, not wider.
 
+## Deployment
+
+The app is published to GitHub Pages from `main` by `.github/workflows/pages.yml`, which runs
+`npm test` before it deploys. Pages serves under a sub-path (`/fabula/`), so the smoke harness
+serves the app that way too and checks that the boot, the card art and the service-worker scope all
+survive it — every URL in the app is relative for this reason.
+
+**Not verified from here:** the live site itself. The build sandbox's proxy refuses `github.io`, so
+the deployed URL has never been opened by the harness. Worth one human look on a real phone.
+
 ## Still to do
 
-- **Flow walk** — playing a whole story through by hand, asking at each step what to tap next.
+- **Flow walk** — playing a whole story through by hand on a real device, asking at each step what
+  to tap next.
 - **Contrast and screen-reader flow** — the sweep checks structure; neither of these is machine
   checkable and both want a human.
