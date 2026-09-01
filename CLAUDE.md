@@ -252,10 +252,10 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | `tell.js` | Step 5: the assembled story, before/after toggle, print, plain-text save and copy |
 | `library.js` | Storyteller profiles, the shelf, create/rename/delete/open; example stories |
 | `deck.js` | Browse all 30 cards as reference — **currently inside `screens.js`**; splits out when it grows search or filters |
-| `learn.js` | Searchable rules library, accordion by subject in play order |
+| `learn.js` | Searchable rules library, accordion by subject in play order; card entries resolve through `getCard` |
 | `sparks.js` | Spark tables, always labelled as house aids — **currently inside `idea.js`** |
 | `settings.js` | Theme, text size, export/import, data check, about — **currently inside `screens.js`** |
-| `tutorial.js` | First-story walkthrough |
+| `tutorial.js` | The ten-step first-story walkthrough, linked from the empty shelf and Settings |
 | `router.js` | Tab routing, section nav, live-state badges |
 | `main.js` | Entry point / boot |
 
@@ -363,7 +363,7 @@ documented here in the same change. Nothing in the schema is written that no scr
       Ingredient card from a boost (P6); jumping back to rewrite a beat and returning (P7).
 - [x] **Phase 6 — Step 5: Tell.** The assembled story page, before/after toggle, print stylesheet,
       plain-text export.
-- [ ] **Phase 7 — Deck, Learn, Examples, Tutorial.** Card browser; searchable rules library incl.
+- [x] **Phase 7 — Deck, Learn, Examples, Tutorial.** Card browser; searchable rules library incl.
       the seven drawing tips (D8); the two worked stories as readable stories (D11); the tutorial.
 - [ ] **Phase 8 — Tablet.** The second layout that adds density (D12), at 768 and 1024.
 - [ ] **Phase 9 — Hardening.** The three harnesses (§9), accessibility pass, measured layout and
@@ -383,9 +383,9 @@ An unticked box means the data is not extracted. **Never build UI against an unt
 | T4 | 9 Structure cards: number, headline, beat name, guidance | `data.js` | `structure.js` | [x] |
 | T5 | 10 Boost cards: headline, guidance, `canSpawn`, `suggestsBeats` | `data.js` | `boost.js` | [x] |
 | T6 | Little Red Riding Hood's answers, per card | `data.js` | card example line | [x] |
-| T7 | Hänsel & Gretel, both versions, as story records | `data-examples.js` | `library.js` | [ ] |
-| T8 | The 7 drawing tips | `data-learn.js` | `learn.js` | [ ] |
-| T9 | Rules-library chapters (5 steps, 9 beats, 10 boosts) | `data-learn.js` | `learn.js` | [ ] |
+| T7 | Both booklet stories as complete story records (H&G with its pre-Boost draft) | `data-examples.js` | `library.js` | [x] |
+| T8 | The 7 drawing tips | `data-learn.js` | `learn.js` | [x] |
+| T9 | Rules-library chapters (how it works, 5 steps, every card, drawing) | `data-learn.js` | `learn.js` | [x] |
 | T10 | Spark tables (house aid): 5 tables × 16 rows | `data-sparks.js` | `idea.js` | [x] |
 | T11 | Card art: 34 images → WebP, id-mapped (760px, q80, 3.2MB total, max 195KB) | `assets/cards/`, generated | `ui.js` card | [x] |
 | T12 | `CARD_ERRATA` (A3) | `data.js` | `learn.js` | [x] |
@@ -412,7 +412,8 @@ ships.** Fill the row when you build the rule, not at audit time.
 | D10 before/after | Procedure | `story.snapshot` | `derived.assemble(story, version)` | Tell page toggle, `aria-pressed` | `both versions render from one record` |
 | P9 tell it again | Permission | — | `tell.tellScreen` | Reachable any time, never withheld | `an empty story reads back as empty rather than crashing` |
 | P8 skip a boost | Permission | `story.boosts[].skipped` | `boost.boostScreen` | "Skip this one" / "Bring this one back" | `P8: a skipped boost comes back` |
-| P10 draw it | Permission | `DRAWING_TIPS` | **guidance only** | Learn chapter | tips render; nothing else claims to |
+| P10 draw it | Permission | `DRAWING_TIPS` | **guidance only** | Learn chapter, 7 tips | `the drawing chapter is guidance only — it names no control` |
+| D11 worked stories | Procedure | `EXAMPLE_STORIES` | `library.exampleScreen` → `derived.assemble` | Two readable stories on the shelf, copyable | `Hänsel and Gretel is told twice, and the two tellings differ` |
 
 ---
 
@@ -499,6 +500,7 @@ rather than a broken image, and the harness must pass with `assets/cards/` empty
 
 | Date | Change | Verification | Cache |
 |---|---|---|---|
+| 2026-09-01 | Phase 7: the rules library (how it works, the five steps, every card, the seven drawing tips) with search and a link from every card to its entry; both booklet stories as complete story records, read through the same assembly as a kid's own, with Hänsel & Gretel carrying its pre-Boost draft so it is genuinely told twice; and the ten-step first-story walkthrough, linked from the empty shelf and from Settings. | `npm test` 62/62, scan clean; `npm run smoke` clean over 29 routes × 5 widths, three consecutive runs. Findings fixed on the way: a dead `stubScreen` export and its unreachable branch in `build.js` (with `contextLine` and two imports that died with it), and 29 rules-library links at 17px | v9 |
 | 2026-09-01 | Phase 6, Tell: the nine beats assembled into one told story, each passage introduced by its own card phrase; the before/after toggle reading both versions out of the same record; print, save-as-text and copy. Unanswered cards and blank beats are simply left out, with a quiet line saying how many beats are still blank — never a scold (A10). **Milestone reached: a story can be built and read back end to end.** | `npm test` 47/47, scan clean; `npm run smoke` clean over 25 routes × 5 widths, including a browser check that the before-version lacks the beat the boost rewrote | v6 |
 | 2026-09-01 | Phase 5, Boost: the ten cards as a grid, each answerable and skippable (P8). A boost can invent an Ingredient card that carries `origin: boost:<id>` and is listed back on the boost that made it (P6), and can send you to a beat and back again with the route remembering where you came from (P7). The before-version freezes automatically on first arrival (A8), with a re-freeze control that names what it discards. | `npm test` 40/40, scan clean; `npm run smoke` clean over 25 routes × 5 widths, three consecutive runs, including a browser check that the snapshot keeps the old beat text after a boost rewrites it | v5 |
 | 2026-09-01 | Phase 4, Structure: the nine beats as a list with previews and blank dots, a one-beat view with pips, the booklet's guidance and its Little Red Riding Hood line per beat, and ruling A5 — beat 2 arrives pre-filled from the "Something happens" card, once, carrying a line that says where it came from and that the card will not change. | `npm test` 33/33, scan clean; `npm run smoke` clean over 23 routes × 5 widths, including a browser check that editing beat 2 leaves the ingredient untouched. A5 guard proved to bite by letting the pre-fill overwrite a written beat (test 30 went red, restored). Also replaced the smoke walk's fixed waits with polling after a 1-in-4 flake (template defect D-15) | v4 |

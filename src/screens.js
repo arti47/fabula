@@ -89,6 +89,8 @@ export function cardScreen(params) {
     add(screen, list);
   }
 
+  add(screen, el('p', {}, el('a', { class: 'back-link', href: `#/learn/${card.id}`, text: 'Read more about this card →' })));
+
   if (card.example) {
     add(screen, el('h3', { text: `How ${card.example.ref} answers it` }));
     if (card.example.text) {
@@ -167,6 +169,10 @@ export function settingsScreen() {
   });
   add(screen, el('h3', { text: 'Load a backup' }), file);
 
+  add(screen, el('h3', { text: 'Your first story' }));
+  add(screen, el('p', { class: 'note', text: 'A walk through making one story from beginning to end.' }));
+  add(screen, el('p', {}, el('a', { class: 'button secondary', href: '#/tutorial', text: 'Read the walkthrough' })));
+
   add(screen, el('h3', { text: 'About' }));
   add(screen, el('p', { class: 'note', text: 'Story Machine runs the Fabula Deck for Kids by Sefirot (Torino, 2021), written by Andrea Binasco and Matteo di Pascale, illustrated by Matteo Ufocinque. This app is a personal play aid built from a copy of the deck.' }));
   for (const e of CARD_ERRATA) {
@@ -184,24 +190,4 @@ export function notFoundScreen() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Stubs — named so an empty screen still says what it is for (§6.1)
-// ---------------------------------------------------------------------------
 
-export function stubScreen(title, what, note) {
-  clearActionBar();
-  return add(
-    el('div'),
-    el('h2', { text: title }),
-    explain(note || what, 'It is not built yet, so there is nothing to do here for the moment.'),
-    el('p', { class: 'empty', text: what }),
-  );
-}
-
-export function learnScreen() {
-  return stubScreen(
-    'Learn',
-    'The rules library — every card explained, the five steps, and the drawing tips — is being built.',
-    'Everything the book teaches, in one searchable place: what each card is for, how the nine beats work, and how to draw your story.',
-  );
-}
