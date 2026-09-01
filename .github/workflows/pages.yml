@@ -1,0 +1,47 @@
+name: Deploy to GitHub Pages
+
+# The app has no build step, so a deploy is just publishing the repository as it stands.
+# Everything the app needs at runtime is committed: index.html, styles.css, src/, data*.js,
+# assets/cards/, the manifest and the service worker. tests/ and tools/ ride along harmlessly.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time; a newer push supersedes an older one still in flight.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # The parse gate, the dead-data scan and the data invariants — seconds, and they are the
+      # difference between deploying the app and deploying a screen that never renders.
+      - run: npm test
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+      - id: deployment
+        uses: actions/deploy-pages@v4
