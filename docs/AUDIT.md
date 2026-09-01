@@ -54,6 +54,17 @@ Findings that the harnesses caught as each phase landed. All fixed in the same c
 | 16 | Navigation says where you are | Header settings link, tutorial | `aria-current` on the header link; the tutorial belongs to the Learn tab | Two routes where nothing on screen said which section you were in |
 | 17 | A harness must measure the real app | Smoke route sweep | Seeds the `mid-story` fixture, and asserts it loaded | Every route was being measured empty, which is the state no kid is ever in |
 
+## Cycle 3 — the tablet pass
+
+| # | Rule | Target | Fix | Why it mattered |
+|---|---|---|---|---|
+| 18 | A tablet adds density, never stretches (§16.2) | Answering screens | One `answerLayout`: the card sits beside its question at every width, sticky from 768; the reading measure is capped; the beat list goes two-up at 1024 | A scaled-up phone layout looks like a decision. Stress probe: beat screens 2.0 → 1.4 screens at 1024, the nine-beat list 2.1 → 1.4 |
+| 19 | The primary action is above the fold (§6.3.2) | Beat, ingredient and boost screens on a phone | The writing field now comes before the guidance — what you touch every time above what you read once | On a 390px screen the field started below the fold: a kid landed on the answering screen and had to scroll to answer |
+| 20 | Frequency decides height (§6.3.4) | Same screens | Guidance and examples moved under the field | The teaching is still on screen, which is what §0.1 requires; it is simply no longer in the way |
+
+Both new contract checks were proved to bite: flattening the tablet grid to one column produced
+nine failures, and the field-above-the-fold check is what found #19 in the first place.
+
 ---
 
 ## Verified clean
@@ -76,12 +87,11 @@ Checked, found sound, and not to be re-litigated without a reason:
 - **Missing card art** — every face either loads or shows a labelled placeholder; the whole harness
   passes with `assets/cards/` empty.
 - **Layout** — zero horizontal overflow at 320/360/390/768/1024 in the stress state; no control
-  under the fixed tab bar; the primary action above the fold on every screen that has one.
+  under the fixed tab bar; the primary action above the fold on every screen that has one; the
+  writing field above the fold on every answering screen; the tablet measurably denser, not wider.
 
 ## Still to do
 
-- **Phase 8, the tablet layout** (768 and 1024 add density rather than stretching). The measured
-  layout pass will need re-running afterwards.
 - **Flow walk** — playing a whole story through by hand, asking at each step what to tap next.
 - **Contrast and screen-reader flow** — the sweep checks structure; neither of these is machine
   checkable and both want a human.

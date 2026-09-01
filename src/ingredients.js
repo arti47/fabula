@@ -10,7 +10,7 @@
 // reachable in any order from the pips, so the permission survives the format.
 
 import { el, add, uid, debounce, isBlank } from './core.js';
-import { actionBar, cardTile, cardFace, showToast } from './ui.js';
+import { actionBar, cardTile, cardFace, showToast, answerLayout } from './ui.js';
 import { INGREDIENTS } from '../data.js';
 import { saveStory } from './store.js';
 import { hasAnyAnswer } from './derived.js';
@@ -192,9 +192,9 @@ export function ingredientQuestion(story, entryId, qIndex) {
   });
   add(wrap, pips);
 
-  add(wrap, el('div', { class: 'question-face' }, cardFace(card)));
-  add(wrap, el('h2', { class: 'question-label', text: question.label }));
-  if (question.hint) add(wrap, el('p', { class: 'note', text: question.hint }));
+  const body = [];
+  body.push(el('h2', { class: 'question-label', text: question.label }));
+  if (question.hint) body.push(el('p', { class: 'note', text: question.hint }));
 
   const field = el('textarea', {
     id: 'answer', 'aria-label': question.label, rows: '3',
@@ -210,17 +210,19 @@ export function ingredientQuestion(story, entryId, qIndex) {
     else if (isBlank(field.value) && !dot) add(pip, el('span', { class: 'blank-dot' }));
   }, 400);
   field.addEventListener('input', save);
-  add(wrap, field);
+  body.push(field);
 
   const exampleAnswer = card.example?.answers?.[question.key];
   if (exampleAnswer) {
-    add(wrap, el(
+    body.push(el(
       'details',
       { class: 'explain' },
       el('summary', { text: `How ${card.example.ref} answers this` }),
       el('div', {}, el('p', { text: exampleAnswer })),
     ));
   }
+
+  add(wrap, answerLayout(cardFace(card), body));
 
   const next = card.questions[index + 1];
   const prev = card.questions[index - 1];

@@ -7,7 +7,7 @@
 // Ruling A9: the order is presentational. Any beat is answerable at any time, and blank is legal.
 
 import { el, add, debounce, isBlank } from './core.js';
-import { actionBar, cardFace, exampleLine } from './ui.js';
+import { actionBar, cardFace, exampleLine, answerLayout } from './ui.js';
 import { BEATS, getCard } from '../data.js';
 import { saveStory } from './store.js';
 import { renderStoryHeader } from './router.js';
@@ -125,10 +125,9 @@ export function beatScreen(story, n, fromBoost) {
   }
   add(wrap, pips);
 
-  add(wrap, el('div', { class: 'question-face' }, cardFace(beat)));
-  add(wrap, el('h2', { class: 'question-label', text: beat.headline }));
-  add(wrap, el('p', { class: 'question-card-name', text: `Beat ${beat.n} · ${beat.beatName}` }));
-  add(wrap, el('p', { text: beat.guidance }));
+  const body = [];
+  body.push(el('h2', { class: 'question-label', text: beat.headline }));
+  body.push(el('p', { class: 'question-card-name', text: `Beat ${beat.n} · ${beat.beatName}` }));
 
   const field = el('textarea', {
     id: 'beat-text', 'aria-label': `Beat ${beat.n}: ${beat.beatName}`, rows: '5',
@@ -145,17 +144,18 @@ export function beatScreen(story, n, fromBoost) {
     else if (isBlank(field.value) && !dot) add(pip, el('span', { class: 'blank-dot' }));
   }, 400);
   field.addEventListener('input', save);
-  add(wrap, field);
+  body.push(field);
+  body.push(el('p', { text: beat.guidance }));
 
   if (beat.n === 2 && current.beats?.[2]?.prefilledFrom === 'inciting') {
-    add(wrap, el('p', {
+    body.push(el('p', {
       class: 'provenance',
       text: 'This came from your “Something happens” card. Change it here as much as you like — the card stays as you wrote it.',
     }));
   }
 
   if (beat.example) {
-    add(wrap, el(
+    body.push(el(
       'details',
       { class: 'explain' },
       el('summary', { text: `How ${beat.example.ref} tells this beat` }),
@@ -163,11 +163,13 @@ export function beatScreen(story, n, fromBoost) {
     ));
   }
   if (beat.examples?.length) {
-    add(wrap, el('h3', { text: 'Other stories at this moment' }));
+    body.push(el('h3', { text: 'Other stories at this moment' }));
     const list = el('ul');
     for (const ex of beat.examples) add(list, exampleLine(ex));
-    add(wrap, list);
+    body.push(list);
   }
+
+  add(wrap, answerLayout(cardFace(beat), body));
 
   const next = BEATS.find((b) => b.n === n + 1);
   const prev = BEATS.find((b) => b.n === n - 1);
