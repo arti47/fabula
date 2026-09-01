@@ -360,6 +360,28 @@ input[type="file"] {
   border-left: 3px solid var(--group-ingredient); padding-left: var(--step); margin: var(--step) 0;
 }
 
+/* ---------- the told story ---------- */
+
+.version-toggle { display: flex; gap: var(--step); margin-bottom: var(--step); }
+.version-toggle .button[aria-pressed="true"] {
+  background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700;
+}
+.told-story {
+  border: 1px solid var(--rule); border-radius: var(--card-radius);
+  background: var(--paper-raised); padding: calc(var(--step) * 2);
+  box-shadow: var(--shadow);
+}
+.told-title { margin-top: 0; }
+.told-idea { font-style: italic; color: var(--ink-soft); }
+.told-passage { font-family: var(--font); font-size: 1.05rem; line-height: 1.65; margin: 0 0 1em; }
+.told-connector { font-variant-caps: small-caps; letter-spacing: 0.04em; color: var(--accent); }
+.told-blanks { border-top: 1px solid var(--rule); padding-top: var(--step); }
+
+@media print {
+  .told-story { border: 0; box-shadow: none; padding: 0; background: #fff; }
+  .version-toggle, .row-actions, .told-blanks, .back-link { display: none !important; }
+}
+
 /* ---------- dialogs ---------- */
 
 .modal-backdrop {
