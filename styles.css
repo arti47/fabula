@@ -309,6 +309,29 @@ input[type="file"] {
 .spark-row { display: flex; flex-wrap: wrap; gap: var(--step); }
 .spark-out { min-height: 1.5em; font-family: var(--font); font-size: 1.05rem; }
 
+/* ---------- one question at a time ---------- */
+
+.pips { display: flex; gap: var(--step); flex-wrap: wrap; margin: var(--step) 0; }
+.pip {
+  min-width: 44px; min-height: 44px; padding: 0 6px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+  border: 1px solid var(--rule); border-radius: 999px;
+  background: var(--paper-raised); color: var(--ink-soft);
+  text-decoration: none; font-variant-numeric: tabular-nums;
+}
+.pip[aria-current="step"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.pip .blank-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--blank-dot); }
+.pip[aria-current="step"] .blank-dot { background: var(--accent-ink); }
+
+.question-card-name { margin: 0; font-size: 0.95rem; color: var(--ink-soft); font-family: var(--font-ui); font-weight: 600; }
+.question-face { max-width: 150px; margin: 0 0 var(--step); }
+.question-face .card-face, .question-face .card-face-missing { border-radius: var(--radius); border: 1px solid var(--rule); }
+.question-label { font-size: 1.3rem; margin: 0 0 4px; }
+
+@media (min-width: 768px) {
+  .question-face { float: right; max-width: 200px; margin-left: var(--step); }
+}
+
 /* ---------- dialogs ---------- */
 
 .modal-backdrop {

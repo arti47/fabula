@@ -246,7 +246,7 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | `derived.js` | Progress counts, "what's still blank", story assembly for the Tell page, data normalization/migration |
 | `build.js` | The guided five-step path and its section nav |
 | `idea.js` | Step 1: die, Prompt cards, the idea sentence, the roll history, sparks |
-| `ingredients.js` | Step 2: cast, worlds, inciting event; add-another; the six/four questions |
+| `ingredients.js` | Step 2: the four-card grid, add-another, skip/unskip, and the one-question-at-a-time view with pips |
 | `structure.js` | Step 3: the nine beats, beat 2 pre-fill (A5) |
 | `boost.js` | Step 4: the ten boosts, card-spawning (P6), beat rewrites (P7), the snapshot (A8) |
 | `tell.js` | Step 5: assembled story, before/after toggle, print view, plain-text export |
@@ -353,7 +353,7 @@ documented here in the same change. Nothing in the schema is written that no scr
       JSON export/import, normalization + migration.
 - [x] **Phase 2 — Step 1: Idea.** The die (crypto, logged, re-rollable), the six Prompt cards with
       their guidance and examples, the idea sentence, "I already have an idea" path, sparks.
-- [ ] **Phase 3 — Step 2: Ingredients.** The four cards in any order (P2), add-another (P3),
+- [x] **Phase 3 — Step 2: Ingredients.** The four cards in any order (P2), add-another (P3),
       per-question fields with the booklet's example answers inline, skip and return (P1, P5).
 - [ ] **Phase 4 — Step 3: Structure.** The nine beats with guidance and examples; beat 2 pre-fill
       from the inciting event (A5); free order (A9).
@@ -398,7 +398,9 @@ ships.** Fill the row when you build the rule, not at audit time.
 | Rule | Shape | Data | Engine | Surface | Test |
 |---|---|---|---|---|---|
 | P1 skip any card | Permission | — | `store.skipCard` | Skip button, every card | skipped card stays reachable |
-| P3 two heroes | Permission | — | `store.addCastMember` | "Add another" | second hero persists and appears in the story |
+| P1 skip a card | Permission | `story.skipped` | `ingredients.ingredientsGrid` | "Skip this one for now" + "Bring it back" | `ingredients: a skipped card comes back` |
+| P2 any order | Permission | — | `ingredients.ingredientsGrid`, pips | Card grid; numbered pips inside a card | `ingredients: the tile counts answers` |
+| P3 two heroes | Permission | — | `ingredients.addEntry` | "Add another main character", uncapped | `ingredients: a second main character is allowed` |
 | P4 re-roll freely | Permission | `PROMPTS`, `DIE_FACES` | `idea.roll` | Roll again, always enabled | `idea: every roll is kept, none discarded` |
 | P5 leave it blank | Permission | — | `derived.progress` | Counts in the story header, never a block | `progress counts what is answered, and nothing else` |
 | House sparks | Permission (ours) | `SPARK_TABLES` | `idea.sparkSection` | Labelled "ours, not the deck's" | `idea: sparks are labelled as ours` |
@@ -494,6 +496,7 @@ rather than a broken image, and the harness must pass with `assets/cards/` empty
 
 | Date | Change | Verification | Cache |
 |---|---|---|---|
+| 2026-09-01 | Phase 3, Ingredients: a grid of the four cards in any order, with add-another on hero/villain/world and a reversible skip; inside a card, one question at a time with numbered pips that jump anywhere, the booklet's example answer collapsed under each, and autosave. Hardened the dead-data scan to strip string literals before asking whether a name is used. | `npm test` 27/27, scan clean; `npm run smoke` clean over 20 routes × 5 widths, with new walk steps covering P1, P2 and P3. The hardened scan immediately found a dead `explain` import that the old one had masked | v3 |
 | 2026-09-01 | Phase 2, the Idea step: the sentence field with debounced autosave, the crypto-backed die showing one Prompt card large with its guidance and examples, unlimited re-rolls with every roll kept in a visible history, and five house-aid spark tables. Adds the dead-data scan to `npm test`. | `npm test` 27/27 incl. die uniformity over 60k rolls and an old-shape normalization fixture; `npm run smoke` clean; scan clean. Findings fixed on the way: 2 dead exports, 5 dead imports, a `.modal-actions` class collision, a storyteller-removal path with no control (now wired, with a confirmation naming the lost stories), and stacked modals | v2 |
 | 2026-09-01 | Phases 0 and 1: app shell (frame, tabs, section nav, sticky story header carrying the progress counts), storybook theme light+dark with a text-size control, hash router, localStorage layer with normalization and JSON export/import, storytellers and the story shelf, the Deck browser, PWA manifest + service worker with the update toast. Browser smoke harness added. | `npm test` 16/16; `npm run smoke` clean over 18 routes × 5 widths, with card art present **and** absent; smoke found 4 real defects on its first run (no `explain()` on the build and Learn screens, a 16px back link, a 16px range and 22px file input) — all fixed | v1 |
 | 2026-09-01 | `data.js` written: all 30 playable cards with headline, questions, paraphrased guidance and examples; house-added examples flagged; `CARD_ERRATA`. Parse gate + 16 data invariants added (T1–T6, T12 ticked). | `npm test` 16/16; guard proved to bite by unflagging a house example (test 13 went red, restored) | — |
