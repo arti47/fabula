@@ -1,0 +1,219 @@
+{
+  "app": "story-machine",
+  "schemaVersion": 1,
+  "exportedAt": "2026-01-01T00:00:00.000Z",
+  "storytellers": [
+    {
+      "id": "teller-mid",
+      "name": "Sam",
+      "emoji": "🦊",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "stories": [
+    {
+      "id": "story-mid",
+      "ownerId": "teller-mid",
+      "title": "The dragon next door",
+      "createdAt": "2026-01-02T00:00:00.000Z",
+      "updatedAt": "2026-01-03T00:00:00.000Z",
+      "schemaVersion": 1,
+      "idea": {
+        "text": "a dragon moves in next door and nobody else can see it",
+        "fromPrompt": "N",
+        "rolls": [
+          {
+            "letter": "G",
+            "ts": "2026-01-02T00:00:00.000Z"
+          },
+          {
+            "letter": "N",
+            "ts": "2026-01-02T00:00:00.000Z"
+          }
+        ]
+      },
+      "cast": [
+        {
+          "id": "mid-hero-1",
+          "kind": "hero",
+          "origin": "ingredients",
+          "answers": {
+            "name": "Ines",
+            "age": "eleven",
+            "looks": "small, always in a yellow coat",
+            "special": "she notices everything",
+            "fear": "being laughed at",
+            "want": "somebody to believe her"
+          }
+        },
+        {
+          "id": "mid-hero-2",
+          "kind": "hero",
+          "origin": "boost:boost-help",
+          "answers": {
+            "name": "Otto",
+            "age": "her brother, seven",
+            "special": "he believes everything"
+          }
+        },
+        {
+          "id": "mid-villain",
+          "kind": "villain",
+          "origin": "ingredients",
+          "answers": {
+            "name": "The Inspector",
+            "looks": "a very tidy man with a clipboard",
+            "want": "to prove nothing unusual ever happens"
+          }
+        }
+      ],
+      "worlds": [
+        {
+          "id": "mid-world",
+          "answers": {
+            "special": "an ordinary street where one house is far too warm",
+            "whereWhen": "now, in a town with a canal"
+          }
+        }
+      ],
+      "inciting": {
+        "answers": {
+          "what": "the empty house next door starts smoking",
+          "goodOrBad": "strange rather than bad",
+          "antagonistsFault": "no",
+          "howItChanges": "Ines cannot leave it alone"
+        }
+      },
+      "beats": {
+        "1": {
+          "text": "Ines lived in the middle house of three, and nothing had ever happened there.",
+          "updatedAt": "2026-09-01T13:33:45.867Z"
+        },
+        "2": {
+          "text": "The empty house began to smoke, in December, with nobody living in it.",
+          "updatedAt": "2026-09-01T13:33:45.867Z"
+        },
+        "3": {
+          "text": "She climbed the wall to look.",
+          "updatedAt": "2026-09-01T13:33:45.867Z"
+        },
+        "6": {
+          "text": "The Inspector came, and she had to decide whether to tell him.",
+          "updatedAt": "2026-09-01T13:33:45.867Z"
+        }
+      },
+      "boosts": {
+        "boost-help": {
+          "answer": "Otto believes her. That is the whole reason she keeps going.",
+          "skipped": false,
+          "spawned": [
+            "mid-hero-2"
+          ],
+          "editedBeats": [
+            3
+          ]
+        },
+        "boost-narrator": {
+          "answer": "Otto tells it, years later, and gets bits wrong.",
+          "skipped": false,
+          "spawned": [],
+          "editedBeats": []
+        },
+        "boost-twist": {
+          "answer": "",
+          "skipped": true,
+          "spawned": [],
+          "editedBeats": []
+        }
+      },
+      "snapshot": {
+        "takenAt": "2026-09-01T13:33:45.867Z",
+        "beats": {
+          "1": {
+            "text": "Ines lived in the middle house of three, and nothing had ever happened there.",
+            "updatedAt": "2026-09-01T13:33:45.867Z"
+          },
+          "2": {
+            "text": "The empty house began to smoke, in December, with nobody living in it.",
+            "updatedAt": "2026-09-01T13:33:45.867Z"
+          },
+          "3": {
+            "text": "She climbed the wall to look.",
+            "updatedAt": "2026-09-01T13:33:45.867Z"
+          },
+          "6": {
+            "text": "The Inspector came, and she had to decide whether to tell him.",
+            "updatedAt": "2026-09-01T13:33:45.867Z"
+          }
+        },
+        "cast": [
+          {
+            "id": "mid-hero-1",
+            "kind": "hero",
+            "origin": "ingredients",
+            "answers": {
+              "name": "Ines",
+              "age": "eleven",
+              "looks": "small, always in a yellow coat",
+              "special": "she notices everything",
+              "fear": "being laughed at",
+              "want": "somebody to believe her"
+            }
+          },
+          {
+            "id": "mid-hero-2",
+            "kind": "hero",
+            "origin": "boost:boost-help",
+            "answers": {
+              "name": "Otto",
+              "age": "her brother, seven",
+              "special": "he believes everything"
+            }
+          },
+          {
+            "id": "mid-villain",
+            "kind": "villain",
+            "origin": "ingredients",
+            "answers": {
+              "name": "The Inspector",
+              "looks": "a very tidy man with a clipboard",
+              "want": "to prove nothing unusual ever happens"
+            }
+          }
+        ],
+        "worlds": [
+          {
+            "id": "mid-world",
+            "answers": {
+              "special": "an ordinary street where one house is far too warm",
+              "whereWhen": "now, in a town with a canal"
+            }
+          }
+        ],
+        "inciting": {
+          "answers": {
+            "what": "the empty house next door starts smoking",
+            "goodOrBad": "strange rather than bad",
+            "antagonistsFault": "no",
+            "howItChanges": "Ines cannot leave it alone"
+          }
+        },
+        "idea": {
+          "text": "a dragon moves in next door and nobody else can see it",
+          "fromPrompt": "N",
+          "rolls": [
+            {
+              "letter": "G",
+              "ts": "2026-01-02T00:00:00.000Z"
+            },
+            {
+              "letter": "N",
+              "ts": "2026-01-02T00:00:00.000Z"
+            }
+          ]
+        }
+      },
+      "skipped": []
+    }
+  ]
+}

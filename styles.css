@@ -158,6 +158,12 @@ a { color: var(--accent); }
   margin: 0 calc(var(--step) * -1); padding: 0 var(--step) var(--step);
 }
 .section-nav::-webkit-scrollbar { display: none; }
+.section-nav .jump-pill {
+  flex: 0 0 auto; padding: 8px 14px; min-height: 40px;
+  border: 1px solid var(--rule); border-radius: 999px;
+  background: var(--paper-raised); color: var(--ink-soft);
+  font: inherit; font-size: 0.9rem; cursor: pointer;
+}
 .section-nav a {
   flex: 0 0 auto; padding: 8px 14px; min-height: 40px;
   display: inline-flex; align-items: center; gap: 0.4em;

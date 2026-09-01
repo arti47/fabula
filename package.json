@@ -8,8 +8,12 @@
     "parse": "node tools/parse-gate.mjs",
     "test": "npm run parse && npm run scan && node --test \"tests/**/*.test.mjs\"",
     "smoke": "node tests/smoke.mjs",
-    "check": "npm test && npm run smoke",
-    "scan": "node tools/dead-data.mjs"
+    "check": "npm test && npm run smoke && npm run audit && npm run a11y",
+    "scan": "node tools/dead-data.mjs",
+    "fixtures": "node tests/make-fixtures.mjs",
+    "probe": "node tests/probe-layout.mjs",
+    "audit": "node tests/interaction.mjs",
+    "a11y": "node tests/a11y.mjs"
   },
   "devDependencies": {
     "playwright-core": "^1.62.1"

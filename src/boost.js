@@ -161,7 +161,7 @@ export function boostScreen(story, boostId) {
       const entry = current.cast.find((c) => c.id === id) || current.worlds.find((w) => w.id === id);
       if (!entry) continue;
       const label = entry.answers?.name || (entry.kind === 'villain' ? 'A new antagonist' : 'A new main character');
-      add(list, el('li', {}, el('a', { href: `#/build/ingredients/${id}`, text: label })));
+      add(list, el('li', {}, el('a', { class: 'back-link', href: `#/build/ingredients/${id}`, text: `${label} →` })));
     }
     add(wrap, list);
   }

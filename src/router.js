@@ -13,7 +13,7 @@ const TABS = [
   { id: 'stories', label: 'Stories', icon: '❐', href: '#/stories', match: /^#\/(stories|example)/ },
   { id: 'build', label: 'Build', icon: '✎', href: '#/build', match: /^#\/build/ },
   { id: 'deck', label: 'Deck', icon: '🂠', href: '#/deck', match: /^#\/deck/ },
-  { id: 'learn', label: 'Learn', icon: '?', href: '#/learn', match: /^#\/learn/ },
+  { id: 'learn', label: 'Learn', icon: '?', href: '#/learn', match: /^#\/(learn|tutorial)/ },
 ];
 
 const ROUTES = [
@@ -34,6 +34,15 @@ const ROUTES = [
   { pattern: /^#\/settings\/?$/, render: () => settingsScreen() },
   { pattern: /^#\/tutorial\/?$/, render: () => tutorialScreen() },
 ];
+
+/** The header's own links are navigation too: say when you are standing on one. */
+function markHeaderLinks() {
+  const hash = location.hash || '';
+  for (const link of document.querySelectorAll('.app-header a[href^="#/"]')) {
+    if (hash.startsWith(link.getAttribute('href'))) link.setAttribute('aria-current', 'page');
+    else link.removeAttribute('aria-current');
+  }
+}
 
 function renderTabs() {
   const bar = clear(qs('#tab-bar'));
@@ -86,6 +95,7 @@ function render() {
   add(screen, route ? route.render(match) : notFoundScreen());
 
   renderTabs();
+  markHeaderLinks();
   renderStoryHeader();
   window.scrollTo(0, 0);
 }

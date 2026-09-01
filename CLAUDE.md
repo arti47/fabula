@@ -229,6 +229,8 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | `tests/` + `package.json` | Dev-only harnesses (`npm test`); `node_modules` gitignored; not in the SW app shell |
 | `tools/parse-gate.mjs` | Syntax-checks every shipped file by filename before the suite runs |
 | `tools/dead-data.mjs` | The dead-data scan (§9): exports nothing reads, imports nothing uses |
+| `tests/harness.mjs` | Shared server, browser and fixture loading, and the one route list every harness measures |
+| `tests/make-fixtures.mjs` | Regenerates the three seed states (`npm run fixtures`) |
 | `README.md` | Setup, offline/privacy statement, and the licensing note (§12 of the template) |
 | `CLAUDE.md` | This file |
 | `docs/card-inventory.md` | The verified card extraction, with source page/image ids |
@@ -431,9 +433,15 @@ horizontal overflow at 320/360/390 and no stretched layout at 768/1024; no stray
 the fold; section nav reaches every sibling; no tap target under 40px measured on the wrapping
 label; the full walk: storyteller → story → roll → idea → ingredients → beats → boost → tell.
 
-**C. Interaction audit (Playwright, ~1 min).** Visits every route, clicks every visible control in
-isolation with storage reset between clicks, and flags: a JS error, an unclickable control, and a
-control that changes nothing. Poll for the change; never a fixed wait (D-15).
+**C. Interaction audit (`npm run audit`, ~2 min).** Visits every route — including the screens
+*inside* a step — clicks every visible control in isolation with storage reset between clicks, and
+flags: a JS error, an unclickable control, and a control that changes nothing. Self-links carrying
+`aria-current` are meant to be no-ops; `window.print` is counted rather than excused. Poll for the
+change; never a fixed wait (D-15).
+
+**C2. Accessibility sweep (`npm run a11y`).** Labels, accessible names, heading order, one `h1`,
+image alt text, landmarks, `aria-current`, `lang`, live regions, the skip link, and proof that the
+text-size control actually scales type. Contrast and screen-reader flow still want a human.
 
 **D. Probes and fixtures, committed.** `tests/fixtures/` — **fresh** (nothing created),
 **mid-story** (a story at the Boost step with two heroes), **stress** (three storytellers, a dozen
@@ -500,6 +508,7 @@ rather than a broken image, and the harness must pass with `assets/cards/` empty
 
 | Date | Change | Verification | Cache |
 |---|---|---|---|
+| 2026-09-01 | Phase 9 hardening, first cycle: committed seed fixtures (fresh / mid-story / stress), a shared harness, the layout probe, the interaction audit and the accessibility sweep — and `docs/AUDIT.md`, which records 17 findings across the build. The interaction audit was clean until it was proved not to bite: its route list never entered a step, so it had never clicked the controls that do the work. With the deep routes added it caught a deliberately broken Skip button three times. | `npm test` 62/62; smoke clean over 28 routes × 5 widths, seeded mid-story; interaction audit clean on mid-story and stress, 400 controls each; a11y sweep clean over 24 routes. Fixed on the way: an 11.5-screen Tell page with no jump row, an in-page anchor the hash router would have read as a route, smooth scrolling that ignored reduced motion, an unlabelled file input, two routes where nothing carried `aria-current`, and a smoke sweep that had been measuring an empty app | v9 |
 | 2026-09-01 | Phase 7: the rules library (how it works, the five steps, every card, the seven drawing tips) with search and a link from every card to its entry; both booklet stories as complete story records, read through the same assembly as a kid's own, with Hänsel & Gretel carrying its pre-Boost draft so it is genuinely told twice; and the ten-step first-story walkthrough, linked from the empty shelf and from Settings. | `npm test` 62/62, scan clean; `npm run smoke` clean over 29 routes × 5 widths, three consecutive runs. Findings fixed on the way: a dead `stubScreen` export and its unreachable branch in `build.js` (with `contextLine` and two imports that died with it), and 29 rules-library links at 17px | v9 |
 | 2026-09-01 | Phase 6, Tell: the nine beats assembled into one told story, each passage introduced by its own card phrase; the before/after toggle reading both versions out of the same record; print, save-as-text and copy. Unanswered cards and blank beats are simply left out, with a quiet line saying how many beats are still blank — never a scold (A10). **Milestone reached: a story can be built and read back end to end.** | `npm test` 47/47, scan clean; `npm run smoke` clean over 25 routes × 5 widths, including a browser check that the before-version lacks the beat the boost rewrote | v6 |
 | 2026-09-01 | Phase 5, Boost: the ten cards as a grid, each answerable and skippable (P8). A boost can invent an Ingredient card that carries `origin: boost:<id>` and is listed back on the boost that made it (P6), and can send you to a beat and back again with the route remembering where you came from (P7). The before-version freezes automatically on first arrival (A8), with a re-freeze control that names what it discards. | `npm test` 40/40, scan clean; `npm run smoke` clean over 25 routes × 5 widths, three consecutive runs, including a browser check that the snapshot keeps the old beat text after a boost rewrites it | v5 |
