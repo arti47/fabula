@@ -3,6 +3,8 @@
 import { el, add, relativeTime } from './core.js';
 import { explain, actionBar, promptModal, confirmModal, showToast, modal } from './ui.js';
 import { storyBlurb, progress } from './derived.js';
+import { EXAMPLE_STORIES, getExample } from '../data-examples.js';
+import { tellScreen } from './tell.js';
 import {
   getStorytellers, addStoryteller, removeStoryteller, getCurrentStoryteller, setCurrentStoryteller,
   listStories, getStory, createStory, deleteStory, saveStory, setCurrentStoryId,
@@ -59,10 +61,11 @@ function shelf(teller) {
   ));
 
   if (!stories.length) {
-    add(screen, el('p', {
-      class: 'empty',
-      text: 'Start your first story: an idea, then who is in it, then what happens.',
-    }));
+    add(screen, add(
+      el('p', { class: 'empty' }),
+      document.createTextNode('Start your first story: an idea, then who is in it, then what happens. '),
+      el('a', { href: '#/tutorial', text: 'Or read how it goes, first.' }),
+    ));
   }
 
   for (const meta of stories) {
@@ -70,6 +73,8 @@ function shelf(teller) {
     if (!story) continue;
     add(screen, storyRow(story));
   }
+
+  add(screen, exampleShelf());
 
   add(screen, actionBar({
     label: 'New story',
@@ -88,6 +93,63 @@ function shelf(teller) {
     }),
   }));
   return screen;
+}
+
+/** The booklet's two worked stories, readable any time (D11). */
+function exampleShelf() {
+  const box = el('div');
+  add(box, el('h3', { text: 'Two stories from the book' }));
+  add(box, el('p', { class: 'note', text: 'Built with these same cards, and readable like your own. Handy when you are stuck on what a beat is supposed to do.' }));
+  for (const example of EXAMPLE_STORIES) {
+    const row = el('a', { class: 'card example-row', href: `#/example/${example.id}` });
+    add(row, add(
+      el('div', { class: 'card-body' }),
+      el('p', { class: 'card-headline', text: example.title }),
+      el('div', { class: 'card-sub', text: example.blurb }),
+    ));
+    add(box, row);
+  }
+  return box;
+}
+
+/** An example story, read-only, through the same Tell page as a kid's own (§10.9). */
+export function exampleScreen(id) {
+  const example = getExample(id);
+  if (!example) {
+    return add(
+      el('div'),
+      el('h2', { text: 'No such story' }),
+      el('p', { class: 'empty', text: 'The book has two worked stories, and that is not one of them.' }),
+      el('a', { class: 'button', href: '#/stories', text: 'Back to the shelf' }),
+    );
+  }
+  const wrap = el('div');
+  add(wrap, el('a', { class: 'back-link', href: '#/stories', text: '← Back to the shelf' }));
+  add(wrap, el('h2', { text: example.title }));
+  add(wrap, explain(
+    'One of the two stories the booklet works through, built with exactly the cards you are using.',
+    'It is here to read, not to change. Copy it to your own shelf if you want to take it somewhere else.',
+  ));
+  add(wrap, el('p', { class: 'note', text: example.blurb }));
+  add(wrap, tellScreen(example, { readOnly: true }));
+  add(wrap, el('button', {
+    type: 'button', class: 'button secondary', text: 'Copy it to my shelf',
+    onclick: () => {
+      const teller = getCurrentStoryteller();
+      if (!teller) { showToast('Add your name first'); return; }
+      const copy = saveStory({
+        ...JSON.parse(JSON.stringify(example)),
+        id: `story-copy-${Date.now().toString(36)}`,
+        example: false,
+        ownerId: teller.id,
+        title: `${example.title} (my copy)`,
+      });
+      setCurrentStoryId(copy.id);
+      showToast('Copied — it is yours to change now');
+      location.hash = '#/build/tell';
+    },
+  }));
+  return wrap;
 }
 
 function tellerRow(teller) {

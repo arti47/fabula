@@ -7,7 +7,7 @@ import { el, add, clear } from './core.js';
 import { actionBar, showToast } from './ui.js';
 import { assemble, asPlainText, hasBothVersions } from './derived.js';
 
-export function tellScreen(story) {
+export function tellScreen(story, { readOnly = false } = {}) {
   const wrap = el('div');
   const both = hasBothVersions(story);
   let version = 'now';
@@ -73,12 +73,14 @@ export function tellScreen(story) {
   }));
   add(wrap, actions);
 
-  add(wrap, actionBar({
-    context: 'Tell it out loud — that is the whole point',
-    label: 'Back to my stories',
-    href: '#/stories',
-    secondary: el('a', { class: 'button secondary', href: '#/build/boost', text: 'Keep boosting' }),
-  }));
+  if (!readOnly) {
+    add(wrap, actionBar({
+      context: 'Tell it out loud — that is the whole point',
+      label: 'Back to my stories',
+      href: '#/stories',
+      secondary: el('a', { class: 'button secondary', href: '#/build/boost', text: 'Keep boosting' }),
+    }));
+  }
   return wrap;
 }
 

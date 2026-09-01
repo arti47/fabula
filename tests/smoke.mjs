@@ -22,7 +22,8 @@ const ROUTES = [
   '#/build/ingredients/inciting', '#/build/ingredients/inciting/3',
   '#/build/structure/1', '#/build/structure/2', '#/build/structure/9',
   '#/build/boost/boost-help', '#/build/boost/boost-learn',
-  '#/learn', '#/settings', '#/tutorial', '#/nonsense',
+  '#/learn', '#/learn/beat-5', '#/settings', '#/tutorial', '#/nonsense',
+  '#/example/example-red-riding-hood', '#/example/example-hansel-gretel', '#/example/nope',
 ];
 const WIDTHS = [320, 360, 390, 768, 1024];
 
@@ -109,7 +110,7 @@ try {
         const d = document.querySelector('#screen details.explain');
         return d ? { present: true, open: d.open } : { present: false };
       });
-      if (!route.startsWith('#/deck/card') && route !== '#/nonsense' && route !== '#/tutorial') {
+      if (!route.startsWith('#/deck/card') && route !== '#/nonsense' && route !== '#/example/nope') {
         check(`${width} ${route} explain`, () => {
           assert.ok(hasExplain.present, 'no explain() note');
           assert.equal(hasExplain.open, false, 'explain() should start collapsed');
@@ -339,6 +340,36 @@ try {
   const afterText = await settled(page, '.told-story', /abandoned twice/);
   check('D10: after the boosts holds the rewritten beat', () => assert.match(afterText, /abandoned twice/));
   check('D10: and the before-version did not', () => assert.ok(!/abandoned twice/.test(beforeText)));
+
+  // Learn: search, and the link from a card to its entry.
+  await page.goto(base + '#/learn');
+  await page.fill('#learn-search', 'Cinderella');
+  const hits = await settled(page, '.learn-results', /match/);
+  check('learn: search finds the booklet examples', () => assert.match(hits, /match/));
+  await page.goto(base + '#/deck/card/beat-5');
+  const cardLinks = await page.textContent('#screen');
+  check('learn: every card links to its entry', () => assert.match(cardLinks, /Read more about this card/));
+
+  // The two worked stories, readable from the shelf.
+  await page.goto(base + '#/example/example-hansel-gretel');
+  const hg = await settled(page, '.told-story', /Once upon a time|Hänsel/);
+  check('examples: Hänsel and Gretel reads back', () => assert.match(hg, /Hänsel/));
+  const hgToggles = await page.evaluate(() => document.querySelectorAll('.version-toggle button').length);
+  check('examples: it is told twice', () => assert.equal(hgToggles, 2));
+  await page.click('.version-toggle button');
+  await settled(page, '.told-story', /draft you had/);
+  // The title says "Hänsel and Gretel" either way, so read the passages, not the whole card.
+  const beforePassages = await page.evaluate(() => [...document.querySelectorAll('.told-passage')].map((n) => n.textContent).join(' '));
+  check('examples: the first draft is Hänsel alone', () => {
+    assert.ok(!/Gretel/.test(beforePassages), 'the draft mentions Gretel');
+    assert.match(beforePassages, /Hänsel/);
+  });
+  await page.click('.version-toggle button:nth-child(2)');
+  await settled(page, '.told-story', /Gretel throws|tricked the witch/);
+  const afterPassages = await page.evaluate(() => [...document.querySelectorAll('.told-passage')].map((n) => n.textContent).join(' '));
+  check('examples: the boosted version has a sister who saves him', () => assert.match(afterPassages, /Gretel/));
+  const afterCard = await page.textContent('.told-story');
+  check('examples: and says which card invented her', () => assert.match(afterCard, /came from a boost/));
 
   // Removing a storyteller is destructive, so it must confirm and name the loss (§6.1).
   await page.goto(base + '#/stories');

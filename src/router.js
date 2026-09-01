@@ -3,12 +3,14 @@
 import { el, add, clear, qs } from './core.js';
 import { getCurrentStory, getCurrentStoryteller } from './store.js';
 import { progress } from './derived.js';
-import { deckScreen, cardScreen, settingsScreen, learnScreen, notFoundScreen, stubScreen } from './screens.js';
-import { storiesScreen } from './library.js';
+import { deckScreen, cardScreen, settingsScreen, notFoundScreen } from './screens.js';
+import { learnScreen } from './learn.js';
+import { tutorialScreen } from './tutorial.js';
+import { storiesScreen, exampleScreen } from './library.js';
 import { buildScreen } from './build.js';
 
 const TABS = [
-  { id: 'stories', label: 'Stories', icon: '❐', href: '#/stories', match: /^#\/stories/ },
+  { id: 'stories', label: 'Stories', icon: '❐', href: '#/stories', match: /^#\/(stories|example)/ },
   { id: 'build', label: 'Build', icon: '✎', href: '#/build', match: /^#\/build/ },
   { id: 'deck', label: 'Deck', icon: '🂠', href: '#/deck', match: /^#\/deck/ },
   { id: 'learn', label: 'Learn', icon: '?', href: '#/learn', match: /^#\/learn/ },
@@ -16,6 +18,7 @@ const TABS = [
 
 const ROUTES = [
   { pattern: /^#\/stories\/?$/, render: () => storiesScreen() },
+  { pattern: /^#\/example\/([\w-]+)\/?$/, render: (m) => exampleScreen(m[1]) },
   { pattern: /^#\/build\/?$/, render: () => buildScreen({ step: null }) },
   { pattern: /^#\/build\/ingredients\/([\w-]+)\/(\d+)\/?$/, render: (m) => buildScreen({ step: 'ingredients', entryId: m[1], qIndex: Number(m[2]) }) },
   { pattern: /^#\/build\/ingredients\/([\w-]+)\/?$/, render: (m) => buildScreen({ step: 'ingredients', entryId: m[1], qIndex: 0 }) },
@@ -26,9 +29,10 @@ const ROUTES = [
   { pattern: /^#\/deck\/card\/([\w-]+)\/?$/, render: (m) => cardScreen({ cardId: m[1] }) },
   { pattern: /^#\/deck\/([\w-]+)\/?$/, render: (m) => deckScreen({ section: m[1] }) },
   { pattern: /^#\/deck\/?$/, render: () => deckScreen({}) },
+  { pattern: /^#\/learn\/([\w-]+)\/?$/, render: (m) => learnScreen({ openId: m[1] }) },
   { pattern: /^#\/learn\/?$/, render: () => learnScreen() },
   { pattern: /^#\/settings\/?$/, render: () => settingsScreen() },
-  { pattern: /^#\/tutorial\/?$/, render: () => stubScreen('Your first story', 'A step-by-step walk through making one story from start to finish is being built.') },
+  { pattern: /^#\/tutorial\/?$/, render: () => tutorialScreen() },
 ];
 
 function renderTabs() {

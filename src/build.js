@@ -1,11 +1,11 @@
-// The guided five-step path and its section nav. Steps land in later phases; this is the frame
-// they hang on, and it already carries the escapes the booklet grants (P1, P2, P5, P9).
+// The guided five-step path and its section nav — the frame each step hangs on, carrying the
+// escapes the booklet grants (P1, P2, P5, P9) on every screen.
 
 import { el, add } from './core.js';
-import { explain, actionBar, clearActionBar } from './ui.js';
+import { explain, clearActionBar } from './ui.js';
 import { STEPS } from '../data.js';
 import { getCurrentStory } from './store.js';
-import { blankSteps, progress } from './derived.js';
+import { blankSteps } from './derived.js';
 import { ideaStep } from './idea.js';
 import { ingredientsGrid, ingredientQuestion } from './ingredients.js';
 import { structureList, beatScreen } from './structure.js';
@@ -55,22 +55,7 @@ export function buildScreen({ step, entryId, qIndex = 0, beatNumber, boostId, fr
     return screen;
   }
 
-  if (current.id === 'tell') {
-    add(screen, tellScreen(story));
-    return screen;
-  }
-
-  add(screen, el('p', {
-    class: 'empty',
-    text: `This step is being built. ${STEP_BLURB[current.id]}`,
-  }));
-
-  const next = STEPS[STEPS.indexOf(current) + 1];
-  add(screen, actionBar({
-    context: contextLine(story, current.id),
-    label: next ? `Next: ${next.name}` : 'Back to your stories',
-    href: next ? next.route : '#/stories',
-  }));
+  add(screen, tellScreen(story));
   return screen;
 }
 
@@ -89,15 +74,6 @@ function stepNav(currentId, blanks) {
     ));
   }
   return nav;
-}
-
-function contextLine(story, stepId) {
-  const p = progress(story);
-  if (stepId === 'ingredients') return `${p.ingredients.done} of ${p.ingredients.total} ingredients`;
-  if (stepId === 'structure') return `${p.beats.done} of ${p.beats.total} beats`;
-  if (stepId === 'boost') return `${p.boosts.done} of ${p.boosts.total} boosts`;
-  if (stepId === 'idea') return p.idea ? 'You have an idea' : 'No idea yet — that is fine';
-  return story.title;
 }
 
 function noStory() {

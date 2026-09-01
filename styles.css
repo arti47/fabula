@@ -382,6 +382,12 @@ input[type="file"] {
   .version-toggle, .row-actions, .told-blanks, .back-link { display: none !important; }
 }
 
+/* ---------- the rules library ---------- */
+
+.learn-entry { margin-bottom: var(--step); }
+.learn-entry > summary { font-family: var(--font); color: var(--ink); }
+.learn-results:not(:empty) { margin: var(--step) 0; }
+
 /* ---------- dialogs ---------- */
 
 .modal-backdrop {
@@ -396,6 +402,8 @@ input[type="file"] {
 }
 .modal h2 { margin-top: 0; }
 .modal-actions { display: flex; gap: var(--step); flex-wrap: wrap; margin-top: calc(var(--step) * 2); }
+
+.example-row { display: block; border-top-color: var(--group-idea); margin-bottom: var(--step); text-decoration: none; color: inherit; }
 .row-actions { display: flex; gap: var(--step); flex-wrap: wrap; margin-top: var(--step); }
 
 .toast-mount { position: fixed; left: 0; right: 0; bottom: calc(var(--tab-h) + 12px); z-index: 60; display: flex; flex-direction: column; align-items: center; gap: var(--step); pointer-events: none; }
