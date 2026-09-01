@@ -56,10 +56,6 @@ export function blankSteps(story) {
   };
 }
 
-export function isStoryStarted(story) {
-  return ideaDone(story) || story.cast.length > 0 || beatProgress(story).done > 0;
-}
-
 /** A short line for the story shelf: the idea if there is one, else the first beat written. */
 export function storyBlurb(story) {
   if (!isBlank(story.idea?.text)) return story.idea.text;

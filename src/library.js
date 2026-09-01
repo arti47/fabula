@@ -1,7 +1,7 @@
 // Storytellers and the shelf of stories.
 
 import { el, add, relativeTime } from './core.js';
-import { explain, actionBar, promptModal, confirmModal, showToast } from './ui.js';
+import { explain, actionBar, promptModal, confirmModal, showToast, modal } from './ui.js';
 import { storyBlurb, progress } from './derived.js';
 import {
   getStorytellers, addStoryteller, removeStoryteller, getCurrentStoryteller, setCurrentStoryteller,
@@ -101,10 +101,12 @@ function tellerRow(teller) {
 }
 
 function switchStoryteller() {
-  const tellers = getStorytellers();
-  const list = el('div');
-  for (const t of tellers) {
-    add(list, el('button', {
+  // The confirm replaces the switcher rather than stacking on top of it.
+  let closeSwitcher = () => {};
+  const list = el('div', { class: 'teller-list' });
+  for (const t of getStorytellers()) {
+    const row = el('div', { class: 'teller-row' });
+    add(row, el('button', {
       type: 'button', class: 'button secondary', text: `${t.emoji} ${t.name}`,
       onclick: () => {
         setCurrentStoryteller(t.id);
@@ -112,33 +114,52 @@ function switchStoryteller() {
         window.dispatchEvent(new HashChangeEvent('hashchange'));
       },
     }));
+    const count = listStories(t.id).length;
+    add(row, el('button', {
+      type: 'button', class: 'button danger', text: 'Remove',
+      'aria-label': `Remove ${t.name}`,
+      onclick: () => {
+        closeSwitcher();
+        confirmModal({
+        title: `Remove ${t.name}?`,
+        message: count
+          ? `Their ${count} stor${count === 1 ? 'y goes' : 'ies go'} too — the ideas, the characters, every beat. There is no way to get them back.`
+          : 'They have no stories yet, so nothing else is lost.',
+        confirmLabel: 'Remove them',
+        onConfirm: () => {
+          removeStoryteller(t.id);
+          showToast(`${t.name} removed`);
+          window.dispatchEvent(new HashChangeEvent('hashchange'));
+        },
+        });
+      },
+    }));
+    add(list, row);
   }
-  promptModalAddPerson(list);
+  closeSwitcher = promptModalAddPerson(list);
 }
 
 function promptModalAddPerson(list) {
-  import('./ui.js').then(({ modal }) => {
-    modal({
-      title: 'Who is telling stories?',
-      body: [list],
-      actions: [
-        {
-          label: 'Add someone new',
-          onClick: () => promptModal({
-            title: 'Add a storyteller',
-            label: 'Their name',
-            confirmLabel: 'Add',
-            onConfirm: (name) => {
-              if (!name) return;
-              addStoryteller(name, EMOJI[Math.floor(Math.random() * EMOJI.length)]);
-              setCurrentStoryId(null);
-              window.dispatchEvent(new HashChangeEvent('hashchange'));
-            },
-          }),
-        },
-        { label: 'Close', kind: 'secondary' },
-      ],
-    });
+  return modal({
+    title: 'Who is telling stories?',
+    body: [list],
+    actions: [
+      {
+        label: 'Add someone new',
+        onClick: () => promptModal({
+          title: 'Add a storyteller',
+          label: 'Their name',
+          confirmLabel: 'Add',
+          onConfirm: (name) => {
+            if (!name) return;
+            addStoryteller(name, EMOJI[Math.floor(Math.random() * EMOJI.length)]);
+            setCurrentStoryId(null);
+            window.dispatchEvent(new HashChangeEvent('hashchange'));
+          },
+        }),
+      },
+      { label: 'Close', kind: 'secondary' },
+    ],
   });
 }
 
@@ -155,7 +176,7 @@ function storyRow(story) {
     text: `Ingredients ${p.ingredients.done}/${p.ingredients.total} · Beats ${p.beats.done}/${p.beats.total} · Boosts ${p.boosts.done}/${p.boosts.total} · ${relativeTime(story.updatedAt)}`,
   }));
 
-  const actions = el('div', { class: 'modal-actions' });
+  const actions = el('div', { class: 'row-actions' });
   add(actions, el('button', {
     type: 'button', class: 'button', text: 'Open',
     onclick: () => { setCurrentStoryId(story.id); location.hash = '#/build'; },
@@ -189,5 +210,3 @@ function storyRow(story) {
   add(body, actions);
   return add(row, body);
 }
-
-export { removeStoryteller };

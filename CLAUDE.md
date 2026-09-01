@@ -228,6 +228,7 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | `manifest.json`, `service-worker.js`, `icon.svg` | PWA |
 | `tests/` + `package.json` | Dev-only harnesses (`npm test`); `node_modules` gitignored; not in the SW app shell |
 | `tools/parse-gate.mjs` | Syntax-checks every shipped file by filename before the suite runs |
+| `tools/dead-data.mjs` | The dead-data scan (§9): exports nothing reads, imports nothing uses |
 | `README.md` | Setup, offline/privacy statement, and the licensing note (§12 of the template) |
 | `CLAUDE.md` | This file |
 | `docs/card-inventory.md` | The verified card extraction, with source page/image ids |
@@ -244,7 +245,7 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | `store.js` | Storytellers, stories, autosave, snapshot/restore, JSON export/import, the die-roll log |
 | `derived.js` | Progress counts, "what's still blank", story assembly for the Tell page, data normalization/migration |
 | `build.js` | The guided five-step path and its section nav |
-| `idea.js` | Step 1: die, Prompt cards, the idea sentence |
+| `idea.js` | Step 1: die, Prompt cards, the idea sentence, the roll history, sparks |
 | `ingredients.js` | Step 2: cast, worlds, inciting event; add-another; the six/four questions |
 | `structure.js` | Step 3: the nine beats, beat 2 pre-fill (A5) |
 | `boost.js` | Step 4: the ten boosts, card-spawning (P6), beat rewrites (P7), the snapshot (A8) |
@@ -252,7 +253,7 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | `library.js` | Storyteller profiles, the shelf, create/rename/delete/open; example stories |
 | `deck.js` | Browse all 30 cards as reference — **currently inside `screens.js`**; splits out when it grows search or filters |
 | `learn.js` | Searchable rules library, accordion by subject in play order |
-| `sparks.js` | Spark tables, always labelled as house aids |
+| `sparks.js` | Spark tables, always labelled as house aids — **currently inside `idea.js`** |
 | `settings.js` | Theme, text size, export/import, data check, about — **currently inside `screens.js`** |
 | `tutorial.js` | First-story walkthrough |
 | `router.js` | Tab routing, section nav, live-state badges |
@@ -350,7 +351,7 @@ documented here in the same change. Nothing in the schema is written that no scr
       two-level nav; localStorage layer.
 - [x] **Phase 1 — Library & storytellers.** Profiles, the shelf, create/open/rename/delete a story,
       JSON export/import, normalization + migration.
-- [ ] **Phase 2 — Step 1: Idea.** The die (crypto, logged, re-rollable), the six Prompt cards with
+- [x] **Phase 2 — Step 1: Idea.** The die (crypto, logged, re-rollable), the six Prompt cards with
       their guidance and examples, the idea sentence, "I already have an idea" path, sparks.
 - [ ] **Phase 3 — Step 2: Ingredients.** The four cards in any order (P2), add-another (P3),
       per-question fields with the booklet's example answers inline, skip and return (P1, P5).
@@ -385,7 +386,7 @@ An unticked box means the data is not extracted. **Never build UI against an unt
 | T7 | Hänsel & Gretel, both versions, as story records | `data-examples.js` | `library.js` | [ ] |
 | T8 | The 7 drawing tips | `data-learn.js` | `learn.js` | [ ] |
 | T9 | Rules-library chapters (5 steps, 9 beats, 10 boosts) | `data-learn.js` | `learn.js` | [ ] |
-| T10 | Spark tables (house aid) | `data-sparks.js` | `sparks.js` | [ ] |
+| T10 | Spark tables (house aid): 5 tables × 16 rows | `data-sparks.js` | `idea.js` | [x] |
 | T11 | Card art: 34 images → WebP, id-mapped (760px, q80, 3.2MB total, max 195KB) | `assets/cards/`, generated | `ui.js` card | [x] |
 | T12 | `CARD_ERRATA` (A3) | `data.js` | `learn.js` | [x] |
 
@@ -398,7 +399,9 @@ ships.** Fill the row when you build the rule, not at audit time.
 |---|---|---|---|---|---|
 | P1 skip any card | Permission | — | `store.skipCard` | Skip button, every card | skipped card stays reachable |
 | P3 two heroes | Permission | — | `store.addCastMember` | "Add another" | second hero persists and appears in the story |
-| P4 re-roll freely | Permission | `PROMPTS` | `idea.roll` | Roll again | every roll logged, none discarded |
+| P4 re-roll freely | Permission | `PROMPTS`, `DIE_FACES` | `idea.roll` | Roll again, always enabled | `idea: every roll is kept, none discarded` |
+| P5 leave it blank | Permission | — | `derived.progress` | Counts in the story header, never a block | `progress counts what is answered, and nothing else` |
+| House sparks | Permission (ours) | `SPARK_TABLES` | `idea.sparkSection` | Labelled "ours, not the deck's" | `idea: sparks are labelled as ours` |
 | P6 boost spawns a card | Permission | `BOOSTS[].canSpawn` | `boost.spawnCard` | "This gives me a new character" | spawned card carries `origin` and appears in Tell |
 | P7 boost rewrites a beat | Permission | — | `boost.editBeat` | "Change beat N" | beat edit lands, snapshot still holds the old text |
 | A5 beat 2 pre-fill | Sequence | — | `structure.prefillBeat2` | Beat 2, with provenance line | editing beat 2 does not rewrite the ingredient |
@@ -491,6 +494,7 @@ rather than a broken image, and the harness must pass with `assets/cards/` empty
 
 | Date | Change | Verification | Cache |
 |---|---|---|---|
+| 2026-09-01 | Phase 2, the Idea step: the sentence field with debounced autosave, the crypto-backed die showing one Prompt card large with its guidance and examples, unlimited re-rolls with every roll kept in a visible history, and five house-aid spark tables. Adds the dead-data scan to `npm test`. | `npm test` 27/27 incl. die uniformity over 60k rolls and an old-shape normalization fixture; `npm run smoke` clean; scan clean. Findings fixed on the way: 2 dead exports, 5 dead imports, a `.modal-actions` class collision, a storyteller-removal path with no control (now wired, with a confirmation naming the lost stories), and stacked modals | v2 |
 | 2026-09-01 | Phases 0 and 1: app shell (frame, tabs, section nav, sticky story header carrying the progress counts), storybook theme light+dark with a text-size control, hash router, localStorage layer with normalization and JSON export/import, storytellers and the story shelf, the Deck browser, PWA manifest + service worker with the update toast. Browser smoke harness added. | `npm test` 16/16; `npm run smoke` clean over 18 routes × 5 widths, with card art present **and** absent; smoke found 4 real defects on its first run (no `explain()` on the build and Learn screens, a 16px back link, a 16px range and 22px file input) — all fixed | v1 |
 | 2026-09-01 | `data.js` written: all 30 playable cards with headline, questions, paraphrased guidance and examples; house-added examples flagged; `CARD_ERRATA`. Parse gate + 16 data invariants added (T1–T6, T12 ticked). | `npm test` 16/16; guard proved to bite by unflagging a house example (test 13 went red, restored) | — |
 | 2026-09-01 | Card art pipeline: `tools/extract-cards.py` generates 34 WebP faces under stable ids; `assets/cards/` gitignored so no publisher art is distributed. App must degrade to placeholders when absent. | 34 files, 3.22MB, max 195KB, ids reconciled against the inventory | — |

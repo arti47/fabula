@@ -1,7 +1,6 @@
 // Hash routing, the tab bar, the persistent story header.
 
 import { el, add, clear, qs } from './core.js';
-import { STEPS } from '../data.js';
 import { getCurrentStory, getCurrentStoryteller } from './store.js';
 import { progress } from './derived.js';
 import { deckScreen, cardScreen, settingsScreen, learnScreen, notFoundScreen, stubScreen } from './screens.js';
@@ -27,7 +26,7 @@ const ROUTES = [
   { pattern: /^#\/tutorial\/?$/, render: () => stubScreen('Your first story', 'A step-by-step walk through making one story from start to finish is being built.') },
 ];
 
-export function renderTabs() {
+function renderTabs() {
   const bar = clear(qs('#tab-bar'));
   const hash = location.hash || '#/stories';
   for (const tab of TABS) {
@@ -68,7 +67,7 @@ function item(label, value) {
   return add(el('span', { class: 'progress-item' }), document.createTextNode(`${label} `), el('b', { text: value }));
 }
 
-export function render() {
+function render() {
   const hash = location.hash || '#/stories';
   const screen = qs('#screen');
   clear(screen);
@@ -87,5 +86,3 @@ export function startRouter() {
   if (!location.hash) location.hash = '#/stories';
   render();
 }
-
-export { STEPS };
