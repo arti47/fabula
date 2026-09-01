@@ -1,0 +1,11 @@
+{
+  "name": "story-machine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Dev-only test harness. The app itself has no build step and no runtime dependencies.",
+  "scripts": {
+    "parse": "node tools/parse-gate.mjs",
+    "test": "npm run parse && node --test \"tests/**/*.test.mjs\""
+  }
+}

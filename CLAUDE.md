@@ -226,7 +226,8 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | `assets/cards/*.webp` | 34 faces (30 playable + 4 dividers), 760px WebP, ids per `docs/card-inventory.md`. **Gitignored** — generated locally by `tools/extract-cards.py` |
 | `tools/extract-cards.py` | Regenerates the card faces from the user's own DIY PDF |
 | `manifest.json`, `service-worker.js`, `icon.svg` | PWA |
-| `tests/` + `package.json` | Dev-only harnesses; `node_modules` gitignored; not in the SW app shell |
+| `tests/` + `package.json` | Dev-only harnesses (`npm test`); `node_modules` gitignored; not in the SW app shell |
+| `tools/parse-gate.mjs` | Syntax-checks every shipped file by filename before the suite runs |
 | `README.md` | Setup, offline/privacy statement, and the licensing note (§12 of the template) |
 | `CLAUDE.md` | This file |
 | `docs/card-inventory.md` | The verified card extraction, with source page/image ids |
@@ -374,18 +375,18 @@ An unticked box means the data is not extracted. **Never build UI against an unt
 
 | id | Table | Target | Consumer | Done |
 |---|---|---|---|---|
-| T1 | 6 Prompt cards: letter, headline, guidance, examples | `data.js` | `idea.js` | [ ] |
-| T2 | Idea card: headline, the "what if you have no idea" path | `data.js` | `idea.js` | [ ] |
-| T3 | 4 Ingredient cards: headline, printed questions, guidance | `data.js` | `ingredients.js` | [ ] |
-| T4 | 9 Structure cards: number, headline, beat name, guidance | `data.js` | `structure.js` | [ ] |
-| T5 | 10 Boost cards: headline, guidance | `data.js` | `boost.js` | [ ] |
-| T6 | Little Red Riding Hood's answers, per card | `data.js` | card example line | [ ] |
+| T1 | 6 Prompt cards: letter, headline, guidance, examples | `data.js` | `idea.js` | [x] |
+| T2 | Idea card: headline, starter sentence, examples | `data.js` | `idea.js` | [x] |
+| T3 | 4 Ingredient cards: headline, printed questions, guidance | `data.js` | `ingredients.js` | [x] |
+| T4 | 9 Structure cards: number, headline, beat name, guidance | `data.js` | `structure.js` | [x] |
+| T5 | 10 Boost cards: headline, guidance, `canSpawn`, `suggestsBeats` | `data.js` | `boost.js` | [x] |
+| T6 | Little Red Riding Hood's answers, per card | `data.js` | card example line | [x] |
 | T7 | Hänsel & Gretel, both versions, as story records | `data-examples.js` | `library.js` | [ ] |
 | T8 | The 7 drawing tips | `data-learn.js` | `learn.js` | [ ] |
 | T9 | Rules-library chapters (5 steps, 9 beats, 10 boosts) | `data-learn.js` | `learn.js` | [ ] |
 | T10 | Spark tables (house aid) | `data-sparks.js` | `sparks.js` | [ ] |
 | T11 | Card art: 34 images → WebP, id-mapped (760px, q80, 3.2MB total, max 195KB) | `assets/cards/`, generated | `ui.js` card | [x] |
-| T12 | `CARD_ERRATA` (A3) | `data.js` | `learn.js` | [ ] |
+| T12 | `CARD_ERRATA` (A3) | `data.js` | `learn.js` | [x] |
 
 ### 8.2 Traceability ledger
 
@@ -489,5 +490,6 @@ rather than a broken image, and the harness must pass with `assets/cards/` empty
 
 | Date | Change | Verification | Cache |
 |---|---|---|---|
+| 2026-09-01 | `data.js` written: all 30 playable cards with headline, questions, paraphrased guidance and examples; house-added examples flagged; `CARD_ERRATA`. Parse gate + 16 data invariants added (T1–T6, T12 ticked). | `npm test` 16/16; guard proved to bite by unflagging a house example (test 13 went red, restored) | — |
 | 2026-09-01 | Card art pipeline: `tools/extract-cards.py` generates 34 WebP faces under stable ids; `assets/cards/` gitignored so no publisher art is distributed. App must degrade to placeholders when absent. | 34 files, 3.22MB, max 195KB, ids reconciled against the inventory | — |
 | 2026-09-01 | Instantiated this spec from the v3 template. Card inventory extracted and verified from the DIY PDF (34 images); Stage B product decisions D1–D18 recorded; ambiguity rulings A1–A10 proposed; roadmap and ledgers seeded, all boxes unticked except T11 (art extracted, not converted). No application code yet. | Card count reconciled against the booklet's "34 illustrated cards" | — |
