@@ -6,6 +6,11 @@
   "description": "Dev-only test harness. The app itself has no build step and no runtime dependencies.",
   "scripts": {
     "parse": "node tools/parse-gate.mjs",
-    "test": "npm run parse && node --test \"tests/**/*.test.mjs\""
+    "test": "npm run parse && node --test \"tests/**/*.test.mjs\"",
+    "smoke": "node tests/smoke.mjs",
+    "check": "npm test && npm run smoke"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.62.1"
   }
 }

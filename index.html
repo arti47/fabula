@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#f6efe1">
+<meta name="description" content="Build a story with the Fabula Deck for Kids: an idea, the ingredients, nine beats, and the boosts that make it better.">
+<title>Story Machine</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#screen">Skip to content</a>
+
+  <header class="app-header" id="app-header">
+    <h1 class="brand"><span class="brand-mark" aria-hidden="true">✶</span> Story Machine</h1>
+    <div class="app-header-actions">
+      <button type="button" id="theme-toggle" class="icon-button" aria-label="Switch between light and dark">
+        <span aria-hidden="true" data-theme-icon>◐</span>
+      </button>
+      <a href="#/settings" class="icon-button" aria-label="Settings"><span aria-hidden="true">⚙</span></a>
+    </div>
+  </header>
+
+  <!-- The persistent resource header: the counts that say what is still blank. -->
+  <div class="story-header" id="story-header" hidden></div>
+
+  <main id="screen" class="screen" tabindex="-1"></main>
+
+  <div id="action-bar-mount"></div>
+
+  <nav class="tab-bar" id="tab-bar" aria-label="Main"></nav>
+
+  <div id="toast-mount" class="toast-mount" aria-live="polite" aria-atomic="true"></div>
+  <div id="modal-mount"></div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
