@@ -145,9 +145,48 @@ try {
     assert.match(counts, /Beats 0\/9/);
     assert.match(counts, /Boosts 0\/10/);
   });
+  // Step 1: the idea, the die, the sparks.
+  await page.goto(base + '#/build/idea');
+  await page.fill('#idea-text', 'a lighthouse that walks');
+  await page.waitForTimeout(600); // debounced autosave
+  await page.click('.action-bar .button:not(.secondary)');
+  await page.waitForSelector('.prompt-panel');
+  const firstLetter = await page.textContent('.die-letter');
+  check('idea: the die lands on a real face', () => assert.match(firstLetter, /^[PMQGNS]$/));
+
+  await page.click('.prompt-panel .button');
+  await page.waitForTimeout(100);
+  const history = await page.textContent('.roll-history');
+  check('idea: every roll is kept, none discarded', () => assert.match(history, /rolled 2 times/));
+
+  await page.click('.spark-row .button');
+  const spark = await page.textContent('.spark-out');
+  check('idea: sparks produce something', () => assert.ok(spark.trim().length > 5, 'no spark text'));
+  const houseFlag = await page.textContent('.spark-note .house-flag');
+  check('idea: sparks are labelled as ours', () => assert.match(houseFlag, /not the deck/));
+
+  await page.goto(base + '#/build/idea');
+  const savedIdea = await page.inputValue('#idea-text');
+  check('idea: the sentence persists', () => assert.equal(savedIdea, 'a lighthouse that walks'));
+  const headerAfter = await page.textContent('.progress-row');
+  check('idea: the header knows there is an idea', () => assert.match(headerAfter, /Idea yes/));
+
+  // Removing a storyteller is destructive, so it must confirm and name the loss (§6.1).
+  await page.goto(base + '#/stories');
+  await page.click('.progress-row .button');
+  await page.waitForSelector('.teller-row');
+  await page.click('.teller-row .button.danger');
+  const warning = await page.textContent('.modal p');
+  check('remove storyteller names what is lost', () => assert.match(warning, /stor(y|ies)/));
+  await page.click('.modal-actions .button.secondary');
+  await page.waitForTimeout(50);
+  const stillThere = await page.evaluate(() => document.querySelectorAll('.modal').length);
+  check('cancel leaves everything alone', () => assert.equal(stillThere, 0));
+
   await page.goto(base + '#/stories');
   const persisted = await page.textContent('#screen');
   check('walk: story persists on the shelf', () => assert.match(persisted, /The dragon next door/));
+  check('walk: the shelf shows the idea as the blurb', () => assert.match(persisted, /a lighthouse that walks/));
   await context.close();
 
   // Every card face either loads or shows a labelled placeholder — never a broken image.

@@ -6,6 +6,7 @@ import { explain, actionBar, clearActionBar } from './ui.js';
 import { STEPS } from '../data.js';
 import { getCurrentStory } from './store.js';
 import { blankSteps, progress } from './derived.js';
+import { ideaStep } from './idea.js';
 
 const STEP_BLURB = {
   idea: 'One sentence about what your story is. Roll the die if you have not got one.',
@@ -29,6 +30,11 @@ export function buildScreen({ step }) {
     STEP_BLURB[current.id],
     'You do not have to do these in order, and you can leave anything blank and come back to it. The story is yours.',
   ));
+
+  if (current.id === 'idea') {
+    add(screen, ideaStep(story)); // owns its own action bar
+    return screen;
+  }
 
   add(screen, el('p', {
     class: 'empty',
