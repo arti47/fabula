@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Story Machine">
+  <rect width="512" height="512" rx="96" fill="#7a4a2b"/>
+  <rect x="118" y="96" width="200" height="280" rx="16" fill="#f6efe1" transform="rotate(-8 218 236)"/>
+  <rect x="194" y="120" width="200" height="280" rx="16" fill="#fffaf0" stroke="#23201b" stroke-width="10"/>
+  <circle cx="294" cy="222" r="40" fill="#b8860b"/>
+  <path d="M294 262v46" stroke="#23201b" stroke-width="12" stroke-linecap="round"/>
+  <path d="M236 330h116" stroke="#23201b" stroke-width="12" stroke-linecap="round"/>
+  <path d="M252 360h84" stroke="#23201b" stroke-width="12" stroke-linecap="round"/>
+</svg>

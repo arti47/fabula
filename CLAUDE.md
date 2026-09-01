@@ -232,6 +232,7 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | `CLAUDE.md` | This file |
 | `docs/card-inventory.md` | The verified card extraction, with source page/image ids |
 | `docs/AUDIT.md` | Numbered findings, pass by pass, plus the verified-clean list |
+| `index.html`, `manifest.json`, `service-worker.js`, `icon.svg` | Shell and PWA |
 
 ### 5.1 `src/` module map
 
@@ -248,11 +249,11 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | `structure.js` | Step 3: the nine beats, beat 2 pre-fill (A5) |
 | `boost.js` | Step 4: the ten boosts, card-spawning (P6), beat rewrites (P7), the snapshot (A8) |
 | `tell.js` | Step 5: assembled story, before/after toggle, print view, plain-text export |
-| `library.js` | Storyteller profiles, the shelf of stories, example stories |
-| `deck.js` | Browse all 30 cards as reference |
+| `library.js` | Storyteller profiles, the shelf, create/rename/delete/open; example stories |
+| `deck.js` | Browse all 30 cards as reference — **currently inside `screens.js`**; splits out when it grows search or filters |
 | `learn.js` | Searchable rules library, accordion by subject in play order |
 | `sparks.js` | Spark tables, always labelled as house aids |
-| `settings.js` | Theme, text size, export/import, data check, about |
+| `settings.js` | Theme, text size, export/import, data check, about — **currently inside `screens.js`** |
 | `tutorial.js` | First-story walkthrough |
 | `router.js` | Tab routing, section nav, live-state badges |
 | `main.js` | Entry point / boot |
@@ -344,10 +345,10 @@ documented here in the same change. Nothing in the schema is written that no scr
 
 ## 8. Roadmap
 
-- [ ] **Phase 0 — Foundations.** Scaffold every file above; extract the complete card data per the
+- [x] **Phase 0 — Foundations.** Scaffold every file above; extract the complete card data per the
       ledger (data before features); storybook theme, light + dark; PWA shell; router, the §6 frame,
       two-level nav; localStorage layer.
-- [ ] **Phase 1 — Library & storytellers.** Profiles, the shelf, create/open/rename/delete a story,
+- [x] **Phase 1 — Library & storytellers.** Profiles, the shelf, create/open/rename/delete a story,
       JSON export/import, normalization + migration.
 - [ ] **Phase 2 — Step 1: Idea.** The die (crypto, logged, re-rollable), the six Prompt cards with
       their guidance and examples, the idea sentence, "I already have an idea" path, sparks.
@@ -415,7 +416,7 @@ beats numbered 1–9, unique, none missing; 10 boosts; every card has headline +
 one example; every art path resolves; the die is uniform over 60k rolls within tolerance; export →
 import round-trips a full story byte-identically; an old-shape fixture normalizes.
 
-**B. Browser smoke (Playwright, ~1 min).** Every route renders with zero console errors; zero
+**B. Browser smoke (`npm run smoke`, ~1 min).** 18 routes × 5 widths (320/360/390/768/1024), run with the card art present and absent. Every route renders with zero console errors; zero
 horizontal overflow at 320/360/390 and no stretched layout at 768/1024; no stray
 `null`/`undefined`/`NaN` text; nothing under the fixed tab bar; every screen's primary action above
 the fold; section nav reaches every sibling; no tap target under 40px measured on the wrapping
@@ -490,6 +491,7 @@ rather than a broken image, and the harness must pass with `assets/cards/` empty
 
 | Date | Change | Verification | Cache |
 |---|---|---|---|
+| 2026-09-01 | Phases 0 and 1: app shell (frame, tabs, section nav, sticky story header carrying the progress counts), storybook theme light+dark with a text-size control, hash router, localStorage layer with normalization and JSON export/import, storytellers and the story shelf, the Deck browser, PWA manifest + service worker with the update toast. Browser smoke harness added. | `npm test` 16/16; `npm run smoke` clean over 18 routes × 5 widths, with card art present **and** absent; smoke found 4 real defects on its first run (no `explain()` on the build and Learn screens, a 16px back link, a 16px range and 22px file input) — all fixed | v1 |
 | 2026-09-01 | `data.js` written: all 30 playable cards with headline, questions, paraphrased guidance and examples; house-added examples flagged; `CARD_ERRATA`. Parse gate + 16 data invariants added (T1–T6, T12 ticked). | `npm test` 16/16; guard proved to bite by unflagging a house example (test 13 went red, restored) | — |
 | 2026-09-01 | Card art pipeline: `tools/extract-cards.py` generates 34 WebP faces under stable ids; `assets/cards/` gitignored so no publisher art is distributed. App must degrade to placeholders when absent. | 34 files, 3.22MB, max 195KB, ids reconciled against the inventory | — |
 | 2026-09-01 | Instantiated this spec from the v3 template. Card inventory extracted and verified from the DIY PDF (34 images); Stage B product decisions D1–D18 recorded; ambiguity rulings A1–A10 proposed; roadmap and ledgers seeded, all boxes unticked except T11 (art extracted, not converted). No application code yet. | Card count reconciled against the booklet's "34 illustrated cards" | — |

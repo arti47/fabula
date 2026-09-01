@@ -1,0 +1,321 @@
+/* Story Machine — storybook theme.
+   Light palette defined on bare :root; dark redefines only the tokens, guarded so an explicit
+   light choice always wins (CLAUDE.md §4). Colour is only ever a second channel. */
+
+:root {
+  --paper: #f6efe1;
+  --paper-raised: #fffaf0;
+  --paper-sunken: #ece2cf;
+  --ink: #23201b;
+  --ink-soft: #5c554a;
+  --ink-faint: #8b8375;
+  --rule: #d9cdb4;
+  --accent: #7a4a2b;
+  --accent-ink: #fffaf0;
+  --focus: #2f6f9e;
+
+  /* The deck's own group colours — always paired with the group name in text. */
+  --group-prompt: #b62d24;
+  --group-idea: #b8860b;
+  --group-ingredient: #c98a10;
+  --group-structure: #2f5d8c;
+  --group-boost: #2f7d42;
+
+  --blank-dot: #c2a878;
+
+  --step: 0.5rem;
+  --radius: 10px;
+  --card-radius: 12px;
+  --header-h: 52px;
+  --tab-h: 60px;
+  --shadow: 0 1px 2px rgb(35 32 27 / 0.10), 0 4px 14px rgb(35 32 27 / 0.06);
+  --font: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --text-scale: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #191712;
+    --paper-raised: #23201a;
+    --paper-sunken: #12100c;
+    --ink: #f0e8d8;
+    --ink-soft: #bdb3a1;
+    --ink-faint: #8d8474;
+    --rule: #3b352b;
+    --accent: #d9a066;
+    --accent-ink: #191712;
+    --focus: #7ab6e0;
+    --group-prompt: #e0655c;
+    --group-idea: #e0b44a;
+    --group-ingredient: #e0b44a;
+    --group-structure: #7aa8d4;
+    --group-boost: #6fbf83;
+    --blank-dot: #6b5c3d;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 4px 14px rgb(0 0 0 / 0.3);
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #191712;
+  --paper-raised: #23201a;
+  --paper-sunken: #12100c;
+  --ink: #f0e8d8;
+  --ink-soft: #bdb3a1;
+  --ink-faint: #8d8474;
+  --rule: #3b352b;
+  --accent: #d9a066;
+  --accent-ink: #191712;
+  --focus: #7ab6e0;
+  --group-prompt: #e0655c;
+  --group-idea: #e0b44a;
+  --group-ingredient: #e0b44a;
+  --group-structure: #7aa8d4;
+  --group-boost: #6fbf83;
+  --blank-dot: #6b5c3d;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 4px 14px rgb(0 0 0 / 0.3);
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: calc(16px * var(--text-scale));
+  line-height: 1.5;
+  touch-action: manipulation;
+  overflow-x: hidden;
+  padding-bottom: calc(var(--tab-h) + env(safe-area-inset-bottom) + var(--step) * 2);
+}
+
+h1, h2, h3 { font-family: var(--font); font-weight: 600; letter-spacing: 0.01em; }
+
+a { color: var(--accent); }
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.skip-link {
+  position: absolute; left: -9999px; top: 0; z-index: 100;
+  background: var(--paper-raised); padding: var(--step);
+}
+.skip-link:focus { left: var(--step); top: var(--step); }
+
+/* ---------- frame ---------- */
+
+.app-header {
+  position: sticky; top: 0; z-index: 30;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--step);
+  min-height: var(--header-h);
+  padding: 0 var(--step);
+  background: var(--paper-raised);
+  border-bottom: 1px solid var(--rule);
+}
+
+.brand { margin: 0; font-size: 1.05rem; display: flex; align-items: center; gap: 0.4em; }
+.brand-mark { color: var(--accent); }
+.app-header-actions { display: flex; gap: 2px; }
+
+.icon-button {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 44px; min-height: 44px;
+  background: none; border: 0; border-radius: var(--radius);
+  color: var(--ink-soft); font-size: 1.15rem; text-decoration: none;
+  cursor: pointer;
+}
+.icon-button:hover { background: var(--paper-sunken); color: var(--ink); }
+
+/* The persistent resource header: story title + what is still blank. */
+.story-header {
+  position: sticky; top: var(--header-h); z-index: 25;
+  padding: calc(var(--step) * 0.75) var(--step);
+  background: var(--paper-sunken);
+  border-bottom: 1px solid var(--rule);
+}
+.story-header-title {
+  font-family: var(--font); font-size: 1rem; margin: 0 0 2px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.progress-row { display: flex; flex-wrap: wrap; gap: calc(var(--step) * 1.25); font-size: 0.8rem; color: var(--ink-soft); }
+.progress-item { display: inline-flex; align-items: baseline; gap: 0.35em; }
+.progress-item b { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+.screen { padding: var(--step) var(--step) 0; max-width: 900px; margin: 0 auto; }
+.screen:focus { outline: none; }
+.screen h2 { margin: calc(var(--step) * 1.5) 0 var(--step); font-size: 1.35rem; }
+
+/* Section nav: first thing inside the scroll area, one pill per sibling route. */
+.section-nav {
+  display: flex; gap: var(--step); overflow-x: auto; scrollbar-width: none;
+  margin: 0 calc(var(--step) * -1); padding: 0 var(--step) var(--step);
+}
+.section-nav::-webkit-scrollbar { display: none; }
+.section-nav a {
+  flex: 0 0 auto; padding: 8px 14px; min-height: 40px;
+  display: inline-flex; align-items: center; gap: 0.4em;
+  border: 1px solid var(--rule); border-radius: 999px;
+  background: var(--paper-raised); color: var(--ink-soft);
+  text-decoration: none; font-size: 0.9rem;
+}
+.section-nav a[aria-current="step"], .section-nav a[aria-current="page"] {
+  background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600;
+}
+.section-nav .blank-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--blank-dot); }
+
+.action-bar {
+  position: fixed; left: 0; right: 0;
+  bottom: calc(var(--tab-h) + env(safe-area-inset-bottom));
+  z-index: 20;
+  display: flex; gap: var(--step); align-items: center;
+  padding: var(--step);
+  background: var(--paper-raised); border-top: 1px solid var(--rule);
+}
+.action-bar .context { font-size: 0.8rem; color: var(--ink-soft); flex: 1; }
+.action-bar-spacer { height: 76px; }
+
+.tab-bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  display: flex;
+  background: var(--paper-raised);
+  border-top: 1px solid var(--rule);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.tab-bar a {
+  flex: 1; min-height: var(--tab-h);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  color: var(--ink-faint); text-decoration: none; font-size: 0.7rem;
+}
+.tab-bar a[aria-current="page"] { color: var(--accent); font-weight: 600; }
+.tab-bar .tab-icon { font-size: 1.15rem; line-height: 1; }
+
+/* ---------- components ---------- */
+
+.button {
+  min-height: 44px; padding: 10px 18px;
+  border: 1px solid var(--accent); border-radius: var(--radius);
+  background: var(--accent); color: var(--accent-ink);
+  font: inherit; font-weight: 600; cursor: pointer;
+}
+.button.secondary { background: var(--paper-raised); color: var(--ink); border-color: var(--rule); }
+.button.danger { background: var(--paper-raised); color: var(--group-prompt); border-color: var(--group-prompt); }
+.button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.explain {
+  margin: 0 0 var(--step);
+  border: 1px solid var(--rule); border-radius: var(--radius);
+  background: var(--paper-raised);
+}
+.explain > summary {
+  padding: 10px var(--step); min-height: 44px;
+  display: flex; align-items: center;
+  cursor: pointer; font-size: 0.9rem; color: var(--ink-soft);
+}
+.explain > div { padding: 0 var(--step) var(--step); font-size: 0.92rem; color: var(--ink-soft); }
+.explain > div p { margin: 0 0 0.6em; }
+
+.note { color: var(--ink-soft); font-size: 0.9rem; }
+.empty {
+  padding: calc(var(--step) * 3) var(--step);
+  text-align: center; color: var(--ink-soft);
+  border: 1px dashed var(--rule); border-radius: var(--radius);
+}
+
+/* Card grid + card face, with a labelled placeholder when the art is absent. */
+.card-grid {
+  display: grid; gap: var(--step);
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  margin-bottom: var(--step);
+}
+.card {
+  display: flex; flex-direction: column;
+  border: 1px solid var(--rule); border-radius: var(--card-radius);
+  background: var(--paper-raised); box-shadow: var(--shadow);
+  overflow: hidden; text-decoration: none; color: inherit;
+  border-top: 4px solid var(--card-color, var(--rule));
+}
+.card-face { aspect-ratio: 955 / 1190; width: 100%; object-fit: cover; display: block; background: var(--paper-sunken); }
+.card-face-missing {
+  aspect-ratio: 955 / 1190; display: flex; align-items: center; justify-content: center;
+  padding: var(--step); text-align: center;
+  background: var(--paper-sunken); color: var(--ink-faint); font-size: 0.75rem;
+}
+.card-body { padding: calc(var(--step) * 0.75) var(--step) var(--step); }
+.card-group { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--card-color, var(--ink-faint)); }
+.card-headline { font-family: var(--font); font-size: 0.95rem; margin: 2px 0 0; }
+.card-sub { font-size: 0.8rem; color: var(--ink-soft); }
+.card-blank { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--blank-dot); margin-left: 0.4em; }
+
+.house-flag {
+  display: inline-block; font-size: 0.7rem; color: var(--ink-faint);
+  border: 1px solid var(--rule); border-radius: 999px; padding: 1px 7px; margin-left: 0.4em;
+}
+
+/* Inputs: >=44px tall and >=16px text, so a phone browser never zooms on focus. */
+input[type="text"], input[type="search"], textarea, select {
+  width: 100%; min-height: 44px; padding: 10px var(--step);
+  border: 1px solid var(--rule); border-radius: var(--radius);
+  background: var(--paper-raised); color: var(--ink);
+  font: inherit; font-size: max(16px, 1rem);
+}
+textarea { min-height: 96px; resize: vertical; line-height: 1.5; }
+label { display: block; font-size: 0.9rem; color: var(--ink-soft); margin: var(--step) 0 4px; }
+
+input[type="range"] { width: 100%; min-height: 44px; accent-color: var(--accent); }
+input[type="file"] {
+  width: 100%; min-height: 44px; padding: 10px var(--step);
+  border: 1px dashed var(--rule); border-radius: var(--radius);
+  background: var(--paper-raised); color: var(--ink); font: inherit; font-size: max(16px, 1rem);
+}
+
+.back-link {
+  display: inline-flex; align-items: center; min-height: 44px;
+  color: var(--ink-soft); text-decoration: none; font-size: 0.9rem;
+}
+.back-link:hover { color: var(--ink); }
+
+/* ---------- dialogs ---------- */
+
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 50;
+  display: flex; align-items: flex-end; justify-content: center;
+  background: rgb(0 0 0 / 0.45); padding: var(--step);
+}
+.modal {
+  width: 100%; max-width: 520px; max-height: 85dvh; overflow-y: auto;
+  background: var(--paper-raised); border-radius: var(--card-radius);
+  padding: calc(var(--step) * 2); box-shadow: var(--shadow);
+}
+.modal h2 { margin-top: 0; }
+.modal-actions { display: flex; gap: var(--step); flex-wrap: wrap; margin-top: calc(var(--step) * 2); }
+
+.toast-mount { position: fixed; left: 0; right: 0; bottom: calc(var(--tab-h) + 12px); z-index: 60; display: flex; flex-direction: column; align-items: center; gap: var(--step); pointer-events: none; }
+.toast { background: var(--ink); color: var(--paper); padding: 10px 16px; border-radius: 999px; font-size: 0.88rem; box-shadow: var(--shadow); }
+
+/* ---------- tablet: add density, never stretch ---------- */
+
+@media (min-width: 768px) {
+  .screen { padding: calc(var(--step) * 2); max-width: 1100px; }
+  .card-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: calc(var(--step) * 1.5); }
+  .modal-backdrop { align-items: center; }
+}
+
+@media (min-width: 1024px) {
+  .card-grid { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+
+@media print {
+  .app-header, .story-header, .tab-bar, .action-bar, .section-nav, .explain { display: none !important; }
+  body { padding: 0; background: #fff; color: #000; }
+}
