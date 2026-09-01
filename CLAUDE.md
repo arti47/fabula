@@ -242,13 +242,13 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | `core.js` | Constants, DOM/util helpers (incl. null-safe `add`), `roll()` on `crypto`. No imports |
 | `ui.js` | Modals, toasts, confirms, the collapsible `explain()` note, the pinned action bar, the card component |
 | `cards.js` | One lookup per kind of thing: `getCard(id)` resolves any card in any group, including nothing else (§10.16) |
-| `store.js` | Storytellers, stories, autosave, snapshot/restore, JSON export/import, the die-roll log |
+| `store.js` | Storytellers, stories, autosave, `takeSnapshot`/`ensureSnapshot`, JSON export/import, the die-roll log |
 | `derived.js` | Progress counts, "what's still blank", story assembly for the Tell page, data normalization/migration |
 | `build.js` | The guided five-step path and its section nav |
 | `idea.js` | Step 1: die, Prompt cards, the idea sentence, the roll history, sparks |
 | `ingredients.js` | Step 2: the four-card grid, add-another, skip/unskip, and the one-question-at-a-time view with pips |
 | `structure.js` | Step 3: the nine beats as a list, one-beat view with pips, beat 2 pre-fill (A5) |
-| `boost.js` | Step 4: the ten boosts, card-spawning (P6), beat rewrites (P7), the snapshot (A8) |
+| `boost.js` | Step 4: the ten boosts, card-spawning (P6), beat rewrites (P7), the snapshot (A8), re-freeze |
 | `tell.js` | Step 5: assembled story, before/after toggle, print view, plain-text export |
 | `library.js` | Storyteller profiles, the shelf, create/rename/delete/open; example stories |
 | `deck.js` | Browse all 30 cards as reference — **currently inside `screens.js`**; splits out when it grows search or filters |
@@ -359,7 +359,7 @@ documented here in the same change. Nothing in the schema is written that no scr
       from the inciting event (A5); free order (A9).
 - [ ] 🏁 **Milestone — First Story Tellable.** Create a storyteller → roll or write an idea →
       ingredients → nine beats → read it back, end to end, on a phone, with zero console errors.
-- [ ] **Phase 5 — Step 4: Boost.** Ten boost cards; the snapshot on first entry (A8); spawning a new
+- [x] **Phase 5 — Step 4: Boost.** Ten boost cards; the snapshot on first entry (A8); spawning a new
       Ingredient card from a boost (P6); jumping back to rewrite a beat and returning (P7).
 - [ ] **Phase 6 — Step 5: Tell.** The assembled story page, before/after toggle, print stylesheet,
       plain-text export.
@@ -404,12 +404,13 @@ ships.** Fill the row when you build the rule, not at audit time.
 | P4 re-roll freely | Permission | `PROMPTS`, `DIE_FACES` | `idea.roll` | Roll again, always enabled | `idea: every roll is kept, none discarded` |
 | P5 leave it blank | Permission | — | `derived.progress` | Counts in the story header, never a block | `progress counts what is answered, and nothing else` |
 | House sparks | Permission (ours) | `SPARK_TABLES` | `idea.sparkSection` | Labelled "ours, not the deck's" | `idea: sparks are labelled as ours` |
-| P6 boost spawns a card | Permission | `BOOSTS[].canSpawn` | `boost.spawnCard` | "This gives me a new character" | spawned card carries `origin` and appears in Tell |
-| P7 boost rewrites a beat | Permission | — | `boost.editBeat` | "Change beat N" | beat edit lands, snapshot still holds the old text |
+| P6 boost spawns a card | Permission | `BOOSTS[].canSpawn` | `boost.boostScreen` → `ingredients.addEntry` | "This gives me a new character", listed back on the boost | `P6: a card spawned by a boost remembers which boost made it` |
+| P7 boost rewrites a beat | Permission | `BOOSTS[].suggestsBeats` | `boost.boostScreen` → `#/build/structure/N/from/<boost>` | "Change beat N", with the way back | `P7: every beat a boost points at exists, and the snapshot still holds the old text` |
 | A5 beat 2 pre-fill | Sequence | — | `structure.prefillBeat2` | Beat 2, pre-filled, with a provenance line | `editing beat 2 does not rewrite the ingredient it came from` |
 | A9 any beat, any time | Permission | `BEATS` | `structure.beatScreen` pips | Numbered pips 1–9, blanks dotted | `structure: the header counts written beats` |
-| A8 snapshot | Procedure | — | `store.snapshot` | Automatic on Boost entry | before/after differ after a boost edit |
+| A8 snapshot | Procedure | `story.snapshot` | `store.ensureSnapshot`, `store.takeSnapshot` | Frozen on Boost entry; re-freeze confirms and names the loss | `the snapshot keeps the draft even after the story moves on` |
 | D10 before/after | Procedure | — | `derived.assemble` | Tell page toggle | both versions render from one record |
+| P8 skip a boost | Permission | `story.boosts[].skipped` | `boost.boostScreen` | "Skip this one" / "Bring this one back" | `P8: a skipped boost comes back` |
 | P10 draw it | Permission | `DRAWING_TIPS` | **guidance only** | Learn chapter | tips render; nothing else claims to |
 
 ---
@@ -497,6 +498,7 @@ rather than a broken image, and the harness must pass with `assets/cards/` empty
 
 | Date | Change | Verification | Cache |
 |---|---|---|---|
+| 2026-09-01 | Phase 5, Boost: the ten cards as a grid, each answerable and skippable (P8). A boost can invent an Ingredient card that carries `origin: boost:<id>` and is listed back on the boost that made it (P6), and can send you to a beat and back again with the route remembering where you came from (P7). The before-version freezes automatically on first arrival (A8), with a re-freeze control that names what it discards. | `npm test` 40/40, scan clean; `npm run smoke` clean over 25 routes × 5 widths, three consecutive runs, including a browser check that the snapshot keeps the old beat text after a boost rewrites it | v5 |
 | 2026-09-01 | Phase 4, Structure: the nine beats as a list with previews and blank dots, a one-beat view with pips, the booklet's guidance and its Little Red Riding Hood line per beat, and ruling A5 — beat 2 arrives pre-filled from the "Something happens" card, once, carrying a line that says where it came from and that the card will not change. | `npm test` 33/33, scan clean; `npm run smoke` clean over 23 routes × 5 widths, including a browser check that editing beat 2 leaves the ingredient untouched. A5 guard proved to bite by letting the pre-fill overwrite a written beat (test 30 went red, restored). Also replaced the smoke walk's fixed waits with polling after a 1-in-4 flake (template defect D-15) | v4 |
 | 2026-09-01 | Phase 3, Ingredients: a grid of the four cards in any order, with add-another on hero/villain/world and a reversible skip; inside a card, one question at a time with numbered pips that jump anywhere, the booklet's example answer collapsed under each, and autosave. Hardened the dead-data scan to strip string literals before asking whether a name is used. | `npm test` 27/27, scan clean; `npm run smoke` clean over 20 routes × 5 widths, with new walk steps covering P1, P2 and P3. The hardened scan immediately found a dead `explain` import that the old one had masked | v3 |
 | 2026-09-01 | Phase 2, the Idea step: the sentence field with debounced autosave, the crypto-backed die showing one Prompt card large with its guidance and examples, unlimited re-rolls with every roll kept in a visible history, and five house-aid spark tables. Adds the dead-data scan to `npm test`. | `npm test` 27/27 incl. die uniformity over 60k rolls and an old-shape normalization fixture; `npm run smoke` clean; scan clean. Findings fixed on the way: 2 dead exports, 5 dead imports, a `.modal-actions` class collision, a storyteller-removal path with no control (now wired, with a confirmation naming the lost stories), and stacked modals | v2 |

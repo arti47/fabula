@@ -82,8 +82,13 @@ for (const [file, text] of appSource) {
     const word = new RegExp(`\\b${name.replace(/\$/g, '\\$')}\\b`, 'g');
     const usesInOwnFile = (code(text).match(word) || []).length > 1; // the declaration is one
     if (appImports.has(name)) continue;
+    if (usesInOwnFile) {
+      notes.push(testImports.has(name)
+        ? `${file}: ${name} is used in its own file and exported for the tests`
+        : `${file}: ${name} is only used inside its own file — drop the export`);
+      continue;
+    }
     if (testImports.has(name)) { notes.push(`${file}: ${name} is read only by the tests`); continue; }
-    if (usesInOwnFile) { notes.push(`${file}: ${name} is only used inside its own file — drop the export`); continue; }
     findings.push(`${file}: exports ${name}, and nothing anywhere reads it`);
   }
 }
