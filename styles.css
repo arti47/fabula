@@ -332,6 +332,34 @@ input[type="file"] {
   .question-face { float: right; max-width: 200px; margin-left: var(--step); }
 }
 
+/* ---------- the nine beats ---------- */
+
+.beat-list { list-style: none; margin: 0 0 var(--step); padding: 0; display: flex; flex-direction: column; gap: var(--step); }
+.beat-row {
+  display: flex; gap: var(--step); align-items: flex-start;
+  padding: var(--step); min-height: 44px;
+  border: 1px solid var(--rule); border-left: 4px solid var(--group-structure);
+  border-radius: var(--radius); background: var(--paper-raised);
+  text-decoration: none; color: inherit;
+}
+.beat-number {
+  flex: 0 0 auto; width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--group-structure); border-radius: 6px;
+  color: var(--group-structure); font-family: var(--font); font-weight: 700;
+}
+.beat-body { display: flex; flex-direction: column; min-width: 0; }
+.beat-headline { font-family: var(--font); font-size: 1rem; }
+.beat-name { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--group-structure); }
+.beat-preview {
+  font-size: 0.85rem; color: var(--ink-soft); margin-top: 4px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.provenance {
+  font-size: 0.85rem; color: var(--ink-soft);
+  border-left: 3px solid var(--group-ingredient); padding-left: var(--step); margin: var(--step) 0;
+}
+
 /* ---------- dialogs ---------- */
 
 .modal-backdrop {

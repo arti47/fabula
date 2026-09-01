@@ -20,6 +20,7 @@ const ROUTES = [
   '#/build/boost', '#/build/tell', '#/deck', '#/deck/prompts', '#/deck/ingredients',
   '#/deck/structure', '#/deck/boosts', '#/deck/card/beat-5', '#/deck/card/boost-help',
   '#/build/ingredients/inciting', '#/build/ingredients/inciting/3',
+  '#/build/structure/1', '#/build/structure/2', '#/build/structure/9',
   '#/learn', '#/settings', '#/tutorial', '#/nonsense',
 ];
 const WIDTHS = [320, 360, 390, 768, 1024];
@@ -42,6 +43,21 @@ function serve() {
 const failures = [];
 function check(name, fn) {
   try { fn(); } catch (err) { failures.push(`${name}: ${err.message}`); }
+}
+
+// Poll for the change; never a fixed wait (template defect D-15). A hash click re-renders on
+// hashchange, which fires after the hash is already set, so waiting on a selector that exists in
+// both the old and new render races with the router.
+async function settled(page, selector, pattern) {
+  await page.waitForFunction(
+    ([sel, src]) => {
+      const node = document.querySelector(sel);
+      return node ? new RegExp(src).test(node.textContent) : false;
+    },
+    [selector, pattern.source],
+    { timeout: 5000 },
+  );
+  return page.textContent(selector);
 }
 
 const server = await serve();
@@ -156,8 +172,7 @@ try {
   check('idea: the die lands on a real face', () => assert.match(firstLetter, /^[PMQGNS]$/));
 
   await page.click('.prompt-panel .button');
-  await page.waitForTimeout(100);
-  const history = await page.textContent('.roll-history');
+  const history = await settled(page, '.roll-history', /rolled 2 times/);
   check('idea: every roll is kept, none discarded', () => assert.match(history, /rolled 2 times/));
 
   await page.click('.spark-row .button');
@@ -175,19 +190,17 @@ try {
   // Step 2: ingredients, one question at a time, in any order.
   await page.goto(base + '#/build/ingredients');
   await page.click('.card-grid .card');
-  await page.waitForSelector('#answer');
-  const firstQ = await page.textContent('.question-label');
+  const firstQ = await settled(page, '.question-label', /How old are they\?/);
   check('ingredients: opens on the first question', () => assert.match(firstQ, /How old are they\?/));
   await page.fill('#answer', 'about eleven');
   await page.waitForTimeout(600);
   await page.click('.action-bar .button:not(.secondary)');
-  await page.waitForSelector('#answer');
-  const secondQ = await page.textContent('.question-label');
+  const secondQ = await settled(page, '.question-label', /What do they look like\?/);
   check('ingredients: Next advances', () => assert.match(secondQ, /What do they look like\?/));
 
   // Jump straight to the name question via the pips (P2 survives the one-at-a-time format).
   await page.click('.pips .pip:nth-child(6)');
-  await page.waitForSelector('#answer');
+  await settled(page, '.question-label', /What are they called\?/);
   await page.fill('#answer', 'Bo');
   await page.waitForTimeout(600);
   await page.goto(base + '#/build/ingredients');
@@ -207,20 +220,52 @@ try {
   // P1: skip a card, and get it back.
   const skipButtons = await page.$$('text=Skip this one for now');
   await skipButtons[1].click();
-  await page.waitForTimeout(100);
-  const afterSkip = await page.textContent('#screen');
+  const afterSkip = await settled(page, '#screen', /Skipped for now/);
   check('ingredients: skipping says so and offers it back', () => assert.match(afterSkip, /Skipped for now/));
   await page.click('text=Bring it back');
-  await page.waitForTimeout(100);
+  await page.waitForFunction(() => !/Skipped for now/.test(document.querySelector('#screen').textContent), null, { timeout: 5000 });
   const afterUnskip = await page.textContent('#screen');
   check('ingredients: a skipped card comes back', () => assert.ok(!/Skipped for now/.test(afterUnskip)));
+
+  // Step 3: the nine beats, and ruling A5 in the browser.
+  await page.goto(base + '#/build/ingredients/inciting/0');
+  await page.fill('#answer', 'Grandma falls ill');
+  await page.waitForTimeout(600);
+
+  await page.goto(base + '#/build/structure');
+  const beatList = await page.textContent('.beat-list');
+  check('structure: all nine beats are listed', () => {
+    assert.match(beatList, /Once upon a time/);
+    assert.match(beatList, /In the end/);
+  });
+  const beatRows = await page.evaluate(() => document.querySelectorAll('.beat-row').length);
+  check('structure: nine of them', () => assert.equal(beatRows, 9));
+
+  await page.goto(base + '#/build/structure/2');
+  await page.waitForSelector('#beat-text');
+  const prefilled = await page.inputValue('#beat-text');
+  check('A5: beat 2 arrives pre-filled from the ingredient', () => assert.equal(prefilled, 'Grandma falls ill'));
+  const provenance = await page.textContent('.provenance');
+  check('A5: and says where it came from', () => assert.match(provenance, /Something happens/));
+
+  await page.fill('#beat-text', 'One morning a letter arrives instead');
+  await page.waitForTimeout(600);
+  await page.goto(base + '#/build/ingredients/inciting/0');
+  const ingredientStillSays = await page.inputValue('#answer');
+  check('A5: editing the beat leaves the card alone', () => assert.equal(ingredientStillSays, 'Grandma falls ill'));
+
+  await page.goto(base + '#/build/structure/9');
+  await page.fill('#beat-text', 'In the end everyone goes home.');
+  await page.waitForTimeout(600);
+  const beatCounts = await page.textContent('.progress-row');
+  check('structure: the header counts written beats', () => assert.match(beatCounts, /Beats 2\/9/));
 
   // Removing a storyteller is destructive, so it must confirm and name the loss (§6.1).
   await page.goto(base + '#/stories');
   await page.click('.progress-row .button');
   await page.waitForSelector('.teller-row');
   await page.click('.teller-row .button.danger');
-  const warning = await page.textContent('.modal p');
+  const warning = await settled(page, '.modal p', /stor/);
   check('remove storyteller names what is lost', () => assert.match(warning, /stor(y|ies)/));
   await page.click('.modal-actions .button.secondary');
   await page.waitForTimeout(50);

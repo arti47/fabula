@@ -247,7 +247,7 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | `build.js` | The guided five-step path and its section nav |
 | `idea.js` | Step 1: die, Prompt cards, the idea sentence, the roll history, sparks |
 | `ingredients.js` | Step 2: the four-card grid, add-another, skip/unskip, and the one-question-at-a-time view with pips |
-| `structure.js` | Step 3: the nine beats, beat 2 pre-fill (A5) |
+| `structure.js` | Step 3: the nine beats as a list, one-beat view with pips, beat 2 pre-fill (A5) |
 | `boost.js` | Step 4: the ten boosts, card-spawning (P6), beat rewrites (P7), the snapshot (A8) |
 | `tell.js` | Step 5: assembled story, before/after toggle, print view, plain-text export |
 | `library.js` | Storyteller profiles, the shelf, create/rename/delete/open; example stories |
@@ -355,7 +355,7 @@ documented here in the same change. Nothing in the schema is written that no scr
       their guidance and examples, the idea sentence, "I already have an idea" path, sparks.
 - [x] **Phase 3 — Step 2: Ingredients.** The four cards in any order (P2), add-another (P3),
       per-question fields with the booklet's example answers inline, skip and return (P1, P5).
-- [ ] **Phase 4 — Step 3: Structure.** The nine beats with guidance and examples; beat 2 pre-fill
+- [x] **Phase 4 — Step 3: Structure.** The nine beats with guidance and examples; beat 2 pre-fill
       from the inciting event (A5); free order (A9).
 - [ ] 🏁 **Milestone — First Story Tellable.** Create a storyteller → roll or write an idea →
       ingredients → nine beats → read it back, end to end, on a phone, with zero console errors.
@@ -406,7 +406,8 @@ ships.** Fill the row when you build the rule, not at audit time.
 | House sparks | Permission (ours) | `SPARK_TABLES` | `idea.sparkSection` | Labelled "ours, not the deck's" | `idea: sparks are labelled as ours` |
 | P6 boost spawns a card | Permission | `BOOSTS[].canSpawn` | `boost.spawnCard` | "This gives me a new character" | spawned card carries `origin` and appears in Tell |
 | P7 boost rewrites a beat | Permission | — | `boost.editBeat` | "Change beat N" | beat edit lands, snapshot still holds the old text |
-| A5 beat 2 pre-fill | Sequence | — | `structure.prefillBeat2` | Beat 2, with provenance line | editing beat 2 does not rewrite the ingredient |
+| A5 beat 2 pre-fill | Sequence | — | `structure.prefillBeat2` | Beat 2, pre-filled, with a provenance line | `editing beat 2 does not rewrite the ingredient it came from` |
+| A9 any beat, any time | Permission | `BEATS` | `structure.beatScreen` pips | Numbered pips 1–9, blanks dotted | `structure: the header counts written beats` |
 | A8 snapshot | Procedure | — | `store.snapshot` | Automatic on Boost entry | before/after differ after a boost edit |
 | D10 before/after | Procedure | — | `derived.assemble` | Tell page toggle | both versions render from one record |
 | P10 draw it | Permission | `DRAWING_TIPS` | **guidance only** | Learn chapter | tips render; nothing else claims to |
@@ -496,6 +497,7 @@ rather than a broken image, and the harness must pass with `assets/cards/` empty
 
 | Date | Change | Verification | Cache |
 |---|---|---|---|
+| 2026-09-01 | Phase 4, Structure: the nine beats as a list with previews and blank dots, a one-beat view with pips, the booklet's guidance and its Little Red Riding Hood line per beat, and ruling A5 — beat 2 arrives pre-filled from the "Something happens" card, once, carrying a line that says where it came from and that the card will not change. | `npm test` 33/33, scan clean; `npm run smoke` clean over 23 routes × 5 widths, including a browser check that editing beat 2 leaves the ingredient untouched. A5 guard proved to bite by letting the pre-fill overwrite a written beat (test 30 went red, restored). Also replaced the smoke walk's fixed waits with polling after a 1-in-4 flake (template defect D-15) | v4 |
 | 2026-09-01 | Phase 3, Ingredients: a grid of the four cards in any order, with add-another on hero/villain/world and a reversible skip; inside a card, one question at a time with numbered pips that jump anywhere, the booklet's example answer collapsed under each, and autosave. Hardened the dead-data scan to strip string literals before asking whether a name is used. | `npm test` 27/27, scan clean; `npm run smoke` clean over 20 routes × 5 widths, with new walk steps covering P1, P2 and P3. The hardened scan immediately found a dead `explain` import that the old one had masked | v3 |
 | 2026-09-01 | Phase 2, the Idea step: the sentence field with debounced autosave, the crypto-backed die showing one Prompt card large with its guidance and examples, unlimited re-rolls with every roll kept in a visible history, and five house-aid spark tables. Adds the dead-data scan to `npm test`. | `npm test` 27/27 incl. die uniformity over 60k rolls and an old-shape normalization fixture; `npm run smoke` clean; scan clean. Findings fixed on the way: 2 dead exports, 5 dead imports, a `.modal-actions` class collision, a storyteller-removal path with no control (now wired, with a confirmation naming the lost stories), and stacked modals | v2 |
 | 2026-09-01 | Phases 0 and 1: app shell (frame, tabs, section nav, sticky story header carrying the progress counts), storybook theme light+dark with a text-size control, hash router, localStorage layer with normalization and JSON export/import, storytellers and the story shelf, the Deck browser, PWA manifest + service worker with the update toast. Browser smoke harness added. | `npm test` 16/16; `npm run smoke` clean over 18 routes × 5 widths, with card art present **and** absent; smoke found 4 real defects on its first run (no `explain()` on the build and Learn screens, a 16px back link, a 16px range and 22px file input) — all fixed | v1 |
