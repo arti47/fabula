@@ -223,7 +223,8 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | `data-examples.js` | The two booklet stories as complete story records (Little Red Riding Hood; Hänsel & Gretel before *and* after Boosts) |
 | `data-sparks.js` | Invented spark tables, `HOUSE_AID = true` |
 | `data-learn.js` | Rules-library chapters: the five steps, the nine beats, the ten boosts, the seven drawing tips |
-| `assets/cards/*.webp` | 34 faces (30 playable + 4 dividers), 760px WebP, ids per `docs/card-inventory.md` |
+| `assets/cards/*.webp` | 34 faces (30 playable + 4 dividers), 760px WebP, ids per `docs/card-inventory.md`. **Gitignored** — generated locally by `tools/extract-cards.py` |
+| `tools/extract-cards.py` | Regenerates the card faces from the user's own DIY PDF |
 | `manifest.json`, `service-worker.js`, `icon.svg` | PWA |
 | `tests/` + `package.json` | Dev-only harnesses; `node_modules` gitignored; not in the SW app shell |
 | `README.md` | Setup, offline/privacy statement, and the licensing note (§12 of the template) |
@@ -383,7 +384,7 @@ An unticked box means the data is not extracted. **Never build UI against an unt
 | T8 | The 7 drawing tips | `data-learn.js` | `learn.js` | [ ] |
 | T9 | Rules-library chapters (5 steps, 9 beats, 10 boosts) | `data-learn.js` | `learn.js` | [ ] |
 | T10 | Spark tables (house aid) | `data-sparks.js` | `sparks.js` | [ ] |
-| T11 | Card art: 34 images → WebP, id-mapped (760px, q80, 3.2MB total, max 195KB) | `assets/cards/` | `ui.js` card | [x] |
+| T11 | Card art: 34 images → WebP, id-mapped (760px, q80, 3.2MB total, max 195KB) | `assets/cards/`, generated | `ui.js` card | [x] |
 | T12 | `CARD_ERRATA` (A3) | `data.js` | `learn.js` | [ ] |
 
 ### 8.2 Traceability ledger
@@ -471,11 +472,16 @@ mattered, with a verified-clean list.
 
 ## 11. Content and licensing
 
-Built from a deck the user owns, for personal and small-group use. The card art in `assets/` is
-Matteo Ufocinque's, published by Sefirot; the booklet's guidance is paraphrased, never reproduced.
-The repository stays **private**. Card art is isolated behind one data file so it can be swapped for
-original faces if this is ever shared more widely — and if it is published, permission from Sefirot
-is the user's to obtain. The README states this plainly.
+Built from a deck the user owns, for personal and small-group use. The card art is Matteo Ufocinque's,
+published by Sefirot, and **is not committed to this repository**: `assets/cards/` is gitignored and
+regenerated locally by `tools/extract-cards.py` from the user's own copy of the DIY PDF. The
+booklet's guidance is paraphrased, never reproduced. The repository stays **private**. Card art is
+referenced by stable id from one data file, so original faces can be substituted wholesale if this
+is ever shared more widely; if it is published, permission from Sefirot is the user's to obtain.
+The README states this plainly, along with the one-time art-generation step.
+
+**Consequence for the build:** the app must render a labelled placeholder for any missing card face
+rather than a broken image, and the harness must pass with `assets/cards/` empty.
 
 ---
 
@@ -483,5 +489,5 @@ is the user's to obtain. The README states this plainly.
 
 | Date | Change | Verification | Cache |
 |---|---|---|---|
-| 2026-09-01 | Card art converted to WebP and committed under stable ids (T11 ticked). | 34 files, 3.22MB, max 195KB | — |
+| 2026-09-01 | Card art pipeline: `tools/extract-cards.py` generates 34 WebP faces under stable ids; `assets/cards/` gitignored so no publisher art is distributed. App must degrade to placeholders when absent. | 34 files, 3.22MB, max 195KB, ids reconciled against the inventory | — |
 | 2026-09-01 | Instantiated this spec from the v3 template. Card inventory extracted and verified from the DIY PDF (34 images); Stage B product decisions D1–D18 recorded; ambiguity rulings A1–A10 proposed; roadmap and ledgers seeded, all boxes unticked except T11 (art extracted, not converted). No application code yet. | Card count reconciled against the booklet's "34 illustrated cards" | — |

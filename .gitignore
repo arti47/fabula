@@ -1,0 +1,6 @@
+node_modules/
+
+# Card art is Sefirot's and is not distributed with this repository.
+# Regenerate it from your own copy of the DIY card PDF:
+#   python3 tools/extract-cards.py path/to/EN_FabulaforKids_DigitalCards.pdf
+assets/cards/
