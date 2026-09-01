@@ -8,6 +8,7 @@ import { getCurrentStory } from './store.js';
 import { blankSteps, progress } from './derived.js';
 import { ideaStep } from './idea.js';
 import { ingredientsGrid, ingredientQuestion } from './ingredients.js';
+import { structureList, beatScreen } from './structure.js';
 
 const STEP_BLURB = {
   idea: 'One sentence about what your story is. Roll the die if you have not got one.',
@@ -17,7 +18,7 @@ const STEP_BLURB = {
   tell: 'Read the whole thing back, before and after the boosts.',
 };
 
-export function buildScreen({ step, entryId, qIndex = 0 }) {
+export function buildScreen({ step, entryId, qIndex = 0, beatNumber }) {
   const story = getCurrentStory();
   if (!story) return noStory();
 
@@ -39,6 +40,11 @@ export function buildScreen({ step, entryId, qIndex = 0 }) {
 
   if (current.id === 'ingredients') {
     add(screen, entryId ? ingredientQuestion(story, entryId, qIndex) : ingredientsGrid(story));
+    return screen;
+  }
+
+  if (current.id === 'structure') {
+    add(screen, beatNumber ? beatScreen(story, beatNumber) : structureList(story));
     return screen;
   }
 
