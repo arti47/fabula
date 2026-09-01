@@ -10,6 +10,7 @@ import { ideaStep } from './idea.js';
 import { ingredientsGrid, ingredientQuestion } from './ingredients.js';
 import { structureList, beatScreen } from './structure.js';
 import { boostGrid, boostScreen } from './boost.js';
+import { tellScreen } from './tell.js';
 
 const STEP_BLURB = {
   idea: 'One sentence about what your story is. Roll the die if you have not got one.',
@@ -51,6 +52,11 @@ export function buildScreen({ step, entryId, qIndex = 0, beatNumber, boostId, fr
 
   if (current.id === 'boost') {
     add(screen, boostId ? boostScreen(story, boostId) : boostGrid(story));
+    return screen;
+  }
+
+  if (current.id === 'tell') {
+    add(screen, tellScreen(story));
     return screen;
   }
 

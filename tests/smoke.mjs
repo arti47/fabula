@@ -317,6 +317,29 @@ try {
   await settled(page, '#screen', /Skip this one/);
   check('P8: a skipped boost comes back', () => assert.ok(true));
 
+  // Step 5: the story read back, both ways.
+  await page.goto(base + '#/build/tell');
+  const told = await settled(page, '.told-story', /lighthouse|Once upon a time|Nothing written/);
+  check('tell: the story reads back', () => assert.ok(told.length > 0));
+  const connectors = await page.evaluate(() => [...document.querySelectorAll('.told-connector')].map((n) => n.textContent.trim()));
+  check('tell: each passage carries its card phrase', () => {
+    assert.ok(connectors.length >= 1, 'no connectors');
+    assert.ok(connectors.some((c) => /Once upon a time|But all of a sudden|In the end/.test(c)), connectors.join('|'));
+  });
+
+  const toggles = await page.evaluate(() => [...document.querySelectorAll('.version-toggle button')].map((b) => b.textContent));
+  check('D10: both versions are offered', () => assert.deepEqual(toggles, ['Before the boosts', 'After the boosts']));
+  await page.click('.version-toggle button');
+  const beforeText = await settled(page, '.told-story', /draft you had when you started boosting/);
+  check('D10: the before-version says what it is', () => assert.match(beforeText, /draft you had/));
+  const pressed = await page.evaluate(() => document.querySelector('.version-toggle button').getAttribute('aria-pressed'));
+  check('D10: the toggle says which is showing', () => assert.equal(pressed, 'true'));
+
+  await page.click('.version-toggle button:nth-child(2)');
+  const afterText = await settled(page, '.told-story', /abandoned twice/);
+  check('D10: after the boosts holds the rewritten beat', () => assert.match(afterText, /abandoned twice/));
+  check('D10: and the before-version did not', () => assert.ok(!/abandoned twice/.test(beforeText)));
+
   // Removing a storyteller is destructive, so it must confirm and name the loss (§6.1).
   await page.goto(base + '#/stories');
   await page.click('.progress-row .button');
