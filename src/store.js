@@ -170,6 +170,30 @@ export function getCurrentStory() {
 }
 
 // ---------------------------------------------------------------------------
+// The snapshot — the "before" version, frozen when the Boost step is first opened (ruling A8)
+// ---------------------------------------------------------------------------
+
+/** A deep-enough copy of everything the Tell page renders, stamped with when it was taken. */
+export function takeSnapshot(story) {
+  return {
+    ...story,
+    snapshot: {
+      takenAt: nowIso(),
+      beats: JSON.parse(JSON.stringify(story.beats || {})),
+      cast: JSON.parse(JSON.stringify(story.cast || [])),
+      worlds: JSON.parse(JSON.stringify(story.worlds || [])),
+      inciting: JSON.parse(JSON.stringify(story.inciting || { answers: {} })),
+      idea: JSON.parse(JSON.stringify(story.idea || {})),
+    },
+  };
+}
+
+/** Freeze the draft the first time the Boost step is opened, and never again on its own. */
+export function ensureSnapshot(story) {
+  return story.snapshot ? null : takeSnapshot(story);
+}
+
+// ---------------------------------------------------------------------------
 // Export / import — a supported feature, not a debug hatch (§4)
 // ---------------------------------------------------------------------------
 

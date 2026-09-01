@@ -8,7 +8,7 @@
 
 import { el, add, debounce, isBlank } from './core.js';
 import { actionBar, cardFace, exampleLine } from './ui.js';
-import { BEATS } from '../data.js';
+import { BEATS, getCard } from '../data.js';
 import { saveStory } from './store.js';
 import { renderStoryHeader } from './router.js';
 
@@ -80,7 +80,7 @@ export function structureList(story) {
 // One beat
 // ---------------------------------------------------------------------------
 
-export function beatScreen(story, n) {
+export function beatScreen(story, n, fromBoost) {
   const beat = BEATS.find((b) => b.n === n);
   if (!beat) {
     return add(
@@ -101,7 +101,15 @@ export function beatScreen(story, n) {
   }
 
   const wrap = el('div');
-  add(wrap, el('a', { class: 'back-link', href: '#/build/structure', text: '← All nine beats' }));
+  const boost = fromBoost ? getCard(fromBoost) : null;
+  add(wrap, el('a', {
+    class: 'back-link',
+    href: boost ? `#/build/boost/${boost.id}` : '#/build/structure',
+    text: boost ? `← Back to “${boost.headline}”` : '← All nine beats',
+  }));
+  if (boost) {
+    add(wrap, el('p', { class: 'provenance', text: `You came here from a Boost card: ${boost.headline}` }));
+  }
 
   const pips = el('nav', { class: 'pips', 'aria-label': 'Beats' });
   for (const b of BEATS) {
@@ -165,8 +173,8 @@ export function beatScreen(story, n) {
   const prev = BEATS.find((b) => b.n === n - 1);
   add(wrap, actionBar({
     context: `Beat ${beat.n} of ${BEATS.length}`,
-    label: next ? `Next: ${next.beatName}` : 'Done — on to the Boosts',
-    href: next ? `#/build/structure/${next.n}` : '#/build/boost',
+    label: boost ? 'Back to the boost' : (next ? `Next: ${next.beatName}` : 'Done — on to the Boosts'),
+    href: boost ? `#/build/boost/${boost.id}` : (next ? `#/build/structure/${next.n}` : '#/build/boost'),
     secondary: prev
       ? el('a', { class: 'button secondary', href: `#/build/structure/${prev.n}`, text: 'Back' })
       : null,

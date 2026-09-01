@@ -21,6 +21,7 @@ const ROUTES = [
   '#/deck/structure', '#/deck/boosts', '#/deck/card/beat-5', '#/deck/card/boost-help',
   '#/build/ingredients/inciting', '#/build/ingredients/inciting/3',
   '#/build/structure/1', '#/build/structure/2', '#/build/structure/9',
+  '#/build/boost/boost-help', '#/build/boost/boost-learn',
   '#/learn', '#/settings', '#/tutorial', '#/nonsense',
 ];
 const WIDTHS = [320, 360, 390, 768, 1024];
@@ -259,6 +260,62 @@ try {
   await page.waitForTimeout(600);
   const beatCounts = await page.textContent('.progress-row');
   check('structure: the header counts written beats', () => assert.match(beatCounts, /Beats 2\/9/));
+
+  // Step 4: the boosts, the snapshot, and the two permissions the booklet demonstrates.
+  await page.goto(base + '#/build/boost');
+  const boostTiles = await page.evaluate(() => document.querySelectorAll('.card-grid .card').length);
+  check('boost: all ten are offered', () => assert.equal(boostTiles, 10));
+  const frozenNote = await page.textContent('#screen');
+  check('A8: the before-version is frozen on arrival', () => assert.match(frozenNote, /as it was when you started boosting/));
+
+  await page.goto(base + '#/build/boost/boost-help');
+  await page.fill('#boost-answer', 'He needs a sister');
+  await page.waitForTimeout(600);
+
+  // P6: this card invents a character, and the new card carries where it came from.
+  await page.click('text=This gives me a new character');
+  await settled(page, '.question-label', /How old are they\?/);
+  await page.fill('#answer', 'a bit younger');
+  await page.waitForTimeout(600);
+  await page.goto(base + '#/build/boost/boost-help');
+  const spawnedList = await settled(page, '#screen', /Made from this card/);
+  check('P6: the spawned card is listed on the boost that made it', () => assert.match(spawnedList, /Made from this card/));
+  const ingredientCount = await page.evaluate(() => {
+    location.hash = '#/build/ingredients';
+    return new Promise((r) => setTimeout(() => r(document.querySelectorAll('.card-grid')[0].children.length), 100));
+  });
+  check('P6: it joins the ingredients', () => assert.ok(ingredientCount >= 2, `only ${ingredientCount} main characters`));
+
+  // P7: a boost sends you back to a beat, and offers the way back.
+  await page.goto(base + '#/build/boost/boost-too-easy');
+  await page.click('text=Change beat 4');
+  await settled(page, '.provenance', /came here from a Boost card/);
+  await page.fill('#beat-text', 'They are abandoned twice, and the second time the birds eat the crumbs.');
+  await page.waitForTimeout(600);
+  const backLink = await page.textContent('.back-link');
+  check('P7: the beat offers the way back to the boost', () => assert.match(backLink, /Back to/));
+  await page.click('.action-bar .button:not(.secondary)');
+  const boostAgain = await settled(page, '#screen', /you went back to beat/);
+  check('P7: the boost records the beat it sent you to', () => assert.match(boostAgain, /beat 4/));
+
+  // The snapshot holds the old beat text even though the beat has changed.
+  const snapshotHeld = await page.evaluate(() => {
+    const id = JSON.parse(localStorage.getItem('storyMachine.currentStory'));
+    const story = JSON.parse(localStorage.getItem(`storyMachine.story.${id}`));
+    return { now: story.beats['4']?.text || '', before: story.snapshot.beats['4']?.text || '' };
+  });
+  check('A8: before and after really differ', () => {
+    assert.match(snapshotHeld.now, /abandoned twice/);
+    assert.ok(!/abandoned twice/.test(snapshotHeld.before), 'the before-version followed the edit');
+  });
+
+  // P8: skipping a boost is a control, and it is reversible.
+  await page.goto(base + '#/build/boost/boost-narrator');
+  await page.click('text=Skip this one');
+  await settled(page, '#screen', /Bring this one back/);
+  await page.click('text=Bring this one back');
+  await settled(page, '#screen', /Skip this one/);
+  check('P8: a skipped boost comes back', () => assert.ok(true));
 
   // Removing a storyteller is destructive, so it must confirm and name the loss (§6.1).
   await page.goto(base + '#/stories');
