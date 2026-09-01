@@ -223,8 +223,9 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | `data-examples.js` | The two booklet stories as complete story records (Little Red Riding Hood; Hänsel & Gretel before *and* after Boosts) |
 | `data-sparks.js` | Invented spark tables, `HOUSE_AID = true` |
 | `data-learn.js` | Rules-library chapters: the five steps, the nine beats, the ten boosts, the seven drawing tips |
-| `assets/cards/*.webp` | 34 faces (30 playable + 4 dividers), 760px WebP, ids per `docs/card-inventory.md`. **Gitignored** — generated locally by `tools/extract-cards.py` |
+| `assets/cards/*.webp` | 34 faces (30 playable + 4 dividers), 760px WebP, ids per `docs/card-inventory.md`; committed |
 | `tools/extract-cards.py` | Regenerates the card faces from the user's own DIY PDF |
+| `.github/workflows/pages.yml` | Runs `npm test`, then publishes the repository to GitHub Pages |
 | `manifest.json`, `service-worker.js`, `icon.svg` | PWA |
 | `tests/` + `package.json` | Dev-only harnesses (`npm test`); `node_modules` gitignored; not in the SW app shell |
 | `tools/parse-gate.mjs` | Syntax-checks every shipped file by filename before the suite runs |
@@ -492,12 +493,15 @@ mattered, with a verified-clean list.
 ## 11. Content and licensing
 
 Built from a deck the user owns, for personal and small-group use. The card art is Matteo Ufocinque's,
-published by Sefirot, and **is not committed to this repository**: `assets/cards/` is gitignored and
-regenerated locally by `tools/extract-cards.py` from the user's own copy of the DIY PDF. The
-booklet's guidance is paraphrased, never reproduced. The repository stays **private**. Card art is
-referenced by stable id from one data file, so original faces can be substituted wholesale if this
-is ever shared more widely; if it is published, permission from Sefirot is the user's to obtain.
-The README states this plainly, along with the one-time art-generation step.
+published by Sefirot, and **is committed to this repository at the owner's decision** so the
+deployed app shows real cards; `tools/extract-cards.py` regenerates it from the owner's own copy of
+the DIY PDF. The booklet's guidance is paraphrased, never reproduced. Card art is referenced by
+stable id from one data file, so original faces can be substituted wholesale, and deleting
+`assets/cards/` degrades the app to labelled placeholders rather than breaking it.
+
+The app is deployed to GitHub Pages from `main`. **The repository is public as of this writing and
+the owner intends to make it private**; note that Pages does not serve a private repository on a
+free plan. Permission from Sefirot is the owner's to obtain, and the README says so.
 
 **Consequence for the build:** the app must render a labelled placeholder for any missing card face
 rather than a broken image, and the harness must pass with `assets/cards/` empty.
@@ -508,6 +512,7 @@ rather than a broken image, and the harness must pass with `assets/cards/` empty
 
 | Date | Change | Verification | Cache |
 |---|---|---|---|
+| 2026-09-01 | Deployed: a Pages workflow that runs `npm test` and then publishes the repository as it stands (there is no build step), and the 34 card faces committed at the owner's decision so the live app shows real cards rather than placeholders. README and §11 updated to say what now ships and where the licensing responsibility sits. | Workflow green; the site serves at https://arti47.github.io/fabula/ | v10 |
 | 2026-09-01 | Phase 8, the tablet: one `answerLayout` puts the card beside the question it asks, at every width — 96px on a phone, 132px from 430, a sticky 200–320px column from 768 — with the reading measure capped and the beat list going two-up at 1024. Measuring it showed the writing field falling below the fold on a phone, so the field now comes before the guidance on every answering screen: what you touch every time sits above what you read once. | `npm test` 62/62; smoke clean over 28 routes × 5 widths with two new contract checks — the field above the fold at every width, and the tablet proved to add density rather than stretch (flattened the grid to one column: 9 failures, restored). Stress probe: the beat screens drop from 2.0 to 1.4 screens at 1024, the nine-beat list from 2.1 to 1.4 | v10 |
 | 2026-09-01 | Phase 9 hardening, first cycle: committed seed fixtures (fresh / mid-story / stress), a shared harness, the layout probe, the interaction audit and the accessibility sweep — and `docs/AUDIT.md`, which records 17 findings across the build. The interaction audit was clean until it was proved not to bite: its route list never entered a step, so it had never clicked the controls that do the work. With the deep routes added it caught a deliberately broken Skip button three times. | `npm test` 62/62; smoke clean over 28 routes × 5 widths, seeded mid-story; interaction audit clean on mid-story and stress, 400 controls each; a11y sweep clean over 24 routes. Fixed on the way: an 11.5-screen Tell page with no jump row, an in-page anchor the hash router would have read as a route, smooth scrolling that ignored reduced motion, an unlabelled file input, two routes where nothing carried `aria-current`, and a smoke sweep that had been measuring an empty app | v9 |
 | 2026-09-01 | Phase 7: the rules library (how it works, the five steps, every card, the seven drawing tips) with search and a link from every card to its entry; both booklet stories as complete story records, read through the same assembly as a kid's own, with Hänsel & Gretel carrying its pre-Boost draft so it is genuinely told twice; and the ten-step first-story walkthrough, linked from the empty shelf and from Settings. | `npm test` 62/62, scan clean; `npm run smoke` clean over 29 routes × 5 widths, three consecutive runs. Findings fixed on the way: a dead `stubScreen` export and its unreachable branch in `build.js` (with `contextLine` and two imports that died with it), and 29 rules-library links at 17px | v9 |

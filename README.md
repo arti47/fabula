@@ -17,18 +17,20 @@ python3 -m http.server 8000     # or any static server
 
 Opening `index.html` from the file system works too, except that the offline install is disabled.
 
-### Card art (one-time step)
+It is also deployed: **https://arti47.github.io/fabula/** — installable from the browser menu on a
+phone or tablet ("Add to Home Screen"), and it works offline once opened.
 
-The card illustrations are not in this repository (see **Licensing** below). Generate them from your
-own copy of the deck's Do-It-Yourself PDF:
+### Card art
+
+The 34 card faces are committed under `assets/cards/`. To regenerate them from your own copy of the
+deck's Do-It-Yourself PDF — after a redraw, or at a different size:
 
 ```sh
 pip install pypdf pillow
 python3 tools/extract-cards.py path/to/EN_FabulaforKids_DigitalCards.pdf
 ```
 
-That writes 34 faces into `assets/cards/`. Without it the app still works — every card shows a
-labelled placeholder instead of its picture.
+If a face is ever missing the app carries on and shows a labelled placeholder in its place.
 
 ## Your stories
 
@@ -57,10 +59,11 @@ roadmap and the ledgers. Keep it updated in the same change as the code.
 <https://www.fabuladeck.com/for-kids>
 
 This app is a **personal play aid** built from a copy of the deck. The card text it reproduces is
-limited to the headlines and the printed questions; everything else is paraphrased. The
-illustrations are Sefirot's and are deliberately **not distributed here** — they are generated
-locally from your own copy.
+limited to the headlines and the printed questions; everything else is paraphrased in the app's own
+voice. The illustrations are Matteo Ufocinque's and are included here so the app shows real cards.
 
-If you share this app beyond your own household, licensing is your responsibility, and permission
-from Sefirot is the right way to get it. Card faces are referenced by stable id from a single data
-file, so original artwork can be substituted wholesale if you need a version that stands on its own.
+**If you share this app beyond your own household, licensing is your responsibility**, and
+permission from Sefirot is the right way to get it. Card faces are referenced by stable id from a
+single data file (`data.js`), so original artwork can be substituted wholesale if you need a version
+that stands on its own — and deleting `assets/cards/` degrades the app to labelled placeholders
+rather than breaking it.
