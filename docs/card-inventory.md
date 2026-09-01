@@ -50,3 +50,12 @@ Page 9 = printable die net, "The Die of Ideas". Faces P M Q G N S (one per Promp
 Booklet permission: re-roll freely until an idea lands, no cost.
 
 ## Count check: 4 dividers + 1 idea + 6 prompts + 4 ingredients + 9 structure + 10 boosts = 34 = booklet's "34 illustrated cards".
+
+## Asset ids (assets/cards/*.webp, 760px q80)
+divider-prompts divider-ingredients divider-structure divider-boosts
+idea
+prompt-p prompt-m prompt-q prompt-g prompt-n prompt-s
+ing-hero ing-villain ing-world ing-event
+beat-1 .. beat-9
+boost-care boost-help boost-why-villain boost-too-easy boost-twist
+boost-background boost-narrator boost-despair boost-faults boost-learn

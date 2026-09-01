@@ -223,7 +223,7 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | `data-examples.js` | The two booklet stories as complete story records (Little Red Riding Hood; Hänsel & Gretel before *and* after Boosts) |
 | `data-sparks.js` | Invented spark tables, `HOUSE_AID = true` |
 | `data-learn.js` | Rules-library chapters: the five steps, the nine beats, the ten boosts, the seven drawing tips |
-| `assets/cards/*.webp` | 30 card faces + 4 divider faces, compressed from the DIY PDF |
+| `assets/cards/*.webp` | 34 faces (30 playable + 4 dividers), 760px WebP, ids per `docs/card-inventory.md` |
 | `manifest.json`, `service-worker.js`, `icon.svg` | PWA |
 | `tests/` + `package.json` | Dev-only harnesses; `node_modules` gitignored; not in the SW app shell |
 | `README.md` | Setup, offline/privacy statement, and the licensing note (§12 of the template) |
@@ -383,7 +383,7 @@ An unticked box means the data is not extracted. **Never build UI against an unt
 | T8 | The 7 drawing tips | `data-learn.js` | `learn.js` | [ ] |
 | T9 | Rules-library chapters (5 steps, 9 beats, 10 boosts) | `data-learn.js` | `learn.js` | [ ] |
 | T10 | Spark tables (house aid) | `data-sparks.js` | `sparks.js` | [ ] |
-| T11 | Card art: 34 images → WebP ≤250KB each, id-mapped | `assets/cards/` | `ui.js` card | [x] extracted, not yet converted |
+| T11 | Card art: 34 images → WebP, id-mapped (760px, q80, 3.2MB total, max 195KB) | `assets/cards/` | `ui.js` card | [x] |
 | T12 | `CARD_ERRATA` (A3) | `data.js` | `learn.js` | [ ] |
 
 ### 8.2 Traceability ledger
@@ -483,4 +483,5 @@ is the user's to obtain. The README states this plainly.
 
 | Date | Change | Verification | Cache |
 |---|---|---|---|
+| 2026-09-01 | Card art converted to WebP and committed under stable ids (T11 ticked). | 34 files, 3.22MB, max 195KB | — |
 | 2026-09-01 | Instantiated this spec from the v3 template. Card inventory extracted and verified from the DIY PDF (34 images); Stage B product decisions D1–D18 recorded; ambiguity rulings A1–A10 proposed; roadmap and ledgers seeded, all boxes unticked except T11 (art extracted, not converted). No application code yet. | Card count reconciled against the booklet's "34 illustrated cards" | — |
