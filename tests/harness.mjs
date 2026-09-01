@@ -14,9 +14,18 @@ const TYPES = {
   '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.webp': 'image/webp',
 };
 
-export function serve() {
+/**
+ * Static server. `prefix` serves the app under a sub-path the way GitHub Pages does
+ * (https://user.github.io/repo/), which is the shape every relative URL in the app has to survive.
+ */
+export function serve({ prefix = '' } = {}) {
   const server = createServer(async (req, res) => {
-    const path = normalize(decodeURIComponent(req.url.split('?')[0])).replace(/^(\.\.[/\\])+/, '');
+    let requested = decodeURIComponent(req.url.split('?')[0]);
+    if (prefix) {
+      if (!requested.startsWith(prefix)) { res.writeHead(404).end('outside the deploy path'); return; }
+      requested = requested.slice(prefix.length - 1) || '/';
+    }
+    const path = normalize(requested).replace(/^(\.\.[/\\])+/, '');
     const file = join(ROOT, path === '/' ? 'index.html' : path);
     try {
       const body = await readFile(file);

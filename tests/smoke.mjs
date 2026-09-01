@@ -382,6 +382,31 @@ try {
   check('walk: the shelf shows the idea as the blurb', () => assert.match(persisted, /a lighthouse that walks/));
   await context.close();
 
+  // The app is deployed under a sub-path (github.io/<repo>/), so every relative URL in it — the
+  // module imports, the card art, the manifest, the service worker's scope — has to survive that.
+  const subServer = await serve({ prefix: '/fabula/' });
+  const subBase = `http://127.0.0.1:${subServer.address().port}/fabula/`;
+  const subContext = await browser.newContext({ viewport: { width: 390, height: 740 } });
+  const subPage = await subContext.newPage();
+  const subErrors = [];
+  subPage.on('pageerror', (e) => subErrors.push(String(e)));
+  subPage.on('console', (m) => { if (m.type() === 'error' && !isMissingArt(m)) subErrors.push(m.text()); });
+  await subPage.goto(subBase, { waitUntil: 'domcontentloaded' });
+  await subPage.waitForSelector('#screen');
+  check('deployed under a sub-path: the app boots', () => assert.deepEqual(subErrors, []));
+  await subPage.goto(`${subBase}#/deck/structure`);
+  await subPage.waitForSelector('.card-grid .card');
+  await subPage.waitForTimeout(600);
+  const subFaces = await subPage.evaluate(() => [...document.querySelectorAll('.card-grid img.card-face')].map((i) => i.naturalWidth > 0));
+  check('deployed under a sub-path: the card art resolves', () => {
+    assert.ok(subFaces.length > 0, 'no card faces rendered');
+    assert.deepEqual(subFaces.filter((ok) => !ok), [], 'a card face failed to load under the sub-path');
+  });
+  const swScope = await subPage.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.scope || 'none');
+  check('deployed under a sub-path: the service worker scopes to it', () => assert.match(swScope, /\/fabula\/$/));
+  await subContext.close();
+  subServer.close();
+
   // Every card face either loads or shows a labelled placeholder — never a broken image.
   const artContext = await browser.newContext({ viewport: { width: 390, height: 740 } });
   const artPage = await artContext.newPage();
