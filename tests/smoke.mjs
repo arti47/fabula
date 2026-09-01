@@ -19,6 +19,7 @@ const ROUTES = [
   '#/stories', '#/build', '#/build/idea', '#/build/ingredients', '#/build/structure',
   '#/build/boost', '#/build/tell', '#/deck', '#/deck/prompts', '#/deck/ingredients',
   '#/deck/structure', '#/deck/boosts', '#/deck/card/beat-5', '#/deck/card/boost-help',
+  '#/build/ingredients/inciting', '#/build/ingredients/inciting/3',
   '#/learn', '#/settings', '#/tutorial', '#/nonsense',
 ];
 const WIDTHS = [320, 360, 390, 768, 1024];
@@ -170,6 +171,49 @@ try {
   check('idea: the sentence persists', () => assert.equal(savedIdea, 'a lighthouse that walks'));
   const headerAfter = await page.textContent('.progress-row');
   check('idea: the header knows there is an idea', () => assert.match(headerAfter, /Idea yes/));
+
+  // Step 2: ingredients, one question at a time, in any order.
+  await page.goto(base + '#/build/ingredients');
+  await page.click('.card-grid .card');
+  await page.waitForSelector('#answer');
+  const firstQ = await page.textContent('.question-label');
+  check('ingredients: opens on the first question', () => assert.match(firstQ, /How old are they\?/));
+  await page.fill('#answer', 'about eleven');
+  await page.waitForTimeout(600);
+  await page.click('.action-bar .button:not(.secondary)');
+  await page.waitForSelector('#answer');
+  const secondQ = await page.textContent('.question-label');
+  check('ingredients: Next advances', () => assert.match(secondQ, /What do they look like\?/));
+
+  // Jump straight to the name question via the pips (P2 survives the one-at-a-time format).
+  await page.click('.pips .pip:nth-child(6)');
+  await page.waitForSelector('#answer');
+  await page.fill('#answer', 'Bo');
+  await page.waitForTimeout(600);
+  await page.goto(base + '#/build/ingredients');
+  const gridText = await page.textContent('#screen');
+  check('ingredients: the tile takes the character\'s name', () => assert.match(gridText, /Bo/));
+  check('ingredients: the tile counts answers', () => assert.match(gridText, /2 of 6 answered/));
+  const headerCounts = await page.textContent('.progress-row');
+  check('ingredients: the header counts the card', () => assert.match(headerCounts, /Ingredients 1\/4/));
+
+  // P3: the same card twice.
+  await page.click('text=Add another main character');
+  await page.waitForSelector('#answer');
+  await page.goto(base + '#/build/ingredients');
+  const twoHeroes = await page.evaluate(() => document.querySelectorAll('.card-grid')[0].children.length);
+  check('ingredients: a second main character is allowed', () => assert.equal(twoHeroes, 2));
+
+  // P1: skip a card, and get it back.
+  const skipButtons = await page.$$('text=Skip this one for now');
+  await skipButtons[1].click();
+  await page.waitForTimeout(100);
+  const afterSkip = await page.textContent('#screen');
+  check('ingredients: skipping says so and offers it back', () => assert.match(afterSkip, /Skipped for now/));
+  await page.click('text=Bring it back');
+  await page.waitForTimeout(100);
+  const afterUnskip = await page.textContent('#screen');
+  check('ingredients: a skipped card comes back', () => assert.ok(!/Skipped for now/.test(afterUnskip)));
 
   // Removing a storyteller is destructive, so it must confirm and name the loss (§6.1).
   await page.goto(base + '#/stories');

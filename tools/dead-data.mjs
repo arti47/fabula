@@ -47,6 +47,18 @@ function importedNames(text) {
   return out;
 }
 
+// Strip comments and string literals before asking "is this name used?" — otherwise a class name
+// like 'explain' in `el('details', { class: 'explain' })` masks a dead import of `explain`.
+function code(text) {
+  return text
+    .replace(/\/\*[\s\S]*?\*\//g, ' ')
+    .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ')
+    .replace(/'(?:[^'\\\n]|\\.)*'/g, "''")
+    .replace(/"(?:[^"\\\n]|\\.)*"/g, '""')
+    // Template literals are left intact: their ${...} parts are real usage.
+    ;
+}
+
 const findings = [];
 const notes = [];
 
@@ -68,7 +80,7 @@ for (const [file, text] of appSource) {
   }
   for (const name of names) {
     const word = new RegExp(`\\b${name.replace(/\$/g, '\\$')}\\b`, 'g');
-    const usesInOwnFile = (text.match(word) || []).length > 1; // the declaration is one
+    const usesInOwnFile = (code(text).match(word) || []).length > 1; // the declaration is one
     if (appImports.has(name)) continue;
     if (testImports.has(name)) { notes.push(`${file}: ${name} is read only by the tests`); continue; }
     if (usesInOwnFile) { notes.push(`${file}: ${name} is only used inside its own file — drop the export`); continue; }
@@ -79,7 +91,7 @@ for (const [file, text] of appSource) {
 // 2. named imports a file never uses
 for (const [file, text] of [...appSource, ...testSource]) {
   for (const { name, statement } of importedNames(text)) {
-    const body = text.split(statement).join('').replace(REEXPORT_RE, '');
+    const body = code(text.split(statement).join('').replace(REEXPORT_RE, ''));
     if (!new RegExp(`\\b${name.replace(/\$/g, '\\$')}\\b`).test(body)) {
       findings.push(`${file}: imports ${name} and never uses it`);
     }
