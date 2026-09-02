@@ -1,7 +1,7 @@
 // Step 4 invariants: the snapshot (A8) and the two permissions the booklet demonstrates (P6, P7).
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { blankStory, takeSnapshot, ensureSnapshot } from '../src/store.js';
+import { blankStory, takeSnapshot, ensureSnapshot, boostingHasBegun } from '../src/store.js';
 import { writeBeat } from '../src/structure.js';
 import { addEntry } from '../src/ingredients.js';
 import { BOOSTS } from '../data.js';
@@ -17,12 +17,31 @@ function draft() {
   return s;
 }
 
-test('the before-version is frozen once, on first arrival', () => {
+test('opening the Boost step is not the same as boosting (A8)', () => {
+  // A kid tapping through the tabs on an empty story used to freeze an empty before-version for
+  // ever, which left the before/after comparison with nothing in it.
   const s = draft();
-  assert.equal(s.snapshot, null);
-  const frozen = ensureSnapshot(s);
-  assert.ok(frozen.snapshot.takenAt);
-  assert.equal(ensureSnapshot(frozen), null, 'a second visit must not re-freeze');
+  assert.equal(boostingHasBegun(s), false);
+
+  const looked = ensureSnapshot(s);                       // just arrived, nothing answered
+  assert.ok(looked.snapshot.takenAt, 'there should still be something to compare against');
+
+  const later = writeBeat(looked, 9, 'And then they went home.');
+  const refreshed = ensureSnapshot(later);
+  assert.equal(refreshed.snapshot.beats[9].text, 'And then they went home.',
+    'until boosting begins, the before-version keeps up with the story');
+});
+
+test('the before-version locks the moment a boost is answered or skipped (A8)', () => {
+  let s = ensureSnapshot(draft());
+  s = { ...s, boosts: { 'boost-help': { answer: 'Give him a sister.', skipped: false, editedBeats: [] } } };
+  assert.equal(boostingHasBegun(s), true);
+  assert.equal(ensureSnapshot(s), null, 'once boosting has begun it must not re-freeze');
+
+  // Skipping counts as boosting too: the kid has been through the card and made a decision.
+  const skipped = { ...ensureSnapshot(draft()), boosts: { 'boost-twist': { answer: '', skipped: true, editedBeats: [] } } };
+  assert.equal(boostingHasBegun(skipped), true);
+  assert.equal(ensureSnapshot(skipped), null);
 });
 
 test('the snapshot keeps the draft even after the story moves on', () => {

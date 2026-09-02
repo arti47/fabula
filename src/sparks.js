@@ -7,7 +7,7 @@
 import { el, add, clear, randomInt, isBlank } from './core.js';
 import { IDEA_SPARKS, SPARK_PLACEHOLDERS, sparksFor } from '../data-sparks.js';
 
-const HOW_MANY = 1;
+const HOW_MANY = 3;
 
 /** What the story calls its hero, villain and world — or the generic word, until it names one. */
 export function nameBook(story) {

@@ -44,6 +44,25 @@ test('a record with junk in the array fields does not crash a screen', () => {
   assert.deepEqual(s.idea.rolls, []);
 });
 
+test('a record from another version cannot put unknown cards on a screen', () => {
+  // A backup written by a later version, or a file edited by hand, names things this build does
+  // not have. They are dropped on the way in rather than rendered.
+  const s = normalizeStory({
+    ownerId: 't', title: 'From elsewhere',
+    boosts: {
+      'boost-help': { answer: 'kept', editedBeats: [4, 12, 0, 'x'] },
+      'boost-from-the-future': { answer: 'dropped' },
+    },
+    beats: { 1: { text: 'kept' }, 12: { text: 'dropped' } },
+    skipped: ['ing-hero', 'ing-nonexistent'],
+  });
+  assert.deepEqual(Object.keys(s.boosts), ['boost-help']);
+  assert.deepEqual(s.boosts['boost-help'].editedBeats, [4], 'a boost cannot point at a beat that is not there');
+  assert.equal(s.boosts['boost-help'].answer, 'kept');
+  assert.deepEqual(Object.keys(s.beats), ['1']);
+  assert.deepEqual(s.skipped, ['ing-hero']);
+});
+
 test('progress counts what is answered, and nothing else', () => {
   const s = blankStory('t', 'x');
   assert.deepEqual(progress(s).ingredients, { done: 0, total: 4 });

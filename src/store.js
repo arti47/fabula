@@ -2,6 +2,11 @@
 // would carry unchanged (CLAUDE.md D6, §7).
 
 import { uid, nowIso } from './core.js';
+import { BOOSTS, BEATS, INGREDIENTS } from '../data.js';
+
+const KNOWN_BOOSTS = new Set(BOOSTS.map((b) => b.id));
+const KNOWN_BEATS = new Set(BEATS.map((b) => b.n));
+const KNOWN_CARDS = new Set(INGREDIENTS.map((i) => i.id));
 
 const KEY = {
   storytellers: 'storyMachine.storytellers',
@@ -121,6 +126,19 @@ export function normalizeStory(story) {
     schemaVersion: SCHEMA_VERSION,
   };
   if (!Array.isArray(out.idea.rolls)) out.idea.rolls = [];
+
+  // A backup written by another version, or edited by hand, can name cards and beats this one does
+  // not have. Drop them here rather than letting them reach a screen (§7).
+  out.boosts = Object.fromEntries(
+    Object.entries(out.boosts)
+      .filter(([id]) => KNOWN_BOOSTS.has(id))
+      .map(([id, state]) => [id, {
+        ...state,
+        editedBeats: (Array.isArray(state.editedBeats) ? state.editedBeats : []).filter((n) => KNOWN_BEATS.has(n)),
+      }]),
+  );
+  out.beats = Object.fromEntries(Object.entries(out.beats).filter(([n]) => KNOWN_BEATS.has(Number(n))));
+  out.skipped = out.skipped.filter((id) => KNOWN_CARDS.has(id));
   return out;
 }
 
@@ -197,9 +215,22 @@ export function takeSnapshot(story) {
   };
 }
 
-/** Freeze the draft the first time the Boost step is opened, and never again on its own. */
+/** Has the kid actually started boosting — answered one, or deliberately skipped one? */
+export function boostingHasBegun(story) {
+  return Object.values(story.boosts || {}).some((b) => (b.answer || '').trim() || b.skipped);
+}
+
+/**
+ * Freeze the draft when boosting begins (A8).
+ *
+ * Opening the Boost step is not the same as boosting. A kid who taps through the tabs on an empty
+ * story used to freeze an empty "before" version for ever — and then the before/after comparison,
+ * which is the whole point of the Boost chapter, had nothing in it. So the snapshot keeps up with
+ * the story until the first boost is answered or skipped, and locks from then on.
+ */
 export function ensureSnapshot(story) {
-  return story.snapshot ? null : takeSnapshot(story);
+  if (boostingHasBegun(story)) return story.snapshot ? null : takeSnapshot(story);
+  return takeSnapshot(story);
 }
 
 // ---------------------------------------------------------------------------

@@ -86,8 +86,18 @@ export function spawnedBy(story, boostId) {
   ];
 }
 
+/**
+ * Two versions are worth offering only once they differ. Until boosting has changed something, the
+ * before-version is the same story, and two buttons showing the same words is noise.
+ */
 export function hasBothVersions(story) {
-  return Boolean(story.snapshot);
+  if (!story.snapshot) return false;
+  const now = JSON.stringify({ beats: story.beats, cast: story.cast, worlds: story.worlds, inciting: story.inciting });
+  const before = JSON.stringify({
+    beats: story.snapshot.beats, cast: story.snapshot.cast,
+    worlds: story.snapshot.worlds, inciting: story.snapshot.inciting,
+  });
+  return now !== before;
 }
 
 /** A character or world, described in one line from whatever was answered. */

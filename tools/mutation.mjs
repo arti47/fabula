@@ -31,10 +31,17 @@ const MUTANTS = [
     harness: 'test',
   },
   {
-    name: 'the snapshot re-freezes every time Boost is opened (A8)',
+    name: 'the before-version keeps re-freezing after boosting has begun (A8)',
     file: 'src/store.js',
-    from: '  return story.snapshot ? null : takeSnapshot(story);',
-    to: '  return takeSnapshot(story);',
+    from: '  if (boostingHasBegun(story)) return story.snapshot ? null : takeSnapshot(story);',
+    to: '  if (boostingHasBegun(story)) return takeSnapshot(story);',
+    harness: 'test',
+  },
+  {
+    name: 'the before-version freezes on arrival, before boosting begins (A8)',
+    file: 'src/store.js',
+    from: '  return takeSnapshot(story);\n}',
+    to: '  return story.snapshot ? null : takeSnapshot(story);\n}',
     harness: 'test',
   },
   {

@@ -36,8 +36,10 @@ test('unanswered cards are left out, and unnamed ones still get a name', () => {
 
 test('both versions render from one record', () => {
   const before = ensureSnapshot(story());
-  assert.equal(hasBothVersions(before), true);
+  // Freshly frozen, the two readings are the same story: there is nothing to compare yet.
+  assert.equal(hasBothVersions(before), false);
   const after = writeBeat(before, 6, 'Gretel throws the witch into the oven.');
+  assert.equal(hasBothVersions(after), true, 'once the story moves on, both are worth reading');
 
   const now = assemble(after, 'now');
   const then = assemble(after, 'before');
