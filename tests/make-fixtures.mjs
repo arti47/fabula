@@ -59,9 +59,9 @@ const midStory = (() => {
   s = writeBeat(s, 6, 'The Inspector came, and she had to decide whether to tell him.');
   s = ensureSnapshot(s);
   s.boosts = {
-    'boost-help': { answer: 'Otto believes her. That is the whole reason she keeps going.', skipped: false, spawned: ['mid-hero-2'], editedBeats: [3] },
-    'boost-narrator': { answer: 'Otto tells it, years later, and gets bits wrong.', skipped: false, spawned: [], editedBeats: [] },
-    'boost-twist': { answer: '', skipped: true, spawned: [], editedBeats: [] },
+    'boost-help': { answer: 'Otto believes her. That is the whole reason she keeps going.', skipped: false, editedBeats: [3] },
+    'boost-narrator': { answer: 'Otto tells it, years later, and gets bits wrong.', skipped: false, editedBeats: [] },
+    'boost-twist': { answer: '', skipped: true, editedBeats: [] },
   };
   return bundle([owner], [s]);
 })();
@@ -114,7 +114,6 @@ const stress = (() => {
   big.boosts = Object.fromEntries(BOOSTS.map((b, n) => [b.id, {
     answer: `${long.slice(0, 180)}(${b.headline})`,
     skipped: false,
-    spawned: b.id === 'boost-help' ? ['big-hero-3'] : (b.id === 'boost-why-villain' ? ['big-villain-1'] : []),
     editedBeats: b.suggestsBeats.slice(0, 2),
   }]));
   big.skipped = ['ing-world'];
@@ -123,7 +122,32 @@ const stress = (() => {
   return bundle(tellers, stories);
 })();
 
-for (const [name, data] of [['fresh', fresh], ['mid-story', midStory], ['stress', stress]]) {
+// A story written by a kid doing everything the app did not expect: emoji, a word with no spaces,
+// quotes and angle brackets, right-to-left text, newlines, and one very short answer.
+const messy = (() => {
+  const owner = teller('teller-messy', '🙂 Zo <script>', '🙂');
+  let s = story(owner.id, 'story-messy', 'a "story" with <angle> brackets & things', (draft) => {
+    draft.idea = { text: '🐉'.repeat(40), fromPrompt: 'S', rolls: [{ letter: 'S', ts: iso(1) }] };
+    draft.cast = [
+      { id: 'messy-hero', kind: 'hero', origin: 'ingredients', answers: { name: '<b>Bo</b>', age: 'x', looks: 'Supercalifragilistic'.repeat(6), fear: 'ما الذي يخيفهم', want: '"everything"', special: 'line one\nline two\nline three' } },
+      { id: 'messy-villain', kind: 'villain', origin: 'boost:boost-why-villain', answers: { name: '   ', want: '&amp; more' } },
+    ];
+    draft.worlds = [{ id: 'messy-world', answers: { special: '', whereWhen: '2026-09-01T00:00:00.000Z', typicalDay: '😀😀😀😀😀😀😀😀😀😀', peopleDo: 'a'.repeat(400) } }];
+    draft.inciting = { answers: { what: 'x', goodOrBad: '', antagonistsFault: 'null', howItChanges: 'undefined' } };
+    return draft;
+  });
+  s = writeBeat(s, 1, 'NaN');
+  s = writeBeat(s, 3, 'z'.repeat(600));
+  s = writeBeat(s, 5, '   ');
+  s = ensureSnapshot(s);
+  s.boosts = {
+    'boost-twist': { answer: '[object Object]', skipped: false, editedBeats: [3] },
+    'boost-why-villain': { answer: '🙃', skipped: false, editedBeats: [] },
+  };
+  return bundle([owner], [s]);
+})();
+
+for (const [name, data] of [['fresh', fresh], ['mid-story', midStory], ['stress', stress], ['messy', messy]]) {
   writeFileSync(join(OUT, `${name}.json`), `${JSON.stringify(data, null, 2)}\n`);
   console.log(`${name}: ${data.storytellers.length} storyteller(s), ${data.stories.length} stor${data.stories.length === 1 ? 'y' : 'ies'}`);
 }

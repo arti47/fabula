@@ -8,13 +8,14 @@
     "parse": "node tools/parse-gate.mjs",
     "test": "npm run parse && npm run scan && node --test \"tests/**/*.test.mjs\"",
     "smoke": "node tests/smoke.mjs",
-    "check": "npm test && npm run smoke && npm run audit && npm run a11y",
+    "check": "npm test && npm run smoke && npm run audit && npm run a11y && npm run update",
     "scan": "node tools/dead-data.mjs",
     "fixtures": "node tests/make-fixtures.mjs",
     "probe": "node tests/probe-layout.mjs",
     "audit": "node tests/interaction.mjs",
     "a11y": "node tests/a11y.mjs",
-    "sparks": "node tools/spark-shape.mjs"
+    "sparks": "node tools/spark-shape.mjs",
+    "update": "node tests/update-path.mjs"
   },
   "devDependencies": {
     "playwright-core": "^1.62.1"

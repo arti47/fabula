@@ -14,14 +14,18 @@ A cycle that produces only cosmetic findings is still a cycle that produced find
 | Dead-data scan | `npm run scan` (inside `npm test`) | seconds |
 | Browser smoke — 28 routes × 5 widths + the walk | `npm run smoke` | ~1 min |
 | Interaction audit — every control, in isolation | `npm run audit` / `npm run audit -- stress` | ~2 min |
-| Accessibility sweep | `node tests/a11y.mjs` | ~20 s |
+| Accessibility sweep | `npm run a11y` | ~20 s |
+| PWA update path | `npm run update` | ~15 s |
+| Spark-shape pass | `npm run sparks` | seconds |
 | Measured layout / stress | `npm run probe -- stress` | ~30 s |
 | Flow walk | by hand | ~30 min |
 
 Seed states live in `tests/fixtures/` and are regenerated with `npm run fixtures`:
 **fresh** (nothing created), **mid-story** (a story at the Boost step, two heroes, a snapshot
 taken), **stress** (three storytellers, thirteen stories, and one story with four heroes, two
-villains, three worlds, nine long beats, ten boosts answered and forty die rolls).
+villains, three worlds, nine long beats, ten boosts answered and forty die rolls), **messy**
+(emoji, 600-character unbroken words, quotes, angle brackets, right-to-left text, whitespace-only
+answers — what a kid types when nobody is watching).
 
 ---
 
@@ -117,6 +121,25 @@ present) · interaction audit on mid-story and stress · accessibility · measur
 1024 under stress · onward-route walk.
 
 **Not a clean cycle** — four findings, so another is owed before the build is done.
+
+## Cycle 6 — the method changed, not repeated
+
+Three passes had come back clean twice, which the template says is when to suspect the pass. So:
+a seed state the passes had never seen, a width nobody had measured, the seams between modules, the
+app's own copy read as promises, and the one behaviour never tested at all.
+
+| # | Rule | Target | Fix | Why it mattered |
+|---|---|---|---|---|
+| 29 | One fact, one record (§10.11, D-5) | `boosts[].spawned` vs `cast[].origin` | What a boost invented is derived from the card's own `origin`; the boost keeps no copy | Both recorded "this boost made this card", each feeding a different screen. Nothing reconciled them, so a divergence would have been invisible — the seam walk is the only pass that could see it |
+| 30 | Text must wrap, not widen the page | Every text surface, at 280px with the messy fixture | `overflow-wrap` on the body and on every story surface | A 600-character unbroken word gave the Tell page **4214px** of horizontal overflow. A kid holding a key down does this |
+| 31 | Copy is enforced or marked guidance-only (§10.13) | Tutorial step 7 | Rewritten to say the version is frozen when the Boost step is opened | It told a kid that visiting Tell saved the version to compare against. The engine snapshots on entering Boost. The outcome usually matched by luck; the sentence was false |
+| 32 | Do not promise privacy the app does not enforce | Tutorial step 1, first-run copy | "keeps their own stories apart", and says plainly it is not a lock | It said another kid on the same tablet would "never see yours". Anyone can switch storyteller. Overstating separation is worse than not claiming it |
+| 33 | Test the update path (§4) | Nothing tested it | `npm run update`: the worker installs and controls, the app opens offline, and a deploy offers "a new version is ready" | The one PWA behaviour that cannot be checked by looking at the running app. Proved to bite by silencing the toast |
+
+Also run clean: dead-data · guidance surfacing · permission sweep · spark-shape · interaction on
+mid-story and stress · a11y · measured layout at 280/320/1024 · onward-route walk.
+
+**Not a clean cycle** — five findings. Another is owed.
 
 ## Deployment
 

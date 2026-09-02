@@ -87,28 +87,25 @@
       "beats": {
         "1": {
           "text": "Ines lived in the middle house of three, and nothing had ever happened there.",
-          "updatedAt": "2026-09-01T13:33:45.867Z"
+          "updatedAt": "2026-09-02T05:32:00.094Z"
         },
         "2": {
           "text": "The empty house began to smoke, in December, with nobody living in it.",
-          "updatedAt": "2026-09-01T13:33:45.867Z"
+          "updatedAt": "2026-09-02T05:32:00.094Z"
         },
         "3": {
           "text": "She climbed the wall to look.",
-          "updatedAt": "2026-09-01T13:33:45.867Z"
+          "updatedAt": "2026-09-02T05:32:00.094Z"
         },
         "6": {
           "text": "The Inspector came, and she had to decide whether to tell him.",
-          "updatedAt": "2026-09-01T13:33:45.867Z"
+          "updatedAt": "2026-09-02T05:32:00.094Z"
         }
       },
       "boosts": {
         "boost-help": {
           "answer": "Otto believes her. That is the whole reason she keeps going.",
           "skipped": false,
-          "spawned": [
-            "mid-hero-2"
-          ],
           "editedBeats": [
             3
           ]
@@ -116,34 +113,32 @@
         "boost-narrator": {
           "answer": "Otto tells it, years later, and gets bits wrong.",
           "skipped": false,
-          "spawned": [],
           "editedBeats": []
         },
         "boost-twist": {
           "answer": "",
           "skipped": true,
-          "spawned": [],
           "editedBeats": []
         }
       },
       "snapshot": {
-        "takenAt": "2026-09-01T13:33:45.867Z",
+        "takenAt": "2026-09-02T05:32:00.094Z",
         "beats": {
           "1": {
             "text": "Ines lived in the middle house of three, and nothing had ever happened there.",
-            "updatedAt": "2026-09-01T13:33:45.867Z"
+            "updatedAt": "2026-09-02T05:32:00.094Z"
           },
           "2": {
             "text": "The empty house began to smoke, in December, with nobody living in it.",
-            "updatedAt": "2026-09-01T13:33:45.867Z"
+            "updatedAt": "2026-09-02T05:32:00.094Z"
           },
           "3": {
             "text": "She climbed the wall to look.",
-            "updatedAt": "2026-09-01T13:33:45.867Z"
+            "updatedAt": "2026-09-02T05:32:00.094Z"
           },
           "6": {
             "text": "The Inspector came, and she had to decide whether to tell him.",
-            "updatedAt": "2026-09-01T13:33:45.867Z"
+            "updatedAt": "2026-09-02T05:32:00.094Z"
           }
         },
         "cast": [

@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { EXAMPLE_STORIES, getExample } from '../data-examples.js';
 import { normalizeStory } from '../src/store.js';
-import { assemble, asPlainText, hasBothVersions } from '../src/derived.js';
+import { assemble, asPlainText, hasBothVersions, spawnedBy } from '../src/derived.js';
 import { BEATS, INGREDIENTS, getCard } from '../data.js';
 
 test('there are two of them, and they resolve by id', () => {
@@ -49,21 +49,22 @@ test('every boost an example answers is a real boost card', () => {
       const card = getCard(id);
       assert.ok(card && card.group === 'boost', `${example.title} answers "${id}", which is not a boost`);
       for (const n of state.editedBeats) assert.ok(n >= 1 && n <= 9, `${example.title}: ${id} points at beat ${n}`);
-      for (const castId of state.spawned) {
-        assert.ok(example.cast.some((c) => c.id === castId), `${example.title}: ${id} claims to have spawned ${castId}`);
-      }
     }
   }
 });
 
 test('a card an example says came from a boost really did', () => {
+  // One record: the card carries its own origin, and the boost screen derives the rest.
   const hg = getExample('example-hansel-gretel');
   const gretel = hg.cast.find((c) => c.answers.name === 'Gretel');
   assert.equal(gretel.origin, 'boost:boost-help');
-  assert.ok(hg.boosts['boost-help'].spawned.includes(gretel.id), 'the boost must claim the card it made');
+  assert.deepEqual(spawnedBy(hg, 'boost-help').map((c) => c.id), [gretel.id]);
+
   const stepmother = hg.cast.find((c) => c.answers.name === 'The Stepmother');
   assert.equal(stepmother.origin, 'boost:boost-why-villain');
-  assert.ok(hg.boosts['boost-why-villain'].spawned.includes(stepmother.id));
+  assert.deepEqual(spawnedBy(hg, 'boost-why-villain').map((c) => c.id), [stepmother.id]);
+
+  assert.deepEqual(spawnedBy(hg, 'boost-narrator'), [], 'a boost that made nothing claims nothing');
 });
 
 test('Hänsel and Gretel is told twice, and the two tellings differ', () => {
