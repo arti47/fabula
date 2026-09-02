@@ -425,6 +425,28 @@ try {
   const afterCard = await page.textContent('.told-story');
   check('examples: and says which card invented her', () => assert.match(afterCard, /came from a boost/));
 
+  // Adding a second character is a permission; removing it again has to exist, and confirm.
+  await page.goto(base + '#/build/ingredients');
+  const heroesBefore = await page.evaluate(() => document.querySelectorAll('.card-grid')[0].children.length);
+  await page.click('text=Add another main character');
+  await settled(page, '.question-label', /How old are they\?/);
+  const removeShown = await page.evaluate(() => Boolean([...document.querySelectorAll('button')].find((b) => /^Remove /.test(b.textContent))));
+  check('a second character can be removed again', () => assert.ok(removeShown, 'no way to undo adding one'));
+  await page.click('#screen .button.danger');
+  const removeWarning = await settled(page, '.modal p', /answer/);
+  check('removing one names what goes with it', () => assert.match(removeWarning, /Every answer on this card goes/));
+  await page.click('.modal-actions .button:not(.secondary)');
+  await page.waitForTimeout(200);
+  const heroesAfter = await page.evaluate(() => document.querySelectorAll('.card-grid')[0].children.length);
+  check('and it actually goes', () => assert.equal(heroesAfter, heroesBefore));
+
+  // A card there is only ever one of cannot be removed: the story would lose the thing that
+  // starts it, and there is nothing to have a second of.
+  await page.goto(base + '#/build/ingredients/inciting/0');
+  await settled(page, '.question-label', /What happens at the beginning\?/);
+  const eventRemovable = await page.evaluate(() => Boolean([...document.querySelectorAll('button')].find((b) => /^Remove /.test(b.textContent))));
+  check('the one-off cards have no remove button', () => assert.equal(eventRemovable, false));
+
   // Removing a storyteller is destructive, so it must confirm and name the loss (§6.1).
   await page.goto(base + '#/stories');
   await page.click('.progress-row .button');

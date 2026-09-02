@@ -501,8 +501,19 @@ mattered, with a verified-clean list.
 8. **Explain and enforce in the same change.** Any UI sentence stating what the book permits owes
    either a control or an explicit "guidance only" mark. Never a third option.
 9. One record, one renderer: the story shape is written once and read by build, tell and export.
-10. Reversibility is inventoried: deleting a story, deleting a storyteller, re-freezing the snapshot,
-    clearing a card — each either undoes or confirms while naming the loss.
+10. Reversibility is inventoried (the table below is the inventory, and it is kept current):
+
+| Action | What it destroys | How it is protected |
+|---|---|---|
+| Delete a story | everything in it | confirms, naming the idea, the characters, the beats and the boosts |
+| Remove a storyteller | them, and all their stories | confirms, counting the stories that go |
+| Re-freeze the before-version | the draft you started boosting with | confirms, naming what is replaced |
+| Load a backup | any story on the shelf sharing an id | confirms, **listing the stories by name** |
+| Remove a character or world | every answer on that card | confirms; the snapshot keeps its own copy |
+| Skip a card or a boost | nothing — answers are kept | reversible, "bring it back" |
+| Switch storyteller | nothing | reversible |
+| Clear a field | that answer | **not protected** — it is typing, and autosave is the point. Accepted |
+| A spark over selected text | the selection | **not protected** — standard editing behaviour. Accepted |
 
 ---
 
@@ -528,6 +539,7 @@ rather than a broken image, and the harness must pass with `assets/cards/` empty
 
 | Date | Change | Verification | Cache |
 |---|---|---|---|
+| 2026-09-01 | Audit cycle 8, the reversibility inventory: every action that destroys state, checked for an undo or a confirmation that names the loss. Two findings. Loading a backup silently replaced any story sharing an id — it now lists them by name and asks. And a character or world could be added but never removed, so a mis-tap was permanent; there is a remove control now, at the end of the scroll, and the before-version keeps its own copy either way. The inventory itself is now a table in §10.10, including the two losses deliberately left unprotected. | `npm test` 78/78; smoke over 30 routes × 5 widths, twice; interaction, a11y and update-path clean | v14 |
 | 2026-09-01 | Audit cycle 7, reading the booklet against the app sentence by sentence — the pass that finds what was never extracted, because no scan can see an absence. Two findings. The Idea card, which the booklet opens with, existed in `data.js` with art, guidance and three examples and appeared on no screen at all; the Learn coverage guard that would have caught it carried an exemption written by hand. It is now beside the idea sentence, in the Deck and in the rules library, and a mechanical guard asserts every group of cards is reachable in the browser. | `npm test` 75/75; smoke clean over 30 routes × 5 widths. Reachability guard proved to bite by removing the Idea section (data test 15 went red) | v13 |
 | 2026-09-01 | Audit cycle 6, run by changing the method rather than repeating it: an adversarial seed state (`messy`), widths nobody had measured (280), the module seams, the app's own copy read for promises, and the update path. Five findings. The seam walk found one fact kept in two records — `boosts[].spawned` and `cast[].origin` both said which boost invented a card — now derived from the card alone. | `npm test` 74/74; smoke (with a messy sweep), interaction, a11y and the new `npm run update` all clean. The update-path pass was proved to bite by silencing the toast | v12 |
 | 2026-09-01 | Audit cycle 5, with a new spark-shape pass (`npm run sparks`) that reads all 704 fragments as writing rather than as rows. Four findings, all fixed: `prefillFrom` in `data.js` was a field the engine never read (it hardcoded beat 2 instead); three spark tables where a draw of three read as one suggestion stuttering; the not-found screen was the app's only dead end; and card grids ran one-column at 320, which put the Boost step at 7.4 screens. | `npm test` 73/73; smoke, interaction (mid-story and stress), a11y all clean. New checks: every route leads somewhere, and a draw avoids three rows opening the same way. Stress at 320: Ingredients 6.5 → 3.6 screens, Boost 7.4 → 4.0, Deck 6.0 → 2.3 | v11 |

@@ -160,6 +160,22 @@ telling it again · the seven drawing tips · both worked stories.
 
 **Not a clean cycle** — three findings. Another is owed.
 
+## Cycle 8 — the reversibility inventory
+
+Every action that destroys state, listed, and checked for an undo or a confirmation that names the
+loss (§10.18). The inventory now lives in CLAUDE.md §10.10 rather than in this pass's head.
+
+| # | Rule | Target | Fix | Why it mattered |
+|---|---|---|---|---|
+| 36 | Destructive actions confirm and name the loss (§6.4) | Loading a backup | Confirms first, listing by name the stories it would replace, and says the rest of the shelf is untouched | It overwrote any story sharing an id and said only "Loaded 3 stories". A kid loading last month's backup lost this month's work with no warning and no undo — the worst combination in the app |
+| 37 | A permission you can exercise, you can un-exercise (§10.18) | Adding a character or world | A remove control at the end of the scroll, confirming, with the snapshot keeping its own copy | "Add another" was uncapped and one-way. A mis-tap left a blank character in the story and in the read-back for ever. The permission had a control; its inverse had none |
+
+Deliberately left unprotected, and now recorded as decisions rather than gaps: clearing a field
+(it is typing, and autosave is the point) and a spark inserted over selected text (standard editing
+behaviour).
+
+**Not a clean cycle** — two findings. Another is owed.
+
 ## Deployment
 
 The app is published to GitHub Pages from `main` by `.github/workflows/pages.yml`, which runs
