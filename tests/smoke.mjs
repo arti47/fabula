@@ -175,6 +175,41 @@ try {
   const context = await browser.newContext({ viewport: { width: 390, height: 740 } });
   const page = await context.newPage();
   await page.goto(base + '#/stories');
+
+  // The zoom lock (§4). The meta tag is the half Android honours; the JS is the half iOS needs.
+  // Both are asserted, because either one alone leaves a phone able to pinch.
+  const viewportMeta = await page.getAttribute('meta[name=viewport]', 'content');
+  check('zoom: the viewport meta refuses scaling', () => {
+    assert.match(viewportMeta, /user-scalable=no/);
+    assert.match(viewportMeta, /maximum-scale=1/);
+  });
+  const pinches = await page.evaluate(() => {
+    const fire = (event) => !document.dispatchEvent(event);
+    const touch = (id) => new Touch({ identifier: id, target: document.body });
+    return {
+      gesturestart: fire(new Event('gesturestart', { cancelable: true, bubbles: true })),
+      gesturechange: fire(new Event('gesturechange', { cancelable: true, bubbles: true })),
+      twoFingers: fire(new TouchEvent('touchmove', {
+        cancelable: true, bubbles: true, touches: [touch(1), touch(2)],
+      })),
+      trackpad: fire(new WheelEvent('wheel', { cancelable: true, bubbles: true, ctrlKey: true })),
+      oneFinger: fire(new TouchEvent('touchmove', {
+        cancelable: true, bubbles: true, touches: [touch(1)],
+      })),
+      plainWheel: fire(new WheelEvent('wheel', { cancelable: true, bubbles: true })),
+    };
+  });
+  check('zoom: an iOS pinch is refused', () => {
+    assert.equal(pinches.gesturestart, true, 'gesturestart went through');
+    assert.equal(pinches.gesturechange, true, 'gesturechange went through');
+  });
+  check('zoom: a two-finger drag is refused', () => assert.equal(pinches.twoFingers, true));
+  check('zoom: a trackpad pinch is refused', () => assert.equal(pinches.trackpad, true));
+  check('zoom: scrolling is left alone', () => {
+    assert.equal(pinches.oneFinger, false, 'a one-finger scroll was cancelled');
+    assert.equal(pinches.plainWheel, false, 'the wheel was cancelled');
+  });
+
   await page.fill('#teller-name', 'Ada');
   await tap(page, '.action-bar .button');
   await page.waitForSelector('text=No stories yet');

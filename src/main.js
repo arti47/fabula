@@ -4,6 +4,7 @@ import { qs } from './core.js';
 import { getPrefs, setPref } from './store.js';
 import { startRouter } from './router.js';
 import { showToast } from './ui.js';
+import { lockZoom } from './zoom.js';
 
 function applyPrefs() {
   const prefs = getPrefs();
@@ -44,6 +45,7 @@ function registerServiceWorker() {
 }
 
 applyPrefs();
+lockZoom();
 wireThemeToggle();
 startRouter();
 registerServiceWorker();

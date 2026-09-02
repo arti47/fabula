@@ -3,7 +3,7 @@
 //   everything  -> cache first, so the app works in a room with no signal
 // Bump CACHE_VERSION on any shipped-file change.
 
-const CACHE_VERSION = 'story-machine-v15';
+const CACHE_VERSION = 'story-machine-v16';
 
 const APP_SHELL = [
   './',
@@ -31,6 +31,7 @@ const APP_SHELL = [
   './src/sparks.js',
   './src/learn.js',
   './src/tutorial.js',
+  './src/zoom.js',
   './src/main.js',
 ];
 
