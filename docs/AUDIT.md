@@ -141,6 +141,25 @@ mid-story and stress · a11y · measured layout at 280/320/1024 · onward-route 
 
 **Not a clean cycle** — five findings. Another is owed.
 
+## Cycle 7 — the booklet, read against the app
+
+The pass no scan can do: read the source sentence by sentence and ask where each one happens in the
+app. It is how the template says to find rules that were never extracted — an absence leaves no
+trace to grep for.
+
+| # | Rule | Target | Fix | Why it mattered |
+|---|---|---|---|---|
+| 34 | Guidance extracted must be guidance surfaced (§0.1) | The Idea card | Shown beside the idea sentence with its headline, guidance and examples; added to the Deck browser and the rules library | *"Let's take the top card of the deck: imagine putting the Magic Hat of Ideas on your head."* The card the booklet opens with had art, three sentences of guidance and three examples in `data.js`, and appeared on **no screen**. Only its one-line `starter` was used |
+| 34a | A guard with an exemption is not a guard | `tests/learn.test.mjs` | The `id !== 'idea'` exemption removed; a new data test asserts every group of cards is reachable in the Deck | The coverage test that should have caught #34 had been taught to skip the one card that failed it. Written by hand, at the time the test was written |
+| 35 | Where the source contradicts itself, rule and record it (§3.5) | Step numbering | Ruling **A11**: five steps with the Idea as step 1 | The booklet numbers its steps twice and differently — five activities in the overview, four "STEP" chapters where the idea is preliminary. The app had quietly picked one without saying so |
+
+Read and found present: the four card groups and their colour coding · every Prompt card's guidance
+and examples · the any-order, skip-one, use-one-twice permissions · the "leave it blank and carry
+on" note · the nine beats with the cottage-and-dragon examples · the boost order permission ·
+telling it again · the seven drawing tips · both worked stories.
+
+**Not a clean cycle** — three findings. Another is owed.
+
 ## Deployment
 
 The app is published to GitHub Pages from `main` by `.github/workflows/pages.yml`, which runs

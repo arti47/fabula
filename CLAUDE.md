@@ -188,6 +188,7 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | A7 | How many heroes / villains / worlds may a story have? | Uncapped. The booklet explicitly permits two and gives no limit (P3) |
 | A8 | When is the "before" version frozen? | Automatically when the Boost step is first opened. A later "update the before-version to now" control exists and confirms while naming what it discards (§6.4) |
 | A9 | Must the nine beats be filled in order? | No. Order is presentational; any beat is answerable at any time (P5) |
+| A11 | The booklet numbers its own steps twice, and differently: the overview lists five activities beginning with the idea, while the chapter headings call Ingredients "STEP 1" and treat the idea as a preliminary phase | The app uses **five numbered steps with the Idea as step 1**. The overview's numbering is the one a kid meets first, the Idea genuinely is work, and a step you can skip is still a step (P5) |
 | A10 | What marks a story "finished"? | Nothing does. The Tell step is reachable whenever the kid wants it; the app never withholds it or scores completeness. Progress is shown, never enforced |
 
 ---
@@ -390,7 +391,7 @@ An unticked box means the data is not extracted. **Never build UI against an unt
 | id | Table | Target | Consumer | Done |
 |---|---|---|---|---|
 | T1 | 6 Prompt cards: letter, headline, guidance, examples | `data.js` | `idea.js` | [x] |
-| T2 | Idea card: headline, starter sentence, examples | `data.js` | `idea.js` | [x] |
+| T2 | Idea card: headline, guidance, starter sentence, examples | `data.js` | `idea.js`, `deck`, `learn.js` | [x] |
 | T3 | 4 Ingredient cards: headline, printed questions, guidance | `data.js` | `ingredients.js` | [x] |
 | T4 | 9 Structure cards: number, headline, beat name, guidance | `data.js` | `structure.js` | [x] |
 | T5 | 10 Boost cards: headline, guidance, `canSpawn`, `suggestsBeats` | `data.js` | `boost.js` | [x] |
@@ -527,6 +528,7 @@ rather than a broken image, and the harness must pass with `assets/cards/` empty
 
 | Date | Change | Verification | Cache |
 |---|---|---|---|
+| 2026-09-01 | Audit cycle 7, reading the booklet against the app sentence by sentence — the pass that finds what was never extracted, because no scan can see an absence. Two findings. The Idea card, which the booklet opens with, existed in `data.js` with art, guidance and three examples and appeared on no screen at all; the Learn coverage guard that would have caught it carried an exemption written by hand. It is now beside the idea sentence, in the Deck and in the rules library, and a mechanical guard asserts every group of cards is reachable in the browser. | `npm test` 75/75; smoke clean over 30 routes × 5 widths. Reachability guard proved to bite by removing the Idea section (data test 15 went red) | v13 |
 | 2026-09-01 | Audit cycle 6, run by changing the method rather than repeating it: an adversarial seed state (`messy`), widths nobody had measured (280), the module seams, the app's own copy read for promises, and the update path. Five findings. The seam walk found one fact kept in two records — `boosts[].spawned` and `cast[].origin` both said which boost invented a card — now derived from the card alone. | `npm test` 74/74; smoke (with a messy sweep), interaction, a11y and the new `npm run update` all clean. The update-path pass was proved to bite by silencing the toast | v12 |
 | 2026-09-01 | Audit cycle 5, with a new spark-shape pass (`npm run sparks`) that reads all 704 fragments as writing rather than as rows. Four findings, all fixed: `prefillFrom` in `data.js` was a field the engine never read (it hardcoded beat 2 instead); three spark tables where a draw of three read as one suggestion stuttering; the not-found screen was the app's only dead end; and card grids ran one-column at 320, which put the Boost step at 7.4 screens. | `npm test` 73/73; smoke, interaction (mid-story and stress), a11y all clean. New checks: every route leads somewhere, and a draw avoids three rows opening the same way. Stress at 320: Ingredients 6.5 → 3.6 screens, Boost 7.4 → 4.0, Deck 6.0 → 2.3 | v11 |
 | 2026-09-01 | Sparks under every field: 39 tables, one per input the app asks for, keyed by the input's own id, plus the five open tables the Idea screen already had — about 640 fragments. "Stuck? Three words" draws three, tapping one drops it in at the cursor, and rows carrying `{hero}` / `{villain}` are filled in from what the story has named. `sparks.js` splits out of `idea.js` as the module map always said it would. | `npm test` 71/71; smoke, interaction audit (416 controls) and a11y sweep all clean. Coverage proved to bite in both directions (deleted a beat's table and misspelled a key: both caught). Found and fixed while measuring: the three chips landed under the fixed action bar on a phone, so a kid tapped the button and saw nothing — rolling now scrolls them into view, and a check pins it | v11 |

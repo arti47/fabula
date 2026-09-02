@@ -2,6 +2,7 @@
 // Run: npm test
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   ALL_CARDS, PROMPTS, INGREDIENTS, BEATS, BOOSTS, DIVIDERS, DIE_FACES,
   IDEA_CARD, CARD_ERRATA, getCard, STEPS,
@@ -120,6 +121,16 @@ test('art ids are unique across the whole deck, dividers included', () => {
   const art = [...ALL_CARDS, ...DIVIDERS].map((c) => c.art);
   assert.equal(new Set(art).size, art.length);
   assert.equal(art.length, 34);
+});
+
+test('every playable card is reachable in the deck browser', () => {
+  // The Idea card sat in the data with art, guidance and examples and appeared on no screen
+  // (audit finding 34). A grep-free guard: the sections must between them name every card.
+  const src = readFileSync(new URL('../src/screens.js', import.meta.url), 'utf8');
+  const sections = src.slice(src.indexOf('const DECK_SECTIONS'), src.indexOf('];', src.indexOf('const DECK_SECTIONS')));
+  const listed = ['IDEA_CARD', 'PROMPTS', 'INGREDIENTS', 'BEATS', 'BOOSTS'].filter((name) => sections.includes(name));
+  assert.deepEqual(listed.sort(), ['BEATS', 'BOOSTS', 'IDEA_CARD', 'INGREDIENTS', 'PROMPTS'],
+    'a group of cards is not in any deck section');
 });
 
 test('errata are recorded and point at real cards', () => {
