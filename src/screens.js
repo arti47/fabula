@@ -4,7 +4,7 @@
 import { el, add } from './core.js';
 import { explain, cardTile, exampleLine, clearActionBar, showToast, confirmModal } from './ui.js';
 import { PROMPTS, INGREDIENTS, BEATS, BOOSTS, IDEA_CARD, GROUPS, getCard, CARD_ERRATA } from '../data.js';
-import { getPrefs, setPref, exportAll, importAll } from './store.js';
+import { getPrefs, setPref, exportAll, importAll, describeImport } from './store.js';
 
 function sectionNav(items, currentId) {
   const nav = el('nav', { class: 'section-nav', 'aria-label': 'Sections' });
@@ -154,9 +154,28 @@ export function settingsScreen() {
     const chosen = file.files?.[0];
     if (!chosen) return;
     try {
-      const result = importAll(JSON.parse(await chosen.text()));
-      showToast(`Loaded ${result.stories} stor${result.stories === 1 ? 'y' : 'ies'}`);
-      location.hash = '#/stories';
+      const payload = JSON.parse(await chosen.text());
+      const plan = describeImport(payload);
+      const load = () => {
+        const result = importAll(payload);
+        showToast(`Loaded ${result.stories} stor${result.stories === 1 ? 'y' : 'ies'}`);
+        location.hash = '#/stories';
+        window.dispatchEvent(new HashChangeEvent('hashchange'));
+      };
+      if (plan.replaced) {
+        // Overwriting is the loss worth naming: say which stories, not how many files.
+        confirmModal({
+          title: 'This backup would replace some of your stories',
+          message: `It holds ${plan.stories} stor${plan.stories === 1 ? 'y' : 'ies'}, and ${plan.replaced} of them `
+            + `${plan.replaced === 1 ? 'has' : 'have'} the same name as ${plan.replaced === 1 ? 'one' : 'ones'} you already have: `
+            + `${plan.replacedTitles.join(', ')}. Loading it puts the backup's version in place, and whatever you have written `
+            + 'since is gone. Everything else on your shelf is left alone.',
+          confirmLabel: 'Load it anyway',
+          onConfirm: load,
+        });
+      } else {
+        load();
+      }
     } catch (err) {
       confirmModal({
         title: 'That file did not load',

@@ -2,7 +2,7 @@
 // A shape change ships a migration AND a fixture: the old-shape record below is that fixture.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { blankStory, normalizeStory, SCHEMA_VERSION } from '../src/store.js';
+import { blankStory, normalizeStory, SCHEMA_VERSION, removeEntry, describeImport } from '../src/store.js';
 import { progress, blankSteps, storyBlurb, hasAnyAnswer, ingredientProgress, beatProgress, boostProgress, ideaDone } from '../src/derived.js';
 
 test('a blank story has every field a screen reads', () => {
@@ -78,6 +78,54 @@ test('the gentle blank marks follow the counts', () => {
   assert.deepEqual(blankSteps(s), { idea: true, ingredients: true, structure: true, boost: true, tell: false });
   s.idea.text = 'something';
   assert.equal(blankSteps(s).idea, false);
+});
+
+test('removing a character takes its answers and nothing else', () => {
+  const s = blankStory('t', 'x');
+  s.cast.push({ id: 'h1', kind: 'hero', answers: { name: 'Ines' }, origin: 'ingredients' });
+  s.cast.push({ id: 'h2', kind: 'hero', answers: { name: 'Otto' }, origin: 'boost:boost-help' });
+  s.worlds.push({ id: 'w1', answers: { special: 'a canal' } });
+  s.beats = { 1: { text: 'Once…' } };
+
+  const after = removeEntry(s, 'h2');
+  assert.deepEqual(after.cast.map((c) => c.answers.name), ['Ines']);
+  assert.equal(after.worlds.length, 1, 'the world is not a character');
+  assert.equal(after.beats[1].text, 'Once…', 'the story is untouched');
+
+  const noWorld = removeEntry(s, 'w1');
+  assert.equal(noWorld.worlds.length, 0);
+  assert.equal(noWorld.cast.length, 2);
+
+  assert.deepEqual(removeEntry(s, 'nobody').cast.length, 2, 'removing nothing removes nothing');
+});
+
+test('a removed character stays in the version already read back', () => {
+  // The snapshot is its own copy (A8), so reading "before the boosts" still shows who was there.
+  const s = blankStory('t', 'x');
+  s.cast.push({ id: 'h1', kind: 'hero', answers: { name: 'Ines' }, origin: 'ingredients' });
+  s.snapshot = { takenAt: '2026-01-01T00:00:00.000Z', beats: {}, cast: [...s.cast], worlds: [], inciting: { answers: {} }, idea: {} };
+  const after = removeEntry(s, 'h1');
+  assert.equal(after.cast.length, 0);
+  assert.equal(after.snapshot.cast[0].answers.name, 'Ines');
+});
+
+test('an import says what it would replace before replacing it', () => {
+  const backup = {
+    app: 'story-machine',
+    storytellers: [{ id: 't1', name: 'Ada' }],
+    stories: [
+      { id: 'story-a', title: 'The dragon next door', ownerId: 't1' },
+      { id: 'story-b', title: 'Something new', ownerId: 't1' },
+    ],
+  };
+  const plan = describeImport(backup);
+  assert.equal(plan.stories, 2);
+  assert.equal(plan.storytellers, 1);
+  // Nothing is stored in this test environment, so nothing is at risk.
+  assert.equal(plan.replaced, 0);
+  assert.deepEqual(plan.replacedTitles, []);
+  assert.throws(() => describeImport({ app: 'something-else' }), /not a Story Machine backup/);
+  assert.throws(() => describeImport(null), /not a Story Machine backup/);
 });
 
 test('the shelf blurb prefers the idea, then the first beat written', () => {

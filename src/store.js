@@ -169,6 +169,15 @@ export function getCurrentStory() {
   return id ? getStory(id) : null;
 }
 
+/** Remove one character or world from a story. The snapshot keeps its own copy, untouched. */
+export function removeEntry(story, entryId) {
+  return {
+    ...story,
+    cast: story.cast.filter((c) => c.id !== entryId),
+    worlds: story.worlds.filter((w) => w.id !== entryId),
+  };
+}
+
 // ---------------------------------------------------------------------------
 // The snapshot — the "before" version, frozen when the Boost step is first opened (ruling A8)
 // ---------------------------------------------------------------------------
@@ -204,6 +213,20 @@ export function exportAll() {
     exportedAt: nowIso(),
     storytellers: getStorytellers(),
     stories: read(KEY.index, []).map((m) => getStory(m.id)).filter(Boolean),
+  };
+}
+
+/** What loading this backup would overwrite, so the app can say so before it does (§10.18). */
+export function describeImport(payload) {
+  if (!payload || payload.app !== 'story-machine') throw new Error('That file is not a Story Machine backup.');
+  const mine = new Set(read(KEY.index, []).map((m) => m.id));
+  const stories = payload.stories || [];
+  const replaced = stories.filter((s) => mine.has(s.id));
+  return {
+    stories: stories.length,
+    replaced: replaced.length,
+    replacedTitles: replaced.map((s) => s.title),
+    storytellers: (payload.storytellers || []).length,
   };
 }
 

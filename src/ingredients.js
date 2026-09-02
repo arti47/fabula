@@ -10,10 +10,10 @@
 // reachable in any order from the pips, so the permission survives the format.
 
 import { el, add, uid, debounce, isBlank } from './core.js';
-import { actionBar, cardTile, cardFace, showToast, answerLayout } from './ui.js';
+import { actionBar, cardTile, cardFace, showToast, answerLayout, confirmModal } from './ui.js';
 import { fieldWithSparks } from './sparks.js';
 import { INGREDIENTS } from '../data.js';
-import { saveStory } from './store.js';
+import { saveStory, removeEntry } from './store.js';
 import { hasAnyAnswer } from './derived.js';
 import { renderStoryHeader } from './router.js';
 
@@ -224,6 +224,26 @@ export function ingredientQuestion(story, entryId, qIndex) {
   }
 
   add(wrap, answerLayout(cardFace(card), body));
+
+  // Adding one of these is a permission (P3); taking it away again has to be possible too.
+  // Destructive, so it sits at the end of the scroll rather than in the thumb's arc (§6.3.11).
+  if (card.repeatable && entriesFor(current, card.kind).length > 1) {
+    const label = entryLabel(card, entry, 0, 1);
+    add(wrap, el('button', {
+      type: 'button', class: 'button danger', text: `Remove ${label}`,
+      onclick: () => confirmModal({
+        title: `Remove ${label}?`,
+        message: `Every answer on this card goes with it. The rest of the story is untouched, and if you `
+          + `have already read your story once, the saved version keeps them.`,
+        confirmLabel: 'Remove',
+        onConfirm: () => {
+          saveStory(removeEntry(current, entryId));
+          showToast(`${label} removed`);
+          location.hash = '#/build/ingredients';
+        },
+      }),
+    }));
+  }
 
   const next = card.questions[index + 1];
   const prev = card.questions[index - 1];
