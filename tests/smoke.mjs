@@ -127,6 +127,16 @@ try {
         });
       }
 
+      // No dead ends (§6.3.6): every screen offers a way onward, the error screen included.
+      const onward = await page.evaluate(() => {
+        const here = location.hash;
+        const links = [...document.querySelectorAll('#screen a[href^="#/"], .action-bar a[href^="#/"]')]
+          .map((a) => a.getAttribute('href'))
+          .filter((href) => href !== here);
+        return new Set(links).size;
+      });
+      check(`${width} ${route} leads somewhere`, () => assert.ok(onward > 0, 'no onward route from this screen'));
+
       const underTabs = await page.evaluate(() => {
         const tabTop = document.querySelector('.tab-bar').getBoundingClientRect().top + window.scrollY;
         const docBottom = document.documentElement.scrollHeight;

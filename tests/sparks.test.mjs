@@ -109,6 +109,20 @@ test('a draw gives three different sparks', () => {
   assert.deepEqual(drawSparks('no.such.key', story), [], 'an unknown key draws nothing rather than throwing');
 });
 
+test('a draw avoids three rows that open the same way, where it can', () => {
+  const story = blankStory('t', 'x');
+  // A table with plenty of different openings should never hand back three of a kind.
+  for (let i = 0; i < 200; i++) {
+    const drawn = drawSparks('beat.2', story);
+    const heads = new Set(drawn.map((row) => row.split(' ')[0].toLowerCase()));
+    assert.equal(heads.size, 3, `beat.2 drew ${drawn.join(' / ')}`);
+  }
+  // And a table that is all one shape still draws, rather than looping forever.
+  const oneShape = drawSparks('hero.want', story);
+  assert.equal(oneShape.length, 3);
+  assert.equal(new Set(oneShape).size, 3);
+});
+
 test('the idea screen keeps its five open tables', () => {
   assert.equal(IDEA_SPARKS.length, 5);
   for (const table of IDEA_SPARKS) {

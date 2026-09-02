@@ -17,9 +17,13 @@ export function beatText(story, n) {
   return story.beats?.[n]?.text || '';
 }
 
-/** What beat 2 would be pre-filled with, or '' if there is nothing to carry over (A5). */
+/** The beat the deck says carries an ingredient over, read from the card rather than hardcoded. */
+export const PREFILLED_BEAT = BEATS.find((b) => b.prefillFrom) || null;
+
+/** What that beat would be pre-filled with, or '' if there is nothing to carry over (A5). */
 export function incitingAsBeat2(story) {
-  return story.inciting?.answers?.what || '';
+  if (!PREFILLED_BEAT) return '';
+  return story[PREFILLED_BEAT.prefillFrom]?.answers?.what || '';
 }
 
 export function writeBeat(story, n, text, extra = {}) {
@@ -29,14 +33,15 @@ export function writeBeat(story, n, text, extra = {}) {
   };
 }
 
-/** Pre-fill beat 2 once, the first time it is opened with nothing in it (A5). */
+/** Pre-fill that beat once, the first time it is opened with nothing in it (A5). */
 export function prefillBeat2(story) {
-  const beat = story.beats?.[2];
-  if (beat && !isBlank(beat.text)) return null;              // already written — never overwrite
-  if (beat?.prefilledFrom) return null;                      // already offered once
+  if (!PREFILLED_BEAT) return null;
+  const existing = story.beats?.[PREFILLED_BEAT.n];
+  if (existing && !isBlank(existing.text)) return null;      // already written — never overwrite
+  if (existing?.prefilledFrom) return null;                  // already offered once
   const text = incitingAsBeat2(story);
   if (isBlank(text)) return null;
-  return writeBeat(story, 2, text, { prefilledFrom: 'inciting' });
+  return writeBeat(story, PREFILLED_BEAT.n, text, { prefilledFrom: PREFILLED_BEAT.prefillFrom });
 }
 
 // ---------------------------------------------------------------------------
@@ -93,7 +98,7 @@ export function beatScreen(story, n, fromBoost) {
   }
 
   let current = story;
-  if (beat.n === 2) {
+  if (PREFILLED_BEAT && beat.n === PREFILLED_BEAT.n) {
     const prefilled = prefillBeat2(current);
     if (prefilled) {
       current = saveStory(prefilled);
@@ -148,7 +153,7 @@ export function beatScreen(story, n, fromBoost) {
   body.push(...fieldWithSparks(field, { key: `beat.${beat.n}`, story: current }));
   body.push(el('p', { text: beat.guidance }));
 
-  if (beat.n === 2 && current.beats?.[2]?.prefilledFrom === 'inciting') {
+  if (PREFILLED_BEAT && beat.n === PREFILLED_BEAT.n && current.beats?.[beat.n]?.prefilledFrom) {
     body.push(el('p', {
       class: 'provenance',
       text: 'This came from your “Something happens” card. Change it here as much as you like — the card stays as you wrote it.',

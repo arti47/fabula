@@ -183,10 +183,12 @@ export function settingsScreen() {
 
 export function notFoundScreen() {
   clearActionBar();
+  // Every screen leads somewhere (§6.3.6) — including this one.
   return add(
     el('div'),
     el('h2', { text: 'Nothing here' }),
-    el('p', { class: 'empty', text: 'That page does not exist. The tabs at the bottom will take you back.' }),
+    el('p', { class: 'empty', text: 'That page does not exist — the link may have been mistyped.' }),
+    el('a', { class: 'button', href: '#/stories', text: 'Back to your stories' }),
   );
 }
 

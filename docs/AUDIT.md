@@ -99,6 +99,25 @@ Checked, found sound, and not to be re-litigated without a reason:
 | 23 | Poll for change, never measure once (D-15) | The check written for #22 | `waitForFunction` on the settled position | The check raced its own smooth scroll and failed against correct code — the same defect it was written to catch |
 | 24 | House aids identify themselves (§2.2) | Every field on 39 screens | "ours, not the deck's" beside every spark control | 640 invented fragments sitting inside an app about somebody else's deck |
 
+## Cycle 5 — all seven passes, plus a spark-shape pass
+
+Run against the per-input sparks. The new pass (`npm run sparks`) reads all 704 fragments as a body
+of writing rather than row by row: repetition across tables, tables that say one thing sixteen ways,
+long words, and the fragments closest to being finished answers.
+
+| # | Rule | Target | Fix | Why it mattered |
+|---|---|---|---|---|
+| 25 | Data extracted must be data consumed (§0.1) | `BEATS[1].prefillFrom` | `structure.js` now finds the beat that declares `prefillFrom` and reads which ingredient it names, instead of hardcoding beat 2 and "inciting" | The field sat in `data.js` describing a rule the engine implemented separately. The behaviour was right and the data was decoration — exactly the defect this project is most prone to, found by asking of each field "where is this read?" |
+| 26 | Three suggestions should read as three | `boost-why-villain` (13/16 opened "they"), `boost-faults` (9/16), `villain.fear` (6/16) | Openings varied in the content, **and** the draw now prefers rows with different opening words where the table allows it | Tapping for three and getting "they were left behind / they were told to / they cannot stop" reads as one suggestion stuttering. Only visible in aggregate — no per-row test could see it |
+| 27 | Every screen leads somewhere (§6.3.6) | The not-found screen | A link back to the shelf, and a smoke check on every route | The one screen in the app with no onward route was the one a kid reaches by accident |
+| 28 | A phone is 320px wide too | Card grids under stress | Grid minimum 150px → 132px, so the smallest phone gets two columns | Ingredients ran to 6.5 screens, Boost to 7.4, the Structure deck to 6.0. Now 3.6, ~4.0 and 2.3 |
+
+Passes run clean: dead-data · guidance surfacing (after #25) · permission sweep (all nine controls
+present) · interaction audit on mid-story and stress · accessibility · measured layout at 320 and
+1024 under stress · onward-route walk.
+
+**Not a clean cycle** — four findings, so another is owed before the build is done.
+
 ## Deployment
 
 The app is published to GitHub Pages from `main` by `.github/workflows/pages.yml`, which runs
