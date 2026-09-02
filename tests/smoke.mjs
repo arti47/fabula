@@ -522,6 +522,36 @@ try {
   check('messy: no errors anywhere', () => assert.deepEqual(messyErrors, []));
   await messyContext.close();
 
+  // The spec requires the app to work with assets/cards/ empty (§11). With the art present that
+  // path never runs, so block the requests and check what a kid sees instead of a broken image.
+  const bareContext = await browser.newContext({ viewport: { width: 390, height: 740 } });
+  await bareContext.route('**/assets/cards/*', (route) => route.abort());
+  const barePage = await bareContext.newPage();
+  await barePage.goto(base + '#/deck/structure', { waitUntil: 'domcontentloaded' });
+  await barePage.waitForSelector('.card-grid .card');
+  await barePage.waitForTimeout(400);
+  const bare = await barePage.evaluate(() => {
+    const cards = [...document.querySelectorAll('.card-grid .card')];
+    return {
+      cards: cards.length,
+      placeholders: cards.filter((c) => c.querySelector('.card-face-missing')).length,
+      broken: cards.filter((c) => {
+        const img = c.querySelector('img.card-face');
+        return img && img.naturalWidth === 0;
+      }).length,
+      label: document.querySelector('.card-face-missing')?.textContent?.trim() || '',
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    };
+  });
+  check('with no card art, every face falls back to a labelled placeholder', () => {
+    assert.ok(bare.cards > 0, 'no cards rendered at all');
+    assert.equal(bare.broken, 0, 'a broken image was left on the page');
+    assert.equal(bare.placeholders, bare.cards, `${bare.cards - bare.placeholders} cards showed neither art nor a placeholder`);
+    assert.match(bare.label, /Structure/, 'the placeholder should say which kind of card is missing');
+    assert.ok(bare.overflow <= 0, 'the placeholder layout overflows');
+  });
+  await bareContext.close();
+
   // The app is deployed under a sub-path (github.io/<repo>/), so every relative URL in it — the
   // module imports, the card art, the manifest, the service worker's scope — has to survive that.
   const subServer = await serve({ prefix: '/fabula/' });

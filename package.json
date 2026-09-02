@@ -15,7 +15,8 @@
     "audit": "node tests/interaction.mjs",
     "a11y": "node tests/a11y.mjs",
     "sparks": "node tools/spark-shape.mjs",
-    "update": "node tests/update-path.mjs"
+    "update": "node tests/update-path.mjs",
+    "mutants": "node tools/mutation.mjs"
   },
   "devDependencies": {
     "playwright-core": "^1.62.1"

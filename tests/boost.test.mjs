@@ -33,6 +33,23 @@ test('the snapshot keeps the draft even after the story moves on', () => {
   assert.equal(after.snapshot.beats[1].text, 'Hänsel lives with his parents near the forest.');
 });
 
+test('the before-version is a copy, not a view of the story', () => {
+  // Every other test changes the story through writeBeat, which builds a new object — so a
+  // snapshot that merely referenced the live story would pass them all.
+  const frozen = ensureSnapshot(draft());
+  frozen.beats[6].text = 'mutated in place';
+  frozen.cast[0].answers.name = 'Someone else';
+  frozen.worlds.push({ id: 'late', answers: {} });
+  frozen.inciting.answers.what = 'changed';
+  frozen.idea.text = 'changed';
+
+  assert.equal(frozen.snapshot.beats[6].text, 'He finds a house made of marzipan.');
+  assert.equal(frozen.snapshot.cast[0].answers.name, 'Hänsel');
+  assert.equal(frozen.snapshot.worlds.length, 0);
+  assert.notEqual(frozen.snapshot.inciting.answers.what, 'changed');
+  assert.notEqual(frozen.snapshot.idea.text, 'changed');
+});
+
 test('re-freezing replaces the before-version on purpose', () => {
   const frozen = ensureSnapshot(draft());
   const after = writeBeat(frozen, 6, 'Gretel saves him.');
