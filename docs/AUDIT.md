@@ -176,6 +176,23 @@ behaviour).
 
 **Not a clean cycle** — two findings. Another is owed.
 
+## Cycle 9 — every guard read for what it lets through
+
+Cycle 7 found a test taught to skip the one case that failed it, so this pass read all 78
+assertions and both browser harnesses asking: what does this let through, and was it shaped to fit
+the code rather than the rule?
+
+| # | Rule | Target | Fix | Why it mattered |
+|---|---|---|---|---|
+| 38 | A breakage is a finding, not the end of the pass | `settled()` and every click in the smoke walk | Both record a finding and carry on | **The worst of the nine cycles.** A control that stopped working aborted the walk at that line, so every check after it silently never ran. Breaking the boost Skip button proved it: the run died with a stack trace and reported nothing. It now reports three precise findings and finishes |
+| 39 | An assertion that cannot fail is not a guard (D-14) | `assert.ok(true)` on the P8 check | Reads the stored `skipped` flag before, during and after | It asserted the literal value true. The steps around it did real work, but the check itself could never fail |
+| 40 | An exemption must be earned | The `explain()` skip list | `#/learn/<id>` never needed exempting; `#/deck/card/*` was hiding a real gap, and now carries a note | Two of the four exempted routes were exempted because they failed, not because the rule did not apply |
+| 41 | A sweep must see what the app actually shows | `a11y.mjs` | Opens every `<details>` before measuring | Most of this app's content is inside collapsed panels — the explain notes, every rules entry, every worked example. None of it had ever been checked. It came back clean, but the sweep had been claiming more than it did |
+| 42 | A silent skip becomes a hole | The above-the-fold check | Screens with no pinned action are listed in the output | Fifteen routes were being skipped without saying so. They are all reference screens and the exemption is right — but it is a decision now, not an absence |
+
+**Not a clean cycle** — five findings, and the first of them means every earlier smoke run proved
+less than it appeared to.
+
 ## Deployment
 
 The app is published to GitHub Pages from `main` by `.github/workflows/pages.yml`, which runs

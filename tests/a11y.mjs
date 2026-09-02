@@ -23,6 +23,12 @@ try {
     await page.goto(base + route, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#screen', { timeout: 5000 });
 
+    // Most of this app's content lives inside collapsed <details> — the explain notes, every rules
+    // entry, every worked example. A sweep that only sees what is open never checks any of it.
+    await page.evaluate(() => {
+      for (const d of document.querySelectorAll('details')) d.open = true;
+    });
+
     const report = await page.evaluate(() => {
       const visible = (n) => n.offsetParent !== null;
       const unlabelled = [];
