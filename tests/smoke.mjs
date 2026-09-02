@@ -6,7 +6,8 @@ import assert from 'node:assert/strict';
 import { serve, launch, seed, isMissingArt, ROUTES as DEEP_ROUTES, WIDTHS } from './harness.mjs';
 
 // The shared route list, plus the states only the walk creates and the error routes.
-const ROUTES = [...DEEP_ROUTES, '#/build/structure/9', '#/deck/boosts', '#/nonsense', '#/example/nope'];
+const ROUTES = [...DEEP_ROUTES, '#/build/structure/9', '#/deck/boosts', '#/deck/idea',
+  '#/deck/card/idea', '#/nonsense', '#/example/nope'];
 
 const failures = [];
 function check(name, fn) {

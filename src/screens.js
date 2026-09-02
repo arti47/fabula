@@ -3,7 +3,7 @@
 
 import { el, add } from './core.js';
 import { explain, cardTile, exampleLine, clearActionBar, showToast, confirmModal } from './ui.js';
-import { PROMPTS, INGREDIENTS, BEATS, BOOSTS, GROUPS, getCard, CARD_ERRATA } from '../data.js';
+import { PROMPTS, INGREDIENTS, BEATS, BOOSTS, IDEA_CARD, GROUPS, getCard, CARD_ERRATA } from '../data.js';
 import { getPrefs, setPref, exportAll, importAll } from './store.js';
 
 function sectionNav(items, currentId) {
@@ -23,6 +23,7 @@ function sectionNav(items, currentId) {
 // ---------------------------------------------------------------------------
 
 const DECK_SECTIONS = [
+  { id: 'idea', label: 'The Idea', cards: () => [IDEA_CARD] },
   { id: 'prompts', label: 'Prompts', cards: () => PROMPTS },
   { id: 'ingredients', label: 'Ingredients', cards: () => INGREDIENTS },
   { id: 'structure', label: 'Structure', cards: () => BEATS },

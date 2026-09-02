@@ -4,7 +4,7 @@
 // Prompt card gives you something. Nothing here is ever refused.
 
 import { el, add, clear, randomInt, debounce, isBlank, nowIso } from './core.js';
-import { actionBar, cardFace, exampleLine } from './ui.js';
+import { actionBar, cardFace, exampleLine, answerLayout } from './ui.js';
 import { PROMPTS, IDEA_CARD, DIE_FACES } from '../data.js';
 import { ideaSparkSection } from './sparks.js';
 import { saveStory } from './store.js';
@@ -19,8 +19,7 @@ export function ideaStep(story) {
     renderStoryHeader();
   }, 400);
 
-  // ---- the sentence -------------------------------------------------------
-  add(wrap, el('h3', { text: IDEA_CARD.starter }));
+  // ---- the sentence, beside the card the book hands you first ---------------
   const field = el('textarea', {
     id: 'idea-text',
     'aria-label': 'Your idea',
@@ -31,8 +30,19 @@ export function ideaStep(story) {
   field.addEventListener('input', () => {
     save({ idea: { ...current.idea, text: field.value } });
   });
-  add(wrap, field);
-  add(wrap, el('p', { class: 'note', text: 'One sentence is plenty. It is the heart of the story — everything else grows around it.' }));
+
+  const ideaExamples = el('ul');
+  for (const ex of IDEA_CARD.examples) add(ideaExamples, exampleLine(ex));
+
+  add(wrap, answerLayout(cardFace(IDEA_CARD), [
+    el('h2', { class: 'question-label', text: IDEA_CARD.headline }),
+    el('p', { class: 'question-card-name', text: IDEA_CARD.starter }),
+    field,
+    el('p', { text: IDEA_CARD.guidance }),
+    el('details', { class: 'explain' },
+      el('summary', { text: 'What other stories started as' }),
+      el('div', {}, ideaExamples)),
+  ]));
 
   // ---- the die ------------------------------------------------------------
   const dieArea = el('div', { class: 'die-area' });

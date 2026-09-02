@@ -24,7 +24,7 @@ test('every card a chapter names actually exists', () => {
 test('every playable card has a rules-library entry', () => {
   // §0.1: guidance in data.js that no screen shows is the defect this project is most prone to.
   const entryIds = new Set(learnEntries().map((e) => e.id));
-  const missing = ALL_CARDS.map((c) => c.id).filter((id) => !entryIds.has(id) && id !== 'idea');
+  const missing = ALL_CARDS.map((c) => c.id).filter((id) => !entryIds.has(id));
   assert.deepEqual(missing, [], `cards with no entry: ${missing.join(', ')}`);
 });
 

@@ -74,7 +74,7 @@ export const LEARN_CHAPTERS = [
       { id: 'step-tell', title: '5. Tell it', text: 'Read the story back — out loud is best. The app keeps the draft you had before you started boosting, so you can read both and see what the boosts did. Print it or save it as text if you want to keep it somewhere else.' },
     ],
   },
-  { id: 'prompts', title: 'The six prompt cards', cards: ['prompt-p', 'prompt-m', 'prompt-q', 'prompt-g', 'prompt-n', 'prompt-s'] },
+  { id: 'prompts', title: 'The Idea card, and the six prompts', cards: ['idea', 'prompt-p', 'prompt-m', 'prompt-q', 'prompt-g', 'prompt-n', 'prompt-s'] },
   { id: 'ingredients', title: 'The four ingredient cards', cards: ['ing-hero', 'ing-villain', 'ing-world', 'ing-event'] },
   { id: 'beats', title: 'The nine beats', cards: ['beat-1', 'beat-2', 'beat-3', 'beat-4', 'beat-5', 'beat-6', 'beat-7', 'beat-8', 'beat-9'] },
   { id: 'boosts', title: 'The ten boost cards', cards: ['boost-care', 'boost-help', 'boost-why-villain', 'boost-too-easy', 'boost-twist', 'boost-background', 'boost-narrator', 'boost-despair', 'boost-faults', 'boost-learn'] },
