@@ -3,10 +3,10 @@
 // The booklet's permission P4 governs this screen: roll as often as you like, at no cost, until a
 // Prompt card gives you something. Nothing here is ever refused.
 
-import { el, add, clear, randomInt, pick, debounce, isBlank, nowIso } from './core.js';
+import { el, add, clear, randomInt, debounce, isBlank, nowIso } from './core.js';
 import { actionBar, cardFace, exampleLine } from './ui.js';
 import { PROMPTS, IDEA_CARD, DIE_FACES } from '../data.js';
-import { SPARK_TABLES } from '../data-sparks.js';
+import { ideaSparkSection } from './sparks.js';
 import { saveStory } from './store.js';
 import { renderStoryHeader } from './router.js';
 
@@ -65,7 +65,7 @@ export function ideaStep(story) {
   else add(dieArea, el('p', { class: 'note', text: 'Tap Roll the die below.' }));
 
   // ---- sparks (house aid) -------------------------------------------------
-  add(wrap, sparkSection());
+  add(wrap, ideaSparkSection());
 
   add(wrap, actionBar({
     context: isBlank(current.idea.text) ? 'No idea written yet — that is fine' : 'Idea saved',
@@ -110,25 +110,3 @@ function rollHistory(story) {
   return box;
 }
 
-function sparkSection() {
-  const box = el('div');
-  add(box, el('h3', { text: 'Still stuck?' }));
-  add(box, add(
-    el('p', { class: 'note spark-note' }),
-    document.createTextNode('A handful of words to knock something loose.'),
-    el('span', { class: 'house-flag', text: 'ours, not the deck’s' }),
-  ));
-
-  const out = el('p', { class: 'spark-out', 'aria-live': 'polite' });
-  const row = el('div', { class: 'spark-row' });
-  for (const table of SPARK_TABLES) {
-    add(row, el('button', {
-      type: 'button', class: 'button secondary', text: table.label,
-      onclick: () => {
-        out.textContent = `${table.prompt} ${pick(table.rows)}`;
-      },
-    }));
-  }
-  add(box, row, out);
-  return box;
-}

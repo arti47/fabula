@@ -8,6 +8,7 @@
 
 import { el, add, debounce, isBlank } from './core.js';
 import { actionBar, cardFace, exampleLine, answerLayout } from './ui.js';
+import { fieldWithSparks } from './sparks.js';
 import { BEATS, getCard } from '../data.js';
 import { saveStory } from './store.js';
 import { renderStoryHeader } from './router.js';
@@ -144,7 +145,7 @@ export function beatScreen(story, n, fromBoost) {
     else if (isBlank(field.value) && !dot) add(pip, el('span', { class: 'blank-dot' }));
   }, 400);
   field.addEventListener('input', save);
-  body.push(field);
+  body.push(...fieldWithSparks(field, { key: `beat.${beat.n}`, story: current }));
   body.push(el('p', { text: beat.guidance }));
 
   if (beat.n === 2 && current.beats?.[2]?.prefilledFrom === 'inciting') {

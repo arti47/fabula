@@ -47,10 +47,6 @@ export function randomInt(maxExclusive) {
   return n % maxExclusive;
 }
 
-export function pick(list) {
-  return list[randomInt(list.length)];
-}
-
 export function uid(prefix = 'id') {
   const buf = new Uint32Array(2);
   crypto.getRandomValues(buf);

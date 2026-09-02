@@ -11,6 +11,7 @@
 
 import { el, add, uid, debounce, isBlank } from './core.js';
 import { actionBar, cardTile, cardFace, showToast, answerLayout } from './ui.js';
+import { fieldWithSparks } from './sparks.js';
 import { INGREDIENTS } from '../data.js';
 import { saveStory } from './store.js';
 import { hasAnyAnswer } from './derived.js';
@@ -210,7 +211,7 @@ export function ingredientQuestion(story, entryId, qIndex) {
     else if (isBlank(field.value) && !dot) add(pip, el('span', { class: 'blank-dot' }));
   }, 400);
   field.addEventListener('input', save);
-  body.push(field);
+  body.push(...fieldWithSparks(field, { key: `${card.kind}.${question.key}`, story: current }));
 
   const exampleAnswer = card.example?.answers?.[question.key];
   if (exampleAnswer) {

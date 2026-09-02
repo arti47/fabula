@@ -222,6 +222,56 @@ try {
   const afterUnskip = await page.textContent('#screen');
   check('ingredients: a skipped card comes back', () => assert.ok(!/Skipped for now/.test(afterUnskip)));
 
+  // Sparks: three at a time, tap one into the field, and the label saying whose they are.
+  await page.goto(base + '#/build/ingredients/inciting/0');
+  await page.waitForSelector('#answer');
+  const sparkLabel = await page.textContent('.sparks .house-flag');
+  check('sparks: labelled as ours, not the deck\'s', () => assert.match(sparkLabel, /not the deck/));
+  const chipsBefore = await page.evaluate(() => document.querySelectorAll('.spark-chip').length);
+  check('sparks: nothing is shown until asked for', () => assert.equal(chipsBefore, 0));
+
+  await page.click('.sparks .button');
+  await page.waitForSelector('.spark-chip');
+  const chips = await page.evaluate(() => [...document.querySelectorAll('.spark-chip')].map((c) => c.textContent));
+  check('sparks: three, and all different', () => {
+    assert.equal(chips.length, 3);
+    assert.equal(new Set(chips).size, 3);
+  });
+  // The chips are below the field, so rolling has to bring them into view — and clear of the
+  // fixed action bar, or a kid taps the button and sees nothing happen.
+  // Scrolling is animated, so poll for it to settle rather than measuring once (D-15).
+  await page.waitForFunction(() => {
+    const chips = [...document.querySelectorAll('.spark-chip')];
+    if (!chips.length) return false;
+    const bar = document.querySelector('.action-bar');
+    const barTop = bar ? bar.getBoundingClientRect().top : window.innerHeight;
+    return Math.max(...chips.map((c) => c.getBoundingClientRect().bottom)) <= barTop;
+  }, null, { timeout: 3000 }).catch(() => {});
+  const chipPlacement = await page.evaluate(() => {
+    const bottoms = [...document.querySelectorAll('.spark-chip')].map((c) => c.getBoundingClientRect().bottom);
+    const bar = document.querySelector('.action-bar');
+    return { lowest: Math.max(...bottoms), barTop: bar ? bar.getBoundingClientRect().top : window.innerHeight };
+  });
+  check('sparks: the three land where they can be seen and tapped', () => {
+    assert.ok(chipPlacement.lowest <= chipPlacement.barTop, 'a spark chip sits under the action bar');
+  });
+
+  const chipText = chips[0];
+  await page.click('.spark-chip');
+  await page.waitForTimeout(650); // the debounced autosave
+  const afterPick = await page.inputValue('#answer');
+  check('sparks: tapping one drops it in the field', () => assert.equal(afterPick, chipText));
+  await page.goto(base + '#/build/ingredients/inciting/0');
+  const persisted2 = await page.inputValue('#answer');
+  check('sparks: what it dropped in is saved like anything else', () => assert.equal(persisted2, chipText));
+
+  // A beat's sparks fill in the names the story has, rather than saying "the hero".
+  await page.goto(base + '#/build/structure/5');
+  await page.click('.sparks .button');
+  await page.waitForSelector('.spark-chip');
+  const beatChips = await page.evaluate(() => [...document.querySelectorAll('.spark-chip')].map((c) => c.textContent).join(' | '));
+  check('sparks: no placeholder ever reaches the screen', () => assert.ok(!/[{}]/.test(beatChips), beatChips));
+
   // Step 3: the nine beats, and ruling A5 in the browser.
   await page.goto(base + '#/build/ingredients/inciting/0');
   await page.fill('#answer', 'Grandma falls ill');
