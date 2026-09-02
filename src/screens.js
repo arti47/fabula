@@ -71,6 +71,10 @@ export function cardScreen(params) {
 
   add(screen, el('a', { href: '#/deck', text: '← Back to the deck', class: 'back-link' }));
   add(screen, el('h2', { text: card.headline }));
+  add(screen, explain(
+    'One card, close up: what it is for, what it asks you, and how the book answers it.',
+    'This is the card on its own, away from your story — nothing you do here changes what you have written.',
+  ));
   add(screen, el('p', { class: 'note', text: `${GROUPS[card.group]?.name}${card.beatName ? ` · ${card.beatName}` : ''}${card.letter ? ` · die face ${card.letter}` : ''}` }));
   add(screen, cardTile(card));
   add(screen, el('p', { text: card.guidance }));
