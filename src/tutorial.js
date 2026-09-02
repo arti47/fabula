@@ -8,7 +8,7 @@ import { explain, clearActionBar } from './ui.js';
 const STEPS = [
   {
     title: 'Put your name in',
-    body: 'The first screen asks who is telling stories. Type your name and tap Start. Everything you write is kept under that name on this device — so if somebody else uses the same tablet, they get their own shelf and never see yours.',
+    body: 'The first screen asks who is telling stories. Type your name and tap Start. Everything you write is kept under that name on this device, so somebody else using the same tablet gets their own shelf and their own stories. It is a way of keeping things apart, not a lock — anyone can switch between names.',
   },
   {
     title: 'Start a story and give it a name',
@@ -32,7 +32,7 @@ const STEPS = [
   },
   {
     title: 'Read it once, badly',
-    body: 'Tap Tell before you boost anything. It will feel thin, and that is exactly right — the book expects a first draft to be thin. What matters is that the app has now quietly saved this version, so you can compare later.',
+    body: 'Tap Tell before you boost anything. It will feel thin, and that is exactly right — the book expects a first draft to be thin. Read it, so you know what you started with: the moment you open the Boost step, the app quietly saves the story as it stands, and that saved version is what you will compare against later.',
   },
   {
     title: 'Boost it',

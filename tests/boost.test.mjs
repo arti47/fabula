@@ -5,6 +5,7 @@ import { blankStory, takeSnapshot, ensureSnapshot } from '../src/store.js';
 import { writeBeat } from '../src/structure.js';
 import { addEntry } from '../src/ingredients.js';
 import { BOOSTS } from '../data.js';
+import { spawnedBy } from '../src/derived.js';
 
 function draft() {
   let s = blankStory('t', 'Hänsel');
@@ -46,6 +47,16 @@ test('P6: a card spawned by a boost remembers which boost made it', () => {
   assert.equal(spawned.kind, 'hero');
   assert.equal(spawned.origin, 'boost:boost-help');
   assert.equal(story.cast.length, 2, 'the original hero is still there');
+});
+
+test('P6: what a boost made is derived from the card, not recorded twice', () => {
+  // Two records of one fact can disagree, and nothing would notice (§10.11).
+  const { story, id } = addEntry(draft(), 'villain', 'boost:boost-why-villain');
+  assert.deepEqual(spawnedBy(story, 'boost-why-villain').map((c) => c.id), [id]);
+  assert.deepEqual(spawnedBy(story, 'boost-help'), []);
+  for (const state of Object.values(story.boosts || {})) {
+    assert.ok(!('spawned' in state), 'the boost should not keep its own copy of what it made');
+  }
 });
 
 test('P6: the two boosts the booklet uses to invent characters can do so', () => {

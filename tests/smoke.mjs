@@ -442,6 +442,26 @@ try {
   check('walk: the shelf shows the idea as the blurb', () => assert.match(persisted, /a lighthouse that walks/));
   await context.close();
 
+  // An adversarial state: emoji, unbroken 600-character words, quotes, angle brackets, right-to-
+  // left text, whitespace-only answers. A kid holding a key down should not break a layout.
+  const messyContext = await browser.newContext({ viewport: { width: 320, height: 740 } });
+  await seed(messyContext, 'messy');
+  const messyPage = await messyContext.newPage();
+  const messyErrors = [];
+  messyPage.on('pageerror', (e) => messyErrors.push(String(e)));
+  messyPage.on('console', (m) => { if (m.type() === 'error' && !isMissingArt(m)) messyErrors.push(m.text()); });
+  for (const route of DEEP_ROUTES.filter((r) => !r.includes('mid-hero-1'))) {
+    await messyPage.goto(base + route, { waitUntil: 'domcontentloaded' });
+    await messyPage.waitForSelector('#screen');
+    const over = await messyPage.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    check(`messy ${route} overflow`, () => assert.ok(over <= 0, `${over}px of horizontal overflow`));
+    // No stray-text check here: this fixture types "null", "NaN" and "[object Object]" into its
+    // answers on purpose, and rendering what the kid typed is correct. The mid-story sweep above
+    // is what catches the app producing those itself.
+  }
+  check('messy: no errors anywhere', () => assert.deepEqual(messyErrors, []));
+  await messyContext.close();
+
   // The app is deployed under a sub-path (github.io/<repo>/), so every relative URL in it — the
   // module imports, the card art, the manifest, the service worker's scope — has to survive that.
   const subServer = await serve({ prefix: '/fabula/' });

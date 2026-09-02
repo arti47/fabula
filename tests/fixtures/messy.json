@@ -1,0 +1,175 @@
+{
+  "app": "story-machine",
+  "schemaVersion": 1,
+  "exportedAt": "2026-01-01T00:00:00.000Z",
+  "storytellers": [
+    {
+      "id": "teller-messy",
+      "name": "🙂 Zo <script>",
+      "emoji": "🙂",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "stories": [
+    {
+      "id": "story-messy",
+      "ownerId": "teller-messy",
+      "title": "a \"story\" with <angle> brackets & things",
+      "createdAt": "2026-01-02T00:00:00.000Z",
+      "updatedAt": "2026-01-03T00:00:00.000Z",
+      "schemaVersion": 1,
+      "idea": {
+        "text": "🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉",
+        "fromPrompt": "S",
+        "rolls": [
+          {
+            "letter": "S",
+            "ts": "2026-01-02T00:00:00.000Z"
+          }
+        ]
+      },
+      "cast": [
+        {
+          "id": "messy-hero",
+          "kind": "hero",
+          "origin": "ingredients",
+          "answers": {
+            "name": "<b>Bo</b>",
+            "age": "x",
+            "looks": "SupercalifragilisticSupercalifragilisticSupercalifragilisticSupercalifragilisticSupercalifragilisticSupercalifragilistic",
+            "fear": "ما الذي يخيفهم",
+            "want": "\"everything\"",
+            "special": "line one\nline two\nline three"
+          }
+        },
+        {
+          "id": "messy-villain",
+          "kind": "villain",
+          "origin": "boost:boost-why-villain",
+          "answers": {
+            "name": "   ",
+            "want": "&amp; more"
+          }
+        }
+      ],
+      "worlds": [
+        {
+          "id": "messy-world",
+          "answers": {
+            "special": "",
+            "whereWhen": "2026-09-01T00:00:00.000Z",
+            "typicalDay": "😀😀😀😀😀😀😀😀😀😀",
+            "peopleDo": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        }
+      ],
+      "inciting": {
+        "answers": {
+          "what": "x",
+          "goodOrBad": "",
+          "antagonistsFault": "null",
+          "howItChanges": "undefined"
+        }
+      },
+      "beats": {
+        "1": {
+          "text": "NaN",
+          "updatedAt": "2026-09-02T05:32:00.096Z"
+        },
+        "3": {
+          "text": "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
+          "updatedAt": "2026-09-02T05:32:00.096Z"
+        },
+        "5": {
+          "text": "   ",
+          "updatedAt": "2026-09-02T05:32:00.096Z"
+        }
+      },
+      "boosts": {
+        "boost-twist": {
+          "answer": "[object Object]",
+          "skipped": false,
+          "editedBeats": [
+            3
+          ]
+        },
+        "boost-why-villain": {
+          "answer": "🙃",
+          "skipped": false,
+          "editedBeats": []
+        }
+      },
+      "snapshot": {
+        "takenAt": "2026-09-02T05:32:00.096Z",
+        "beats": {
+          "1": {
+            "text": "NaN",
+            "updatedAt": "2026-09-02T05:32:00.096Z"
+          },
+          "3": {
+            "text": "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
+            "updatedAt": "2026-09-02T05:32:00.096Z"
+          },
+          "5": {
+            "text": "   ",
+            "updatedAt": "2026-09-02T05:32:00.096Z"
+          }
+        },
+        "cast": [
+          {
+            "id": "messy-hero",
+            "kind": "hero",
+            "origin": "ingredients",
+            "answers": {
+              "name": "<b>Bo</b>",
+              "age": "x",
+              "looks": "SupercalifragilisticSupercalifragilisticSupercalifragilisticSupercalifragilisticSupercalifragilisticSupercalifragilistic",
+              "fear": "ما الذي يخيفهم",
+              "want": "\"everything\"",
+              "special": "line one\nline two\nline three"
+            }
+          },
+          {
+            "id": "messy-villain",
+            "kind": "villain",
+            "origin": "boost:boost-why-villain",
+            "answers": {
+              "name": "   ",
+              "want": "&amp; more"
+            }
+          }
+        ],
+        "worlds": [
+          {
+            "id": "messy-world",
+            "answers": {
+              "special": "",
+              "whereWhen": "2026-09-01T00:00:00.000Z",
+              "typicalDay": "😀😀😀😀😀😀😀😀😀😀",
+              "peopleDo": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          }
+        ],
+        "inciting": {
+          "answers": {
+            "what": "x",
+            "goodOrBad": "",
+            "antagonistsFault": "null",
+            "howItChanges": "undefined"
+          }
+        },
+        "idea": {
+          "text": "🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉🐉",
+          "fromPrompt": "S",
+          "rolls": [
+            {
+              "letter": "S",
+              "ts": "2026-01-02T00:00:00.000Z"
+            }
+          ]
+        }
+      },
+      "skipped": []
+    }
+  ]
+}

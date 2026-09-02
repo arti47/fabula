@@ -74,6 +74,18 @@ function versionOf(story, version) {
   return story;
 }
 
+/**
+ * The cards a boost invented (P6). Derived from each card's own `origin`, never stored twice — a
+ * second copy on the boost would be a fact that could disagree with itself.
+ */
+export function spawnedBy(story, boostId) {
+  const tag = `boost:${boostId}`;
+  return [
+    ...(story.cast || []).filter((c) => c.origin === tag),
+    ...(story.worlds || []).filter((w) => w.origin === tag),
+  ];
+}
+
 export function hasBothVersions(story) {
   return Boolean(story.snapshot);
 }

@@ -82,6 +82,8 @@ html { -webkit-text-size-adjust: 100%; }
 
 body {
   margin: 0;
+  /* A kid holds a key down, or pastes a link. Unbroken text must wrap, not widen the page. */
+  overflow-wrap: break-word;
   background: var(--paper);
   color: var(--ink);
   font-family: var(--font-ui);
@@ -391,6 +393,8 @@ input[type="file"] {
 .told-title { margin-top: 0; }
 .told-idea { font-style: italic; color: var(--ink-soft); }
 .told-passage { font-family: var(--font); font-size: 1.05rem; line-height: 1.65; margin: 0 0 1em; }
+.told-story, .beat-preview, .card-sub, .card-headline, .spark-chip, .story-header-title,
+.told-idea, .empty, .note { overflow-wrap: anywhere; }
 .told-connector { font-variant-caps: small-caps; letter-spacing: 0.04em; color: var(--accent); }
 .told-blanks { border-top: 1px solid var(--rule); padding-top: var(--step); }
 

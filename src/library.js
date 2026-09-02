@@ -26,7 +26,7 @@ function firstRun() {
   add(screen, el('h2', { text: 'Who is telling stories?' }));
   add(screen, explain(
     'Put your name in, and this shelf becomes yours.',
-    'If somebody else uses this tablet too, they can add their own name and keep their own stories separate.',
+    'If somebody else uses this tablet too, they can add their own name and keep their own stories apart from yours.',
   ));
 
   const input = el('input', { type: 'text', id: 'teller-name', placeholder: 'Your name', autocomplete: 'off' });

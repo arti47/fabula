@@ -11,6 +11,7 @@ import { el, add, debounce, isBlank } from './core.js';
 import { actionBar, cardTile, cardFace, exampleLine, showToast, confirmModal, answerLayout } from './ui.js';
 import { BOOSTS, BEATS, INGREDIENTS, getCard } from '../data.js';
 import { saveStory, ensureSnapshot, takeSnapshot } from './store.js';
+import { spawnedBy } from './derived.js';
 import { addEntry } from './ingredients.js';
 import { fieldWithSparks } from './sparks.js';
 import { renderStoryHeader } from './router.js';
@@ -22,7 +23,7 @@ function push(list, ...nodes) {
 }
 
 function boostState(story, id) {
-  return { answer: '', skipped: false, spawned: [], editedBeats: [], ...(story.boosts?.[id] || {}) };
+  return { answer: '', skipped: false, editedBeats: [], ...(story.boosts?.[id] || {}) };
 }
 
 function writeBoost(story, id, patch) {
@@ -149,9 +150,9 @@ export function boostScreen(story, boostId) {
         type: 'button', class: 'button',
         text: kind === 'hero' ? 'This gives me a new character' : 'This gives me another antagonist',
         onclick: () => {
+          // The card records which boost made it; nothing else needs to.
           const { story: next, id } = addEntry(current, kind, `boost:${boost.id}`);
-          const withLink = writeBoost(next, boost.id, { spawned: [...state.spawned, id] });
-          saveStory(withLink);
+          saveStory(next);
           showToast(`New ${card.headline.toLowerCase()} added`);
           location.hash = `#/build/ingredients/${id}`;
         },
@@ -160,14 +161,13 @@ export function boostScreen(story, boostId) {
     push(body, row);
   }
 
-  if (state.spawned.length) {
+  const made = spawnedBy(current, boost.id);
+  if (made.length) {
     push(body, el('h3', { text: 'Made from this card' }));
     const list = el('ul');
-    for (const id of state.spawned) {
-      const entry = current.cast.find((c) => c.id === id) || current.worlds.find((w) => w.id === id);
-      if (!entry) continue;
+    for (const entry of made) {
       const label = entry.answers?.name || (entry.kind === 'villain' ? 'A new antagonist' : 'A new main character');
-      add(list, el('li', {}, el('a', { class: 'back-link', href: `#/build/ingredients/${id}`, text: `${label} →` })));
+      add(list, el('li', {}, el('a', { class: 'back-link', href: `#/build/ingredients/${entry.id}`, text: `${label} →` })));
     }
     push(body, list);
   }

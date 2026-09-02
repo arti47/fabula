@@ -343,8 +343,9 @@ storyMachine.story.<id>
     worlds:  [ { id, answers: { special, whereWhen, typicalDay, peopleDo } } ],
     inciting:{ answers: { what, goodOrBad, antagonistsFault, howItChanges } },
     beats:   { "1".."9": { text, updatedAt, prefilledFrom?: "inciting" } },  // A5
-    boosts:  { <boostId>: { answer, skipped: bool,
-                            spawned: [castId…], editedBeats: [n…] } },       // P6, P7
+    boosts:  { <boostId>: { answer, skipped: bool, editedBeats: [n…] } },    // P7
+             // what a boost invented is NOT stored here — it is derived from cast[].origin (P6),
+             // because one fact in two records can disagree and nothing would notice (§10.11)
     snapshot:{ takenAt, beats, cast, worlds, inciting } | null,              // A8, D10
     skipped: [cardId…] }                                                     // P1
 ```
@@ -415,7 +416,7 @@ ships.** Fill the row when you build the rule, not at audit time.
 | P4 re-roll freely | Permission | `PROMPTS`, `DIE_FACES` | `idea.roll` | Roll again, always enabled | `idea: every roll is kept, none discarded` |
 | P5 leave it blank | Permission | — | `derived.progress` | Counts in the story header, never a block | `progress counts what is answered, and nothing else` |
 | House sparks | Permission (ours) | `IDEA_SPARKS`, `INPUT_SPARKS` | `sparks.drawSparks`, `sparks.fieldWithSparks` | "Stuck? Three words" under every field, labelled "ours, not the deck's" | `every input the app asks for has a table` · `every table belongs to a real input` |
-| P6 boost spawns a card | Permission | `BOOSTS[].canSpawn` | `boost.boostScreen` → `ingredients.addEntry` | "This gives me a new character", listed back on the boost | `P6: a card spawned by a boost remembers which boost made it` |
+| P6 boost spawns a card | Permission | `BOOSTS[].canSpawn`, `cast[].origin` | `boost.boostScreen` → `ingredients.addEntry`, `derived.spawnedBy` | "This gives me a new character", listed back on the boost | `P6: what a boost made is derived from the card, not recorded twice` |
 | P7 boost rewrites a beat | Permission | `BOOSTS[].suggestsBeats` | `boost.boostScreen` → `#/build/structure/N/from/<boost>` | "Change beat N", with the way back | `P7: every beat a boost points at exists, and the snapshot still holds the old text` |
 | A5 beat 2 pre-fill | Sequence | — | `structure.prefillBeat2` | Beat 2, pre-filled, with a provenance line | `editing beat 2 does not rewrite the ingredient it came from` |
 | A9 any beat, any time | Permission | `BEATS` | `structure.beatScreen` pips | Numbered pips 1–9, blanks dotted | `structure: the header counts written beats` |
@@ -452,10 +453,15 @@ change; never a fixed wait (D-15).
 image alt text, landmarks, `aria-current`, `lang`, live regions, the skip link, and proof that the
 text-size control actually scales type. Contrast and screen-reader flow still want a human.
 
+**C3. Update path (`npm run update`).** The one PWA behaviour that cannot be checked by looking at
+the running app: the worker installs and takes control, the app opens with the network gone, and a
+deployed change offers "a new version is ready" to the page that is already open.
+
 **D. Probes and fixtures, committed.** `tests/fixtures/` — **fresh** (nothing created),
 **mid-story** (a story at the Boost step with two heroes), **stress** (three storytellers, a dozen
 stories, a story with 4 heroes, 2 villains, 3 worlds, every beat long, all 10 boosts answered,
-40 die rolls). `tests/probe-layout.mjs` prints per route: height in viewports, control count,
+40 die rolls), **messy** (emoji, 600-character unbroken words, quotes, angle brackets, right-to-left
+text, whitespace-only answers — what a kid types when nobody is watching). `tests/probe-layout.mjs` prints per route: height in viewports, control count,
 primary-action offset, smallest tap target, overflow per width. A probe prints; it does not assert.
 
 **Audit passes, in order, repeated until a full cycle finds nothing** (§11.2): dead-data scan ·
@@ -521,6 +527,7 @@ rather than a broken image, and the harness must pass with `assets/cards/` empty
 
 | Date | Change | Verification | Cache |
 |---|---|---|---|
+| 2026-09-01 | Audit cycle 6, run by changing the method rather than repeating it: an adversarial seed state (`messy`), widths nobody had measured (280), the module seams, the app's own copy read for promises, and the update path. Five findings. The seam walk found one fact kept in two records — `boosts[].spawned` and `cast[].origin` both said which boost invented a card — now derived from the card alone. | `npm test` 74/74; smoke (with a messy sweep), interaction, a11y and the new `npm run update` all clean. The update-path pass was proved to bite by silencing the toast | v12 |
 | 2026-09-01 | Audit cycle 5, with a new spark-shape pass (`npm run sparks`) that reads all 704 fragments as writing rather than as rows. Four findings, all fixed: `prefillFrom` in `data.js` was a field the engine never read (it hardcoded beat 2 instead); three spark tables where a draw of three read as one suggestion stuttering; the not-found screen was the app's only dead end; and card grids ran one-column at 320, which put the Boost step at 7.4 screens. | `npm test` 73/73; smoke, interaction (mid-story and stress), a11y all clean. New checks: every route leads somewhere, and a draw avoids three rows opening the same way. Stress at 320: Ingredients 6.5 → 3.6 screens, Boost 7.4 → 4.0, Deck 6.0 → 2.3 | v11 |
 | 2026-09-01 | Sparks under every field: 39 tables, one per input the app asks for, keyed by the input's own id, plus the five open tables the Idea screen already had — about 640 fragments. "Stuck? Three words" draws three, tapping one drops it in at the cursor, and rows carrying `{hero}` / `{villain}` are filled in from what the story has named. `sparks.js` splits out of `idea.js` as the module map always said it would. | `npm test` 71/71; smoke, interaction audit (416 controls) and a11y sweep all clean. Coverage proved to bite in both directions (deleted a beat's table and misspelled a key: both caught). Found and fixed while measuring: the three chips landed under the fixed action bar on a phone, so a kid tapped the button and saw nothing — rolling now scrolls them into view, and a check pins it | v11 |
 | 2026-09-01 | Deployed: a Pages workflow that runs `npm test` and then publishes the repository as it stands (there is no build step), and the 34 card faces committed at the owner's decision so the live app shows real cards rather than placeholders. README and §11 updated to say what now ships and where the licensing responsibility sits. | Workflow green (test job then deploy job, both success). Smoke gained a sub-path pass: the app is served under `/fabula/` the way Pages serves it, and the boot, the card art and the service worker's scope are all checked there — the sandbox's proxy blocks `github.io`, so this is the closest verification available from here and the live URL is unverified by me | v10 |
