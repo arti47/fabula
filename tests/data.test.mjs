@@ -109,12 +109,19 @@ test('boost spawn targets and beat suggestions reference things that exist', () 
 });
 
 test('house-added examples are flagged so the UI can label them', () => {
-  // §2.2: nothing invented may pass as Sefirot's.
+  // §2.2: nothing invented may pass as Sefirot's. Counting them is not enough — one losing its
+  // flag leaves the rest, and the count still looks healthy. The set is named.
+  const OURS = [
+    'Wreck-It Ralph', 'Coraline', 'Encanto', 'Inside Out', 'Turning Red', 'Spider-Verse',
+  ];
   const all = ALL_CARDS.flatMap((c) => c.examples || []);
-  const house = all.filter((e) => e.house);
-  assert.ok(house.length > 0);
-  for (const e of house) assert.equal(e.house, true);
-  for (const e of all) assert.ok(e.ref && e.text, 'example needs ref and text');
+  const flagged = all.filter((e) => e.house).map((e) => e.ref).sort();
+  assert.deepEqual(flagged, [...OURS].sort(), 'the flagged examples are not the ones we added');
+  for (const e of all) {
+    assert.ok(e.ref && e.text, 'example needs ref and text');
+    if (OURS.includes(e.ref)) assert.equal(e.house, true, `${e.ref} is ours and must say so`);
+    else assert.ok(!e.house, `${e.ref} is the booklet's and must not be flagged as ours`);
+  }
 });
 
 test('art ids are unique across the whole deck, dividers included', () => {

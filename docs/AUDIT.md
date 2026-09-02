@@ -17,6 +17,7 @@ A cycle that produces only cosmetic findings is still a cycle that produced find
 | Accessibility sweep | `npm run a11y` | ~20 s |
 | PWA update path | `npm run update` | ~15 s |
 | Spark-shape pass | `npm run sparks` | seconds |
+| Mutation pass | `npm run mutants` / `-- all` | seconds / ~6 min |
 | Measured layout / stress | `npm run probe -- stress` | ~30 s |
 | Flow walk | by hand | ~30 min |
 
@@ -192,6 +193,43 @@ the code rather than the rule?
 
 **Not a clean cycle** — five findings, and the first of them means every earlier smoke run proved
 less than it appeared to.
+
+## Cycle 10 — mutation: break each rule and see what notices
+
+Every guard in this project had been proved to bite once, by hand, when it was written.
+`npm run mutants` does that for all of them, repeatably: sixteen mutants, each breaking one rule the
+app is supposed to keep. A mutant that **survives** is a rule that can break silently.
+
+| # | Rule | Target | Fix | Why it mattered |
+|---|---|---|---|---|
+| 43 | The before-version is a copy, not a view (A8) | `store.takeSnapshot` | A test that mutates the story in place and asserts the snapshot holds still | Replacing the deep copy with a shared reference passed every existing test. They all change stories through `writeBeat`, which builds a new object — so the copy was load-bearing and *nothing tested it*. It was correct by luck |
+| 44 | Nothing invented may pass as Sefirot's (§2.2) | The house-example guard | The six house examples are named; each must be flagged, and each booklet example must not be | The old check counted flagged examples and asserted the count was above zero. Un-flagging one left five, and it passed. A count cannot notice a loss |
+| 45 | The app must work with `assets/cards/` empty (§11) | The placeholder path | Smoke blocks all card-art requests on one route and asserts every face falls back to a labelled placeholder, with no broken image and no overflow | The spec has required this since Phase 0 and it was verified once, by hand. Every automated run had the art present, so the fallback had never executed. Breaking it changed nothing that any check could see |
+
+The remaining thirteen mutants were caught, including all five browser ones and the update toast.
+
+**Not a clean cycle** — three findings, all of them guards rather than app defects.
+
+## Cycle 11 — the empty story, and state that rots
+
+Two app-facing methods never used: every screen with nothing in it (where a kid actually starts, and
+every fixture so far has been full), and a story whose state has gone stale.
+
+| # | Rule | Target | Fix | Why it mattered |
+|---|---|---|---|---|
+| 46 | A ruling has to survive contact with how the app is used (A8) | `store.ensureSnapshot` | The before-version locks when **boosting begins** — the first boost answered or skipped — and keeps up with the story until then | Walking an empty story revealed it: the snapshot froze on *opening* the Boost step. A kid tapping through the five tabs before writing anything locked an empty "before" version for ever. They would then write the whole story, boost it, and find the comparison the entire Boost chapter exists for showing nothing. The ruling was right; the trigger was wrong |
+| 47 | Do not offer a choice that has no difference | `derived.hasBothVersions` | Both versions are offered only once they differ | An untouched story showed "Before the boosts / After the boosts", two buttons rendering identical emptiness |
+| 48 | Data from elsewhere must not reach a screen (§7) | `store.normalizeStory` | Unknown boost ids, beats outside 1–9 and unknown card ids are dropped on the way in | A rotted story printed "you went back to beats 4, 12". A backup from another version, or a hand-edited file, walked straight through to the UI |
+
+The rotted-state walk found no crashes: a snapshot holding a character the story no longer has still
+reads correctly (they were there then), and unknown ids were ignored by every list that iterates the
+deck rather than the record.
+
+The mutation pass then reported its own A8 mutant **stale**: the code it patched had been rewritten
+by finding 46. Two mutants replaced it — one for each direction the new rule can fail — and the pass
+is clean again at 17. A stale mutant is the pass noticing it has stopped testing what it claims to.
+
+**Not a clean cycle** — three findings, including the first genuine rules defect since cycle 8.
 
 ## Deployment
 
