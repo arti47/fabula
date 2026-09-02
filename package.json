@@ -13,7 +13,8 @@
     "fixtures": "node tests/make-fixtures.mjs",
     "probe": "node tests/probe-layout.mjs",
     "audit": "node tests/interaction.mjs",
-    "a11y": "node tests/a11y.mjs"
+    "a11y": "node tests/a11y.mjs",
+    "sparks": "node tools/spark-shape.mjs"
   },
   "devDependencies": {
     "playwright-core": "^1.62.1"

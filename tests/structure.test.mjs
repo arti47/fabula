@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { blankStory } from '../src/store.js';
-import { prefillBeat2, writeBeat, beatText, incitingAsBeat2 } from '../src/structure.js';
+import { prefillBeat2, writeBeat, beatText, incitingAsBeat2, PREFILLED_BEAT } from '../src/structure.js';
 import { beatProgress } from '../src/derived.js';
 
 function storyWithInciting(what) {
@@ -11,6 +11,16 @@ function storyWithInciting(what) {
   s.inciting.answers = { what, goodOrBad: 'bad' };
   return s;
 }
+
+test('the pre-filling beat is the one the card data names, not a hardcoded number', () => {
+  // The data says which beat carries an ingredient over; the engine must read it rather than
+  // assume it, or `prefillFrom` in data.js is a field nothing consumes.
+  assert.ok(PREFILLED_BEAT, 'no beat declares prefillFrom');
+  assert.equal(PREFILLED_BEAT.n, 2);
+  assert.equal(PREFILLED_BEAT.prefillFrom, 'inciting');
+  const filled = prefillBeat2(storyWithInciting('Grandma falls ill'));
+  assert.equal(filled.beats[PREFILLED_BEAT.n].prefilledFrom, PREFILLED_BEAT.prefillFrom);
+});
 
 test('beat 2 pre-fills from the Something happens card', () => {
   const s = storyWithInciting('Grandma falls ill');

@@ -27,14 +27,30 @@ export function fillNames(row, story) {
   return row.replace(/\{(\w+)\}/g, (whole, key) => names[key] ?? SPARK_PLACEHOLDERS[key] ?? whole);
 }
 
-/** Three different rows, filled in. Fewer only if the table is smaller than three. */
+const opening = (row) => row.split(' ')[0].toLowerCase();
+
+/**
+ * Three different rows, filled in. Fewer only if the table is smaller than three.
+ *
+ * Where it can, the draw avoids three rows that open with the same word: "to be believed / to go
+ * home / to be forgiven" reads as one suggestion said three times. Where a table is genuinely all
+ * one shape — every answer to "what do they want?" starts with "to" — it takes what it can get.
+ */
 export function drawSparks(key, story, count = HOW_MANY) {
   const rows = sparksFor(key);
   if (!rows) return [];
+
   const pool = [...rows];
   const drawn = [];
+  const used = new Set();
+
   while (drawn.length < Math.min(count, rows.length)) {
-    drawn.push(...pool.splice(randomInt(pool.length), 1));
+    const fresh = pool.filter((row) => !used.has(opening(row)));
+    const from = fresh.length ? fresh : pool;
+    const chosen = from[randomInt(from.length)];
+    pool.splice(pool.indexOf(chosen), 1);
+    used.add(opening(chosen));
+    drawn.push(chosen);
   }
   return drawn.map((row) => fillNames(row, story));
 }

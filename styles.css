@@ -237,7 +237,8 @@ a { color: var(--accent); }
 /* Card grid + card face, with a labelled placeholder when the art is absent. */
 .card-grid {
   display: grid; gap: var(--step);
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  /* 132px keeps two columns even at 320, where a one-column deck ran to seven screens. */
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
   margin-bottom: var(--step);
 }
 .card {
