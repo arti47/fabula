@@ -12,6 +12,7 @@ import { actionBar, cardTile, cardFace, exampleLine, showToast, confirmModal, an
 import { BOOSTS, BEATS, INGREDIENTS, getCard } from '../data.js';
 import { saveStory, ensureSnapshot, takeSnapshot } from './store.js';
 import { addEntry } from './ingredients.js';
+import { fieldWithSparks } from './sparks.js';
 import { renderStoryHeader } from './router.js';
 
 /** Collect nodes for the answer column, skipping nullish ones the way `add` does. */
@@ -123,7 +124,7 @@ export function boostScreen(story, boostId) {
     renderStoryHeader();
   }, 400);
   field.addEventListener('input', save);
-  push(body, field);
+  push(body, ...fieldWithSparks(field, { key: boost.id, story: current }));
   push(body, el('p', { text: boost.guidance }));
 
   // P8 — skipping is a control, and it is reversible.

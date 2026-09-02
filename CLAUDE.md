@@ -69,7 +69,7 @@ non-English content.
 | D4 | Distribution | Shared with friends / a school | Private repo; art swappable behind one data file; licensing note in README |
 | D5 | Stories | A library, plus storytellers | Local profiles; every module takes a story id, never assumes one story |
 | D6 | Storage | Device now, cloud later | localStorage + export/import; sync-shaped schema; Firebase is Phase 10, gated |
-| D7 | Stuck help | Book examples + offline spark tables | No network, no key, no AI. Sparks are house aids (§2.2), labelled as such |
+| D7 | Stuck help | Book examples + offline spark tables, one per input | No network, no key, no AI. Sparks are house aids (§2.2), labelled as such |
 | D8 | Drawing step | Guide only, no images | The seven tips ship as a rules-library chapter; no canvas, no camera, no image storage |
 | D9 | Flow | Guided path, escapable | Wizard order by default; skip / come back / add-another visible on every screen |
 | D10 | Payoff | Story page, before and after | Pre-Boost draft snapshotted; both versions readable; print + plain-text export |
@@ -102,6 +102,14 @@ non-English content.
 `data-sparks.js` exports `HOUSE_AID = true`. Its tables are invented by this project, not by
 Sefirot, and **every screen that shows a spark labels it as a house aid**. Sparks are single words
 or short phrases that feed interpretation — never finished story content.
+
+There is **one table per input the app asks for** — 39 of them, keyed by the input's own id
+(`hero.fear`, `villain.want`, `world.typicalDay`, `beat.5`, `boost-twist`…) — plus the five open
+tables the Idea screen uses before any question has been asked. Rows may carry `{hero}`,
+`{villain}` and `{world}`, filled in from what the story has named and falling back to "the hero",
+"the villain", "that place". Every row is a fragment of nine words or fewer with no full stop: it
+must leave the kid something to do. Coverage is enforced **in both directions** — an input with no
+table and a table with no input are each a test failure.
 
 ---
 
@@ -221,7 +229,7 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | `styles.css` | Storybook theme (light + dark) + all component styles |
 | `data.js` | The deck: all 30 playable cards — headline, group, badge, art path, questions, guidance, examples |
 | `data-examples.js` | The two booklet stories as complete story records (Little Red Riding Hood; Hänsel & Gretel before *and* after Boosts) |
-| `data-sparks.js` | Invented spark tables, `HOUSE_AID = true` |
+| `data-sparks.js` | Invented spark tables — five open ones for the Idea screen, and one per input (39) — `HOUSE_AID = true` |
 | `data-learn.js` | Rules-library chapters: the five steps, the nine beats, the ten boosts, the seven drawing tips |
 | `assets/cards/*.webp` | 34 faces (30 playable + 4 dividers), 760px WebP, ids per `docs/card-inventory.md`; committed |
 | `tools/extract-cards.py` | Regenerates the card faces from the user's own DIY PDF |
@@ -256,7 +264,7 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | `library.js` | Storyteller profiles, the shelf, create/rename/delete/open; example stories |
 | `deck.js` | Browse all 30 cards as reference — **currently inside `screens.js`**; splits out when it grows search or filters |
 | `learn.js` | Searchable rules library, accordion by subject in play order; card entries resolve through `getCard` |
-| `sparks.js` | Spark tables, always labelled as house aids — **currently inside `idea.js`** |
+| `sparks.js` | Draws three sparks for an input, fills in the names the story has, inserts at the cursor; always labelled a house aid |
 | `settings.js` | Theme, text size, export/import, data check, about — **currently inside `screens.js`** |
 | `tutorial.js` | The ten-step first-story walkthrough, linked from the empty shelf and Settings |
 | `router.js` | Tab routing, section nav, live-state badges |
@@ -389,7 +397,7 @@ An unticked box means the data is not extracted. **Never build UI against an unt
 | T7 | Both booklet stories as complete story records (H&G with its pre-Boost draft) | `data-examples.js` | `library.js` | [x] |
 | T8 | The 7 drawing tips | `data-learn.js` | `learn.js` | [x] |
 | T9 | Rules-library chapters (how it works, 5 steps, every card, drawing) | `data-learn.js` | `learn.js` | [x] |
-| T10 | Spark tables (house aid): 5 tables × 16 rows | `data-sparks.js` | `idea.js` | [x] |
+| T10 | Spark tables (house aid): 5 open tables + 39 per-input tables, ~16 rows each | `data-sparks.js` | `sparks.js` | [x] |
 | T11 | Card art: 34 images → WebP, id-mapped (760px, q80, 3.2MB total, max 195KB) | `assets/cards/`, generated | `ui.js` card | [x] |
 | T12 | `CARD_ERRATA` (A3) | `data.js` | `learn.js` | [x] |
 
@@ -406,7 +414,7 @@ ships.** Fill the row when you build the rule, not at audit time.
 | P3 two heroes | Permission | — | `ingredients.addEntry` | "Add another main character", uncapped | `ingredients: a second main character is allowed` |
 | P4 re-roll freely | Permission | `PROMPTS`, `DIE_FACES` | `idea.roll` | Roll again, always enabled | `idea: every roll is kept, none discarded` |
 | P5 leave it blank | Permission | — | `derived.progress` | Counts in the story header, never a block | `progress counts what is answered, and nothing else` |
-| House sparks | Permission (ours) | `SPARK_TABLES` | `idea.sparkSection` | Labelled "ours, not the deck's" | `idea: sparks are labelled as ours` |
+| House sparks | Permission (ours) | `IDEA_SPARKS`, `INPUT_SPARKS` | `sparks.drawSparks`, `sparks.fieldWithSparks` | "Stuck? Three words" under every field, labelled "ours, not the deck's" | `every input the app asks for has a table` · `every table belongs to a real input` |
 | P6 boost spawns a card | Permission | `BOOSTS[].canSpawn` | `boost.boostScreen` → `ingredients.addEntry` | "This gives me a new character", listed back on the boost | `P6: a card spawned by a boost remembers which boost made it` |
 | P7 boost rewrites a beat | Permission | `BOOSTS[].suggestsBeats` | `boost.boostScreen` → `#/build/structure/N/from/<boost>` | "Change beat N", with the way back | `P7: every beat a boost points at exists, and the snapshot still holds the old text` |
 | A5 beat 2 pre-fill | Sequence | — | `structure.prefillBeat2` | Beat 2, pre-filled, with a provenance line | `editing beat 2 does not rewrite the ingredient it came from` |
@@ -512,6 +520,7 @@ rather than a broken image, and the harness must pass with `assets/cards/` empty
 
 | Date | Change | Verification | Cache |
 |---|---|---|---|
+| 2026-09-01 | Sparks under every field: 39 tables, one per input the app asks for, keyed by the input's own id, plus the five open tables the Idea screen already had — about 640 fragments. "Stuck? Three words" draws three, tapping one drops it in at the cursor, and rows carrying `{hero}` / `{villain}` are filled in from what the story has named. `sparks.js` splits out of `idea.js` as the module map always said it would. | `npm test` 71/71; smoke, interaction audit (416 controls) and a11y sweep all clean. Coverage proved to bite in both directions (deleted a beat's table and misspelled a key: both caught). Found and fixed while measuring: the three chips landed under the fixed action bar on a phone, so a kid tapped the button and saw nothing — rolling now scrolls them into view, and a check pins it | v11 |
 | 2026-09-01 | Deployed: a Pages workflow that runs `npm test` and then publishes the repository as it stands (there is no build step), and the 34 card faces committed at the owner's decision so the live app shows real cards rather than placeholders. README and §11 updated to say what now ships and where the licensing responsibility sits. | Workflow green (test job then deploy job, both success). Smoke gained a sub-path pass: the app is served under `/fabula/` the way Pages serves it, and the boot, the card art and the service worker's scope are all checked there — the sandbox's proxy blocks `github.io`, so this is the closest verification available from here and the live URL is unverified by me | v10 |
 | 2026-09-01 | Phase 8, the tablet: one `answerLayout` puts the card beside the question it asks, at every width — 96px on a phone, 132px from 430, a sticky 200–320px column from 768 — with the reading measure capped and the beat list going two-up at 1024. Measuring it showed the writing field falling below the fold on a phone, so the field now comes before the guidance on every answering screen: what you touch every time sits above what you read once. | `npm test` 62/62; smoke clean over 28 routes × 5 widths with two new contract checks — the field above the fold at every width, and the tablet proved to add density rather than stretch (flattened the grid to one column: 9 failures, restored). Stress probe: the beat screens drop from 2.0 to 1.4 screens at 1024, the nine-beat list from 2.1 to 1.4 | v10 |
 | 2026-09-01 | Phase 9 hardening, first cycle: committed seed fixtures (fresh / mid-story / stress), a shared harness, the layout probe, the interaction audit and the accessibility sweep — and `docs/AUDIT.md`, which records 17 findings across the build. The interaction audit was clean until it was proved not to bite: its route list never entered a step, so it had never clicked the controls that do the work. With the deep routes added it caught a deliberately broken Skip button three times. | `npm test` 62/62; smoke clean over 28 routes × 5 widths, seeded mid-story; interaction audit clean on mid-story and stress, 400 controls each; a11y sweep clean over 24 routes. Fixed on the way: an 11.5-screen Tell page with no jump row, an in-page anchor the hash router would have read as a route, smooth scrolling that ignored reduced motion, an unlabelled file input, two routes where nothing carried `aria-current`, and a smoke sweep that had been measuring an empty app | v9 |

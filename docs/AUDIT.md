@@ -90,6 +90,15 @@ Checked, found sound, and not to be re-litigated without a reason:
   under the fixed tab bar; the primary action above the fold on every screen that has one; the
   writing field above the fold on every answering screen; the tablet measurably denser, not wider.
 
+## Cycle 4 — the per-input sparks
+
+| # | Rule | Target | Fix | Why it mattered |
+|---|---|---|---|---|
+| 21 | Content must reach a screen, and a screen must have content (§0.1) | 39 spark tables | Two tests, opposite directions: every input has a table, every table has an input | 39 tables and 39 inputs drift apart the moment either list changes. Proved by deleting `beat.7`'s table and misspelling `hero.age`: caught as two separate failures |
+| 22 | A control must visibly do something | Spark chips on a phone | Rolling scrolls the three into view, clear of the fixed action bar | The chips rendered below the fold behind the action bar: tap the button, nothing appears to happen. The button worked perfectly and read as broken |
+| 23 | Poll for change, never measure once (D-15) | The check written for #22 | `waitForFunction` on the settled position | The check raced its own smooth scroll and failed against correct code — the same defect it was written to catch |
+| 24 | House aids identify themselves (§2.2) | Every field on 39 screens | "ours, not the deck's" beside every spark control | 640 invented fragments sitting inside an app about somebody else's deck |
+
 ## Deployment
 
 The app is published to GitHub Pages from `main` by `.github/workflows/pages.yml`, which runs
