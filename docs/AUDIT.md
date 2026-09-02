@@ -231,6 +231,51 @@ is clean again at 17. A stale mutant is the pass noticing it has stopped testing
 
 **Not a clean cycle** — three findings, including the first genuine rules defect since cycle 8.
 
+## Where this stopped, and why
+
+**The stopping rule was not met.** The template says the build is done when one complete cycle of
+every pass produces no finding. Eleven cycles produced 48 findings and the last one produced three —
+declining, but never zero. The machine audit was stopped by decision, not by the rule.
+
+That is a defensible place to stop and a dishonest thing to leave unrecorded, so: what follows is
+what the next person should know.
+
+**The pattern across eleven cycles.** Repeating a pass found almost nothing; changing the method
+found something every time. The findings arrived like this:
+
+| Cycle | Method | Findings |
+|---|---|---|
+| 1–4 | the harnesses, as each phase landed | 24 |
+| 5 | seven passes + reading the sparks as writing | 4 |
+| 6 | adversarial state, unmeasured widths, module seams, the app's own copy | 5 |
+| 7 | the booklet read against the app | 3 |
+| 8 | the reversibility inventory | 2 |
+| 9 | every guard read for what it lets through | 5 |
+| 10 | mutation: break each rule, see what notices | 3 |
+| 11 | the empty story, and state that rots | 3 |
+
+Cycles 9 and 10 found only harness gaps — guards that had never bitten anything. Cycle 11 went back
+to the app with a method never tried and immediately found a wrong ruling. **The lesson is that the
+method, not the effort, is what finds things.**
+
+**What is most likely still wrong.** In rough order of likelihood:
+
+1. **Wording, for a 12-year-old.** No pass can judge it and I am not the audience. Every screen's
+   copy is my guess at the register.
+2. **The tablet layout under real content.** Measured at 768 and 1024, but only ever with the
+   fixtures — never with a story somebody cared about.
+3. **The spark fragments as a body of writing.** 704 of them, checked mechanically for shape and
+   read once by me. Repetition and duds will surface only in use.
+4. **Anything about how it feels to be stuck.** The app's whole job is prompting at the moment a
+   kid runs out of ideas, and that moment cannot be simulated.
+5. **The deployed build itself.** The workflow is green and the sub-path shape is tested locally,
+   but this sandbox cannot reach `github.io`, so nobody has opened the live URL.
+
+**Methods not yet used**, if the audit resumes: mutants written from the traceability ledger rather
+than from imagination (every P-row and every A-ruling); a second reading of the booklet looking for
+mechanics the app invented rather than ones it missed; and the tablet walked under the messy and
+stress fixtures.
+
 ## Deployment
 
 The app is published to GitHub Pages from `main` by `.github/workflows/pages.yml`, which runs
