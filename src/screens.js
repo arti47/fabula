@@ -4,7 +4,8 @@
 import { el, add } from './core.js';
 import { explain, cardTile, exampleLine, clearActionBar, showToast, confirmModal } from './ui.js';
 import { PROMPTS, INGREDIENTS, BEATS, BOOSTS, IDEA_CARD, GROUPS, getCard, CARD_ERRATA } from '../data.js';
-import { getPrefs, setPref, exportAll, importAll, describeImport } from './store.js';
+import { getPrefs, setPref, exportAll, importAll, describeImport, getCurrentStory, deleteStory } from './store.js';
+import { storytellerManager } from './library.js';
 
 function sectionNav(items, currentId) {
   const nav = el('nav', { class: 'section-nav', 'aria-label': 'Sections' });
@@ -196,6 +197,37 @@ export function settingsScreen() {
   add(screen, el('h3', { text: 'Your first story' }));
   add(screen, el('p', { class: 'note', text: 'A walk through making one story from beginning to end.' }));
   add(screen, el('p', {}, el('a', { class: 'button secondary', href: '#/tutorial', text: 'Read the walkthrough' })));
+
+  // The two ways to get rid of something, at the end of the scroll and never in the thumb's
+  // resting arc (§6.1). Both controls exist on the shelf as well; a person looking to delete
+  // themselves or a story looks in Settings first, and used to find neither here.
+  add(screen, el('h3', { text: 'Storytellers' }));
+  add(screen, el('p', { class: 'note', text: 'Add someone else who uses this device, swap between you, or remove a storyteller — which takes every story they have written with them.' }));
+  add(screen, el('p', {}, el('button', {
+    type: 'button', class: 'button secondary', text: 'Switch, add or remove',
+    onclick: () => storytellerManager(),
+  })));
+
+  const open = getCurrentStory();
+  if (open) {
+    add(screen, el('h3', { text: 'The story you have open' }));
+    add(screen, el('p', { class: 'note', text: `“${open.title}” is the one you are working on.` }));
+    add(screen, el('p', {}, el('button', {
+      type: 'button', class: 'button danger', text: 'Delete this story',
+      'aria-label': `Delete ${open.title}`,
+      onclick: () => confirmModal({
+        title: `Delete “${open.title}”?`,
+        message: 'Everything in it goes: the idea, the characters, all nine beats and every boost. There is no way to get it back.',
+        confirmLabel: 'Delete it',
+        onConfirm: () => {
+          deleteStory(open.id);
+          showToast('Story deleted');
+          location.hash = '#/stories';
+          window.dispatchEvent(new HashChangeEvent('hashchange'));
+        },
+      }),
+    })));
+  }
 
   add(screen, el('h3', { text: 'About' }));
   add(screen, el('p', { class: 'note', text: 'Story Machine runs the Fabula Deck for Kids by Sefirot (Torino, 2021), written by Andrea Binasco and Matteo di Pascale, illustrated by Matteo Ufocinque. This app is a personal play aid built from a copy of the deck.' }));

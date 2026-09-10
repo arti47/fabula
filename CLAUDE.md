@@ -268,11 +268,11 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | `structure.js` | Step 3: the nine beats as a list, one-beat view with pips, beat 2 pre-fill (A5) |
 | `boost.js` | Step 4: the ten boosts, card-spawning (P6), beat rewrites (P7), the snapshot (A8), re-freeze |
 | `tell.js` | Step 5: the assembled story, before/after toggle, print, plain-text save and copy |
-| `library.js` | Storyteller profiles, the shelf, create/rename/delete/open; example stories |
+| `library.js` | Storyteller profiles, the shelf, create/rename/delete/open, the storyteller manager (switch, add, remove); example stories |
 | `deck.js` | Browse all 30 cards as reference — **currently inside `screens.js`**; splits out when it grows search or filters |
 | `learn.js` | Searchable rules library, accordion by subject in play order; card entries resolve through `getCard` |
 | `sparks.js` | Draws three sparks for an input, fills in the names the story has, inserts at the cursor; always labelled a house aid |
-| `settings.js` | Theme, text size, export/import, data check, about — **currently inside `screens.js`** |
+| `settings.js` | Theme, text size, export/import, the storyteller manager, deleting the open story, about — **currently inside `screens.js`** |
 | `tutorial.js` | The ten-step first-story walkthrough, linked from the empty shelf and Settings |
 | `router.js` | Tab routing, section nav, live-state badges |
 | `zoom.js` | The zoom lock: refuses pinch gestures iOS Safari grants despite the viewport meta |
@@ -475,7 +475,7 @@ stories, a story with 4 heroes, 2 villains, 3 worlds, every beat long, all 10 bo
 text, whitespace-only answers — what a kid types when nobody is watching). `tests/probe-layout.mjs` prints per route: height in viewports, control count,
 primary-action offset, smallest tap target, overflow per width. A probe prints; it does not assert.
 
-**Mutation pass (`npm run mutants`, `-- all` for the browser ones).** Twenty-one mutants, each breaking
+**Mutation pass (`npm run mutants`, `-- all` for the browser ones).** Twenty-four mutants, each breaking
 one rule the app is supposed to keep — the pre-fill, the snapshot, the die, a permission's control,
 the placeholder path, the update toast, the zoom lock. A mutant that survives is a rule that can break silently,
 and is a finding against the harness rather than the app.
@@ -520,8 +520,8 @@ mattered, with a verified-clean list.
 
 | Action | What it destroys | How it is protected |
 |---|---|---|
-| Delete a story | everything in it | confirms, naming the idea, the characters, the beats and the boosts |
-| Remove a storyteller | them, and all their stories | confirms, counting the stories that go |
+| Delete a story | everything in it | confirms, naming the idea, the characters, the beats and the boosts. Reachable from the shelf row **and** from Settings for the story you have open |
+| Remove a storyteller | them, and all their stories | confirms, counting the stories that go. Reachable from the shelf's **Storytellers** control and from Settings; the last storyteller is removable, which returns the app to first run |
 | Re-freeze the before-version | the draft you started boosting with | confirms, naming what is replaced |
 | Load a backup | any story on the shelf sharing an id | confirms, **listing the stories by name** |
 | Remove a character or world | every answer on that card | confirms; the snapshot keeps its own copy |
@@ -554,6 +554,7 @@ rather than a broken image, and the harness must pass with `assets/cards/` empty
 
 | Date | Change | Verification | Cache |
 |---|---|---|---|
+| 2026-09-02 | Deleting a storyteller or a story made findable. Both controls have existed since Phase 1 and both worked; neither could be found. The only route to removing a storyteller was a button labelled **Switch**, a word that does not mean remove, and Settings — the first place a person looks to delete themselves or the thing they are working on — offered neither. The shelf control is now **Storytellers**, labelled for all three verbs it performs; Settings gains a storyteller section that opens the same manager, and a "Delete this story" for the story currently open, both at the end of the scroll and out of the thumb's arc (§6.1). Removing the last storyteller was already allowed and is now asserted: it returns the app to first run rather than stranding it. This is §0.2 in a new coat — a control that exists but cannot be reached is a permission the app has removed. | `npm test` 84/84; smoke gains six checks — the shelf control's own label, both Settings controls, the confirmation naming what goes, the story actually going, and the last storyteller removable; interaction (430 controls) and a11y clean; `npm run mutants -- all` 24/24 caught, including three new ones: the label reverted to "Switch", the Settings delete wired to nothing, and the last storyteller made unremovable | v17 |
 | 2026-09-02 | The zoom lock made real. The viewport meta has said `user-scalable=no` since Phase 0, and iOS Safari has ignored that since iOS 10 — so on the phone this app is most likely to be held, pinch-zoom still worked and the locked layout was a claim rather than a fact. `src/zoom.js` refuses the gestures themselves: iOS `gesturestart`/`change`/`end`, any two-finger `touchmove`, and a ctrl/⌘ wheel (a trackpad pinch). One-finger scrolling and a plain wheel are explicitly left alone, and double-tap stays with `touch-action: manipulation` rather than a touchend guard that would eat the second tap on a button. The accessibility debt is unchanged and still paid in Settings. Added with it: `tests/shell.test.mjs`, because §5 has always required a new module to reach the app-shell list and the module map, and nothing enforced it — a module missing from the shell is invisible until the app is opened with no signal. | `npm test` 84/84 (the shell guard proved to bite: it went red on `zoom.js` before the module map had a row for it); smoke gains five zoom checks over 30 routes × 5 widths; interaction, a11y, update path clean; `npm run mutants -- all` 21/21 caught | v16 |
 | 2026-09-01 | Machine audit stopped, by decision rather than by the stopping rule: eleven cycles, 48 findings, the last cycle producing three. `docs/AUDIT.md` gains a closing section — the cycle-by-cycle count, the lesson that changing the method found something every time while repeating one found almost nothing, the five things most likely still wrong (wording for a 12-year-old first among them), and the methods left untried. The next finding should come from a kid, or from you, holding a phone. | Final state: `npm test` 81/81 · smoke 30 routes × 5 widths + adversarial, sub-path and no-art sweeps · interaction audit on two fixtures · a11y · update path · 17/17 mutants caught | v15 |
 | 2026-09-01 | Audit cycle 11, back to the app: every screen with nothing in it, and state that has rotted. Three findings. **Ruling A8 was wrong in practice** — the before-version froze on merely *opening* the Boost step, so a kid tapping through the tabs on an empty story locked an empty draft for ever and lost the comparison the whole Boost chapter exists for. It now locks when boosting begins: the first boost answered or skipped. The Tell page also offered two identical readings until the story moved on, and a record from another version could put unknown boosts and out-of-range beats on a screen. | `npm test` 81/81; smoke, interaction, a11y, update-path and the mutation pass all clean | v15 |

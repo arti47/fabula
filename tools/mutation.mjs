@@ -159,6 +159,27 @@ const MUTANTS = [
     harness: 'test',
   },
   {
+    name: 'the storyteller control stops naming what it removes',
+    file: 'src/library.js',
+    from: "    'aria-label': 'Switch, add or remove a storyteller',",
+    to: "    'aria-label': 'Storytellers',",
+    harness: 'smoke',
+  },
+  {
+    name: 'deleting the open story from Settings does nothing',
+    file: 'src/screens.js',
+    from: '          deleteStory(open.id);',
+    to: '          void open;',
+    harness: 'smoke',
+  },
+  {
+    name: 'the last storyteller cannot be removed',
+    file: 'src/store.js',
+    from: '  write(KEY.storytellers, getStorytellers().filter((t) => t.id !== id));',
+    to: '  if (getStorytellers().length > 1) write(KEY.storytellers, getStorytellers().filter((t) => t.id !== id));',
+    harness: 'smoke',
+  },
+  {
     name: 'the update toast never offers a new version',
     file: 'src/main.js',
     from: "          showToast('A new version is ready — reload to get it', 6000);",

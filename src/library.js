@@ -155,14 +155,21 @@ export function exampleScreen(id) {
 function tellerRow(teller) {
   const row = el('div', { class: 'progress-row' });
   add(row, el('span', { class: 'progress-item', text: `${teller.emoji} ${teller.name}` }));
+  // Named for everything it does. It used to say "Switch", so the only way to remove a
+  // storyteller was hidden behind a word that does not mean remove (§0.2).
   add(row, el('button', {
-    type: 'button', class: 'button secondary', text: 'Switch',
-    onclick: () => switchStoryteller(),
+    type: 'button', class: 'button secondary', text: 'Storytellers',
+    'aria-label': 'Switch, add or remove a storyteller',
+    onclick: () => storytellerManager(),
   }));
   return row;
 }
 
-function switchStoryteller() {
+/**
+ * Switch to another storyteller, add one, or remove one and everything they have written.
+ * Exported because Settings is the other place a person looks for it (§6.1).
+ */
+export function storytellerManager() {
   // The confirm replaces the switcher rather than stacking on top of it.
   let closeSwitcher = () => {};
   const list = el('div', { class: 'teller-list' });

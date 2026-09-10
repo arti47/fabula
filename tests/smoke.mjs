@@ -535,6 +535,38 @@ try {
   const persisted = await page.textContent('#screen');
   check('walk: story persists on the shelf', () => assert.match(persisted, /The dragon next door/));
   check('walk: the shelf shows the idea as the blurb', () => assert.match(persisted, /a lighthouse that walks/));
+
+  // Getting rid of things. Both controls existed before and neither was findable: the storyteller
+  // one hid behind a button that said "Switch", and Settings — where a person looks to delete
+  // themselves — offered neither. So the label is asserted, not just the behaviour.
+  const tellerControl = await page.evaluate(() => {
+    const b = document.querySelector('.progress-row .button');
+    return `${b.textContent} ${b.getAttribute('aria-label') || ''}`;
+  });
+  check('the shelf control says it can remove a storyteller', () => assert.match(tellerControl, /remove/i));
+
+  await page.goto(base + '#/settings');
+  await page.waitForSelector('#screen h2');
+  const settingsText = await page.textContent('#screen');
+  check('settings offers the storyteller manager', () => assert.match(settingsText, /Switch, add or remove/));
+  check('settings offers to delete the open story', () => assert.match(settingsText, /Delete this story/));
+
+  await tap(page, '#screen .button.danger');
+  const storyWarning = await settled(page, '.modal', /beats/);
+  check('deleting a story names what goes with it', () => assert.match(storyWarning, /all nine beats and every boost/));
+  await tap(page, '.modal-actions .button:not(.secondary)');
+  const emptyShelf = await settled(page, '#screen h2', /No stories yet/);
+  check('and the story actually goes', () => assert.match(emptyShelf, /No stories yet/));
+
+  // The last storyteller is removable too: a person who wants off this device gets all the way off.
+  await tap(page, '.progress-row .button');
+  await page.waitForSelector('.teller-row');
+  await tap(page, '.teller-row .button.danger');
+  await settled(page, '.modal', /Remove/);
+  await tap(page, '.modal-actions .button:not(.secondary)');
+  const firstRun = await settled(page, '#screen h2', /Who is telling stories/);
+  check('the last storyteller can be removed', () => assert.match(firstRun, /Who is telling stories/));
+
   await context.close();
 
   // An adversarial state: emoji, unbroken 600-character words, quotes, angle brackets, right-to-
