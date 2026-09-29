@@ -42,7 +42,7 @@ function write(key, value) {
 // ---------------------------------------------------------------------------
 
 export function getPrefs() {
-  return { theme: 'system', textScale: 1, look: 'page', ...read(KEY.prefs, {}) };
+  return { textScale: 1, ...read(KEY.prefs, {}) };
 }
 
 export function setPref(name, value) {

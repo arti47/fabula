@@ -9,14 +9,14 @@ import { ICON_NAMES, DRAWING_NAMES } from '../src/icons.js';
 const ROOT = new URL('..', import.meta.url).pathname;
 const router = readFileSync(`${ROOT}src/router.js`, 'utf8');
 
-test('every tab has an icon', () => {
+test('every place in the menu has an icon', () => {
   const ids = [...router.matchAll(/\{ id: '([\w-]+)', label:/g)].map((m) => m[1]);
-  assert.ok(ids.length >= 4, `found only ${ids.length} tabs`);
-  for (const id of ids) assert.ok(ICON_NAMES.includes(id), `no icon for the ${id} tab`);
+  assert.ok(ids.length >= 4, `found only ${ids.length} places`);
+  for (const id of ids) assert.ok(ICON_NAMES.includes(id), `no icon for ${id}`);
 });
 
 test('the header icons exist', () => {
-  for (const name of ['light', 'dark', 'settings']) {
+  for (const name of ['menu', 'settings']) {
     assert.ok(ICON_NAMES.includes(name), `no ${name} icon`);
   }
 });

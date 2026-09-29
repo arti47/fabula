@@ -269,17 +269,25 @@ const MUTANTS = [
   },
   {
     name: 'a declaration escapes its rule again',
-    file: 'skins/page.css',
-    from: ':root[data-look="page"] .brand-mark { display: none; }',
-    to: ':root[data-look="page"] .brand-mark { display: none; }\n--stray: 1px;',
+    file: 'styles.css',
+    from: '.brand-mark { color: var(--accent); }',
+    to: '.brand-mark { color: var(--accent); }\n--stray: 1px;',
     harness: 'test',
   },
+
   {
-    name: 'a look stops being applied at boot',
-    file: 'src/main.js',
-    from: "  root.setAttribute('data-look', LOOKS.some((l) => l.id === prefs.look) ? prefs.look : 'page');",
-    to: "  root.setAttribute('data-look', 'page');",
+    name: 'the persistent resource header stops being persistent (§6.2)',
+    file: 'styles.css',
+    from: '.story-header {\n  position: sticky; top: var(--header-h); z-index: 25;',
+    to: '.story-header {\n  position: static; z-index: 25;',
     harness: 'smoke',
+  },
+  {
+    name: 'the bar stops saying where you are (D31)',
+    file: 'src/router.js',
+    from: "  here.setAttribute('aria-current', 'page');",
+    to: "  here.removeAttribute('aria-current');",
+    harness: 'a11y',
   },
   {
     name: 'the update toast never offers a new version',
@@ -294,6 +302,7 @@ const COMMANDS = {
   test: ['npm', ['test', '--silent']],
   smoke: ['node', ['tests/smoke.mjs']],
   update: ['node', ['tests/update-path.mjs']],
+  a11y: ['node', ['tests/a11y.mjs']],
 };
 
 const results = [];
@@ -301,7 +310,14 @@ for (const mutant of MUTANTS) {
   if (!runAll && mutant.harness !== 'test') { results.push({ ...mutant, status: 'skipped' }); continue; }
 
   const path = join(ROOT, mutant.file);
-  const original = readFileSync(path, 'utf8');
+  // A mutant whose file has been deleted is stale, not a crash. It killed the whole run once.
+  let original;
+  try {
+    original = readFileSync(path, 'utf8');
+  } catch {
+    results.push({ ...mutant, status: 'STALE' });
+    continue;
+  }
   if (!original.includes(mutant.from)) {
     results.push({ ...mutant, status: 'STALE' }); // the code moved; the mutant no longer applies
     continue;

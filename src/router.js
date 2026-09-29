@@ -1,7 +1,8 @@
 // Hash routing, the tab bar, the persistent story header.
 
 import { el, add, clear, qs } from './core.js';
-import { iconSlot } from './icons.js';
+import { modal } from './ui.js';
+import { icon } from './icons.js';
 import { getCurrentStory } from './store.js';
 import { progress, coverCard } from './derived.js';
 import { deckScreen, cardScreen, settingsScreen, notFoundScreen } from './screens.js';
@@ -10,11 +11,13 @@ import { tutorialScreen } from './tutorial.js';
 import { storiesScreen, exampleScreen } from './library.js';
 import { buildScreen } from './build.js';
 
-const TABS = [
-  { id: 'stories', label: 'Stories', href: '#/stories', match: /^#\/(stories|example)/ },
-  { id: 'build', label: 'Build', href: '#/build', match: /^#\/build/ },
-  { id: 'deck', label: 'Deck', href: '#/deck', match: /^#\/deck/ },
-  { id: 'learn', label: 'Learn', href: '#/learn', match: /^#\/(learn|tutorial)/ },
+// Where else you can go. A fixed bar of four tabs took 61px off every screen for navigation a kid
+// uses a few times a session; it lives behind one button now, and the table gets the room (D31).
+const PLACES = [
+  { id: 'stories', label: 'Stories', blurb: 'Your shelf', href: '#/stories', match: /^#\/(stories|example)/ },
+  { id: 'build', label: 'Build', blurb: 'The story you are making', href: '#/build', match: /^#\/build/ },
+  { id: 'deck', label: 'Deck', blurb: 'All thirty cards', href: '#/deck', match: /^#\/deck/ },
+  { id: 'learn', label: 'Learn', blurb: 'How it all works', href: '#/learn', match: /^#\/(learn|tutorial)/ },
 ];
 
 const ROUTES = [
@@ -36,25 +39,57 @@ const ROUTES = [
   { pattern: /^#\/tutorial\/?$/, render: () => tutorialScreen() },
 ];
 
+/** The bar names the place you are standing in, and marks it. */
+function markHere() {
+  const here = qs('#here');
+  if (!here) return;
+  const hash = location.hash || '#/stories';
+  const place = PLACES.find((p) => p.match.test(hash));
+  const settings = hash.startsWith('#/settings');
+  here.textContent = settings ? 'Settings' : (place ? place.label : 'Stories');
+  here.setAttribute('href', settings ? '#/settings' : (place ? place.href : '#/stories'));
+  here.setAttribute('aria-current', 'page');
+}
+
 /** The header's own links are navigation too: say when you are standing on one. */
 function markHeaderLinks() {
   const hash = location.hash || '';
-  for (const link of document.querySelectorAll('.app-header a[href^="#/"]')) {
+  // Not the here-link: it is current by *place* (tutorial is Learn, an example is Stories), and
+  // marking by href prefix stripped it on exactly those two routes.
+  for (const link of document.querySelectorAll('.app-header a[href^="#/"]:not(#here)')) {
     if (hash.startsWith(link.getAttribute('href'))) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
   }
 }
 
-function renderTabs() {
-  const bar = clear(qs('#tab-bar'));
+/** The menu: one button, four places, the one you are standing on marked. */
+function openMenu() {
   const hash = location.hash || '#/stories';
-  for (const tab of TABS) {
-    add(bar, add(
-      el('a', { href: tab.href, 'aria-current': tab.match.test(hash) ? 'page' : null }),
-      iconSlot(tab.id, 'tab-icon'),
-      el('span', { text: tab.label }),
+  const list = el('div', { class: 'place-list' });
+  for (const place of PLACES) {
+    const here = place.match.test(hash);
+    const row = el('a', {
+      class: `place${here ? ' is-here' : ''}`,
+      href: place.href,
+      'aria-current': here ? 'page' : null,
+    });
+    row.append(icon(place.id, { size: 26 }));
+    add(row, add(
+      el('span', { class: 'place-text' }),
+      el('span', { class: 'place-name', text: place.label }),
+      el('span', { class: 'place-blurb', text: place.blurb }),
     ));
+    add(list, row);
   }
+  const close = modal({ title: 'Go somewhere else', body: [list], actions: [{ label: 'Stay here', kind: 'secondary' }] });
+  for (const row of list.querySelectorAll('a')) row.addEventListener('click', () => close());
+}
+
+function wireMenu() {
+  const button = qs('#menu-button');
+  if (!button || button.dataset.wired) return;
+  button.dataset.wired = 'yes';
+  button.addEventListener('click', openMenu);
 }
 
 /** The persistent resource header: the counts that say what is still blank (§6). */
@@ -125,7 +160,8 @@ function render() {
   const match = route ? hash.match(route.pattern) : null;
   add(screen, route ? route.render(match) : notFoundScreen());
 
-  renderTabs();
+  wireMenu();
+  markHere();
   markHeaderLinks();
   renderStoryHeader();
   centreCurrentPill();

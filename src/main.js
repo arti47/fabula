@@ -1,8 +1,6 @@
-// Entry point: theme, text size, service worker, router.
+// Entry point: text size, the header's icons, the zoom lock, the service worker, the router.
 
-import { qs } from './core.js';
-import { getPrefs, setPref } from './store.js';
-import { LOOKS } from './looks.js';
+import { getPrefs } from './store.js';
 import { startRouter } from './router.js';
 import { showToast } from './ui.js';
 import { icon } from './icons.js';
@@ -11,35 +9,15 @@ import { lockZoom } from './zoom.js';
 /** The header's own icons, and the toggle showing what it will switch you to. */
 function paintHeaderIcons() {
   const settings = document.querySelector('[data-settings-icon]');
-  if (settings) { settings.replaceChildren(icon('settings')); }
-  const theme = document.querySelector('[data-theme-icon]');
-  if (theme) { theme.replaceChildren(icon(currentlyDark() ? 'light' : 'dark')); }
+  if (settings) settings.replaceChildren(icon('settings'));
+  const menu = document.querySelector('[data-menu-icon]');
+  if (menu) menu.replaceChildren(icon('menu'));
 }
 
 export function applyPrefs() {
   const prefs = getPrefs();
   const root = document.documentElement;
-  if (prefs.theme === 'light' || prefs.theme === 'dark') root.setAttribute('data-theme', prefs.theme);
-  else root.removeAttribute('data-theme');
-  // Three looks, switchable, while we work out which one this app wants to be (§4).
-  root.setAttribute('data-look', LOOKS.some((l) => l.id === prefs.look) ? prefs.look : 'page');
   root.style.setProperty('--text-scale', String(prefs.textScale || 1));
-}
-
-function currentlyDark() {
-  const explicit = document.documentElement.getAttribute('data-theme');
-  if (explicit) return explicit === 'dark';
-  return window.matchMedia('(prefers-color-scheme: dark)').matches;
-}
-
-function wireThemeToggle() {
-  const button = qs('#theme-toggle');
-  if (!button) return;
-  button.addEventListener('click', () => {
-    setPref('theme', currentlyDark() ? 'light' : 'dark');
-    applyPrefs();
-    paintHeaderIcons();
-  });
 }
 
 function registerServiceWorker() {
@@ -60,6 +38,5 @@ function registerServiceWorker() {
 applyPrefs();
 paintHeaderIcons();
 lockZoom();
-wireThemeToggle();
 startRouter();
 registerServiceWorker();

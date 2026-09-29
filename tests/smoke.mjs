@@ -39,6 +39,40 @@ async function settled(page, selector, pattern) {
   return page.textContent(selector);
 }
 
+/** Type, but a field that never arrives is one finding rather than the end of the walk. An
+ *  unguarded `page.fill` threw and killed the run before a single recorded failure was printed —
+ *  the same blast-radius bug cycle 9 fixed for clicks, still open for typing. */
+async function type(page, selector, text) {
+  try {
+    await page.fill(selector, text, { timeout: 5000 });
+    return true;
+  } catch {
+    failures.push(`walk stalled: could not type into ${selector} (at ${page.url().split('#')[1] || '/'})`);
+    return false;
+  }
+}
+
+/** Wait for something to exist, but its absence is one finding rather than the end of the walk. */
+async function present(page, selector, timeout = 5000) {
+  try {
+    await page.waitForSelector(selector, { timeout });
+    return true;
+  } catch {
+    failures.push(`walk stalled: ${selector} never appeared (at ${page.url().split('#')[1] || '/'})`);
+    return false;
+  }
+}
+
+/** Read text, but a node that is not there is one finding rather than the end of the walk. */
+async function read(page, selector) {
+  try {
+    return await page.textContent(selector, { timeout: 5000 });
+  } catch {
+    failures.push(`walk stalled: ${selector} had nothing to read (at ${page.url().split('#')[1] || '/'})`);
+    return '';
+  }
+}
+
 /** Click, but a control that will not click is one finding rather than the end of the walk. */
 async function tap(page, selector) {
   try {
@@ -67,13 +101,13 @@ try {
     for (const route of ROUTES) {
       errors.length = 0;
       await page.goto(base + route, { waitUntil: 'domcontentloaded' });
-      await page.waitForSelector('#screen h2, #screen label', { timeout: 5000 });
+      await present(page, '#screen h2, #screen label');
 
       check(`${width} ${route} console`, () => assert.deepEqual(errors, []));
 
       if (route === '#/build/idea') {
         // If the fixture did not load, every other measurement below is of an empty app.
-        const seeded = await page.textContent('.story-header-title');
+        const seeded = await read(page, '.story-header-title');
         check(`${width} fixture loaded`, () => assert.equal(seeded, 'The dragon next door'));
       }
 
@@ -115,6 +149,22 @@ try {
       // buttons it was meant to explain. Two rows of context plus a 44px button is the ceiling.
       if (bar) check(`${width} ${route} action bar stays one bar`, () => assert.ok(bar.height <= 96, `${bar.height}px tall`));
 
+      // §6.2: the counts are meant to be visible from every in-story screen. A skin rule once set
+      // `position: relative` on the header and quietly ended that, which nothing noticed.
+      if (route.startsWith('#/build')) {
+        const stuck = await page.evaluate(async () => {
+          window.scrollTo(0, 400);
+          await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+          const box = document.querySelector('.story-header')?.getBoundingClientRect();
+          const header = document.querySelector('.app-header')?.getBoundingClientRect();
+          window.scrollTo(0, 0);
+          return box && header ? Math.round(box.top - header.bottom) : null;
+        });
+        check(`${width} ${route} the counts stay on screen`, () => {
+          assert.ok(stuck !== null && Math.abs(stuck) <= 2, `story header sits ${stuck}px from the header after scrolling`);
+        });
+      }
+
       // The pill that says where you are is the one that must be on screen.
       const strayPill = await page.evaluate(() => {
         const nav = document.querySelector('.section-nav');
@@ -129,13 +179,13 @@ try {
       // Chrome is what the screen costs before a word of the story appears (D22).
       const chrome = await page.evaluate(() => {
         const h = (sel) => { const n = document.querySelector(sel); return n && !n.hidden ? n.getBoundingClientRect().height : 0; };
-        return Math.round(h('.app-header') + h('.story-header') + h('.tab-bar'));
+        return Math.round(h('.app-header') + h('.story-header'));
       });
-      // Under 390 the four counts need a second line — they are 288px of text and a 360px phone
-      // has 316px of room once the gutters are taken. Shrinking them below 0.75rem to win 8px
-      // would cost a kid legibility on the one thing this header exists to show, so the budget
-      // carries the extra line instead.
-      const chromeBudget = width <= 360 ? 200 : 175;
+      // One band now (D31): a 44px header and the story header, and nothing else fixed anywhere.
+      // The story header is taller than a bar because it carries the story's cover behind the
+      // title — that is the look, not chrome creep. It was 210px with a tab bar; it is ~126 now,
+      // and only at 320, where the four counts wrap, does it need the extra line's 30px.
+      const chromeBudget = width <= 320 ? 160 : 140;
       check(`${width} ${route} fixed chrome stays out of the way`, () => assert.ok(chrome <= chromeBudget, `${chrome}px of chrome`));
 
       // The nav pill and a heading two centimetres below it saying the same thing is one of them
@@ -212,12 +262,6 @@ try {
       });
       check(`${width} ${route} leads somewhere`, () => assert.ok(onward > 0, 'no onward route from this screen'));
 
-      const underTabs = await page.evaluate(() => {
-        const tabTop = document.querySelector('.tab-bar').getBoundingClientRect().top + window.scrollY;
-        const docBottom = document.documentElement.scrollHeight;
-        return docBottom > window.innerHeight ? 0 : Math.max(0, Math.round(document.querySelector('#screen').getBoundingClientRect().bottom + window.scrollY - tabTop));
-      });
-      check(`${width} ${route} content clear of the tab bar`, () => assert.ok(underTabs <= 0, `${underTabs}px under the tab bar`));
     }
     await context.close();
   }
@@ -261,17 +305,17 @@ try {
     assert.equal(pinches.plainWheel, false, 'the wheel was cancelled');
   });
 
-  await page.fill('#teller-name', 'Ada');
+  await type(page, '#teller-name', 'Ada');
   await tap(page, '.action-bar .button');
-  await page.waitForSelector('text=No stories yet');
+  await present(page, 'text=No stories yet');
   await tap(page, '.action-bar .button');
-  await page.fill('#prompt-input', 'The dragon next door');
+  await type(page, '#prompt-input', 'The dragon next door');
   await tap(page, '.modal-actions .button');
-  await page.waitForSelector('.story-header-title');
+  await present(page, '.story-header-title');
   check('walk: story header names the story', async () => {});
-  const title = await page.textContent('.story-header-title');
+  const title = await read(page, '.story-header-title');
   check('walk: title', () => assert.equal(title, 'The dragon next door'));
-  const counts = await page.textContent('.progress-row');
+  const counts = await read(page, '.progress-row');
   check('walk: progress counts', () => {
     assert.match(counts, /Ingredients 0\/4/);
     assert.match(counts, /Beats 0\/9/);
@@ -279,11 +323,11 @@ try {
   });
   // Step 1: the idea, the die, the sparks.
   await page.goto(base + '#/build/idea');
-  await page.fill('#idea-text', 'a lighthouse that walks');
+  await type(page, '#idea-text', 'a lighthouse that walks');
   await page.waitForTimeout(600); // debounced autosave
   await tap(page, '.action-bar .button:not(.secondary)');
-  await page.waitForSelector('.prompt-panel');
-  const firstLetter = await page.textContent('.die-letter');
+  await present(page, '.prompt-panel');
+  const firstLetter = await read(page, '.die-letter');
   check('idea: the die lands on a real face', () => assert.match(firstLetter, /^[PMQGNS]$/));
 
   await tap(page, '.prompt-panel .button');
@@ -291,9 +335,9 @@ try {
   check('idea: every roll is kept, none discarded', () => assert.match(history, /rolled 2 times/));
 
   await tap(page, '.spark-row .button');
-  const spark = await page.textContent('.spark-out');
+  const spark = await read(page, '.spark-out');
   check('idea: sparks produce something', () => assert.ok(spark.trim().length > 5, 'no spark text'));
-  const houseFlag = await page.textContent('.spark-note .house-flag');
+  const houseFlag = await read(page, '.spark-note .house-flag');
   check('idea: sparks are labelled as ours', () => assert.match(houseFlag, /not the deck/));
 
   // Tapping the same spark twice must not hand back the same line — it reads as a dead button.
@@ -309,7 +353,7 @@ try {
   await page.goto(base + '#/build/idea');
   const savedIdea = await page.inputValue('#idea-text');
   check('idea: the sentence persists', () => assert.equal(savedIdea, 'a lighthouse that walks'));
-  const headerAfter = await page.textContent('.progress-row');
+  const headerAfter = await read(page, '.progress-row');
   check('idea: the header knows there is an idea', () => assert.match(headerAfter, /Idea yes/));
 
   // Step 2: ingredients, one question at a time, in any order.
@@ -317,7 +361,7 @@ try {
   await tap(page, '.card-grid .card');
   const firstQ = await settled(page, '.question-label', /How old are they\?/);
   check('ingredients: opens on the first question', () => assert.match(firstQ, /How old are they\?/));
-  await page.fill('#answer', 'about eleven');
+  await type(page, '#answer', 'about eleven');
   await page.waitForTimeout(600);
   await tap(page, '.action-bar .button:not(.secondary)');
   const secondQ = await settled(page, '.question-label', /What do they look like\?/);
@@ -341,18 +385,18 @@ try {
   // Jump straight to the name question via the pips (P2 survives the one-at-a-time format).
   await tap(page, '.pips .pip:nth-child(6)');
   await settled(page, '.question-label', /What are they called\?/);
-  await page.fill('#answer', 'Bo');
+  await type(page, '#answer', 'Bo');
   await page.waitForTimeout(600);
   await page.goto(base + '#/build/ingredients');
-  const gridText = await page.textContent('#screen');
+  const gridText = await read(page, '#screen');
   check('ingredients: the tile takes the character\'s name', () => assert.match(gridText, /Bo/));
   check('ingredients: the tile counts answers', () => assert.match(gridText, /2 of 6 answered/));
-  const headerCounts = await page.textContent('.progress-row');
+  const headerCounts = await read(page, '.progress-row');
   check('ingredients: the header counts the card', () => assert.match(headerCounts, /Ingredients 1\/4/));
 
   // P3: the same card twice.
   await tap(page, 'text=Add another main character');
-  await page.waitForSelector('#answer');
+  await present(page, '#answer');
   await page.goto(base + '#/build/ingredients');
   const twoHeroes = await page.evaluate(() => document.querySelectorAll('.card-grid')[0].children.length);
   check('ingredients: a second main character is allowed', () => assert.equal(twoHeroes, 2));
@@ -364,19 +408,19 @@ try {
   check('ingredients: skipping says so and offers it back', () => assert.match(afterSkip, /Skipped for now/));
   await tap(page, 'text=Bring it back');
   await page.waitForFunction(() => !/Skipped for now/.test(document.querySelector('#screen').textContent), null, { timeout: 5000 });
-  const afterUnskip = await page.textContent('#screen');
+  const afterUnskip = await read(page, '#screen');
   check('ingredients: a skipped card comes back', () => assert.ok(!/Skipped for now/.test(afterUnskip)));
 
   // Sparks: three at a time, tap one into the field, and the label saying whose they are.
   await page.goto(base + '#/build/ingredients/inciting/0');
-  await page.waitForSelector('#answer');
-  const sparkLabel = await page.textContent('.sparks .house-flag');
+  await present(page, '#answer');
+  const sparkLabel = await read(page, '.sparks .house-flag');
   check('sparks: labelled as ours, not the deck\'s', () => assert.match(sparkLabel, /not the deck/));
   const chipsBefore = await page.evaluate(() => document.querySelectorAll('.spark-chip').length);
   check('sparks: nothing is shown until asked for', () => assert.equal(chipsBefore, 0));
 
   await tap(page, '.sparks .button');
-  await page.waitForSelector('.spark-chip');
+  await present(page, '.spark-chip');
   const chips = await page.evaluate(() => [...document.querySelectorAll('.spark-chip')].map((c) => c.textContent));
   check('sparks: three, and all different', () => {
     assert.equal(chips.length, 3);
@@ -413,17 +457,17 @@ try {
   // A beat's sparks fill in the names the story has, rather than saying "the hero".
   await page.goto(base + '#/build/structure/5');
   await tap(page, '.sparks .button');
-  await page.waitForSelector('.spark-chip');
+  await present(page, '.spark-chip');
   const beatChips = await page.evaluate(() => [...document.querySelectorAll('.spark-chip')].map((c) => c.textContent).join(' | '));
   check('sparks: no placeholder ever reaches the screen', () => assert.ok(!/[{}]/.test(beatChips), beatChips));
 
   // Step 3: the nine beats, and ruling A5 in the browser.
   await page.goto(base + '#/build/ingredients/inciting/0');
-  await page.fill('#answer', 'Grandma falls ill');
+  await type(page, '#answer', 'Grandma falls ill');
   await page.waitForTimeout(600);
 
   await page.goto(base + '#/build/structure');
-  const beatList = await page.textContent('.beat-list');
+  const beatList = await read(page, '.beat-list');
   check('structure: all nine beats are listed', () => {
     assert.match(beatList, /Once upon a time/);
     assert.match(beatList, /In the end/);
@@ -432,39 +476,39 @@ try {
   check('structure: nine of them', () => assert.equal(beatRows, 9));
 
   await page.goto(base + '#/build/structure/2');
-  await page.waitForSelector('#beat-text');
+  await present(page, '#beat-text');
   const prefilled = await page.inputValue('#beat-text');
   check('A5: beat 2 arrives pre-filled from the ingredient', () => assert.equal(prefilled, 'Grandma falls ill'));
-  const provenance = await page.textContent('.provenance');
+  const provenance = await read(page, '.provenance');
   check('A5: and says where it came from', () => assert.match(provenance, /Something happens/));
 
-  await page.fill('#beat-text', 'One morning a letter arrives instead');
+  await type(page, '#beat-text', 'One morning a letter arrives instead');
   await page.waitForTimeout(600);
   await page.goto(base + '#/build/ingredients/inciting/0');
   const ingredientStillSays = await page.inputValue('#answer');
   check('A5: editing the beat leaves the card alone', () => assert.equal(ingredientStillSays, 'Grandma falls ill'));
 
   await page.goto(base + '#/build/structure/9');
-  await page.fill('#beat-text', 'In the end everyone goes home.');
+  await type(page, '#beat-text', 'In the end everyone goes home.');
   await page.waitForTimeout(600);
-  const beatCounts = await page.textContent('.progress-row');
+  const beatCounts = await read(page, '.progress-row');
   check('structure: the header counts written beats', () => assert.match(beatCounts, /Beats 2\/9/));
 
   // Step 4: the boosts, the snapshot, and the two permissions the booklet demonstrates.
   await page.goto(base + '#/build/boost');
   const boostTiles = await page.evaluate(() => document.querySelectorAll('.card-grid .card').length);
   check('boost: all ten are offered', () => assert.equal(boostTiles, 10));
-  const frozenNote = await page.textContent('#screen');
+  const frozenNote = await read(page, '#screen');
   check('A8: the before-version is frozen on arrival', () => assert.match(frozenNote, /as it was when you started boosting/));
 
   await page.goto(base + '#/build/boost/boost-help');
-  await page.fill('#boost-answer', 'He needs a sister');
+  await type(page, '#boost-answer', 'He needs a sister');
   await page.waitForTimeout(600);
 
   // P6: this card invents a character, and the new card carries where it came from.
   await tap(page, 'text=This gives me a new character');
   await settled(page, '.question-label', /How old are they\?/);
-  await page.fill('#answer', 'a bit younger');
+  await type(page, '#answer', 'a bit younger');
   await page.waitForTimeout(600);
   await page.goto(base + '#/build/boost/boost-help');
   const spawnedList = await settled(page, '#screen', /Made from this card/);
@@ -479,9 +523,9 @@ try {
   await page.goto(base + '#/build/boost/boost-too-easy');
   await tap(page, 'text=Change beat 4');
   await settled(page, '.provenance', /came here from a Boost card/);
-  await page.fill('#beat-text', 'They are abandoned twice, and the second time the birds eat the crumbs.');
+  await type(page, '#beat-text', 'They are abandoned twice, and the second time the birds eat the crumbs.');
   await page.waitForTimeout(600);
-  const backLink = await page.textContent('.back-link');
+  const backLink = await read(page, '.back-link');
   check('P7: the beat offers the way back to the boost', () => assert.match(backLink, /Back to/));
   await tap(page, '.action-bar .button:not(.secondary)');
   const boostAgain = await settled(page, '#screen', /you went back to beat/);
@@ -560,12 +604,12 @@ try {
 
   // A finished card says so from across the room (G9), and a written beat fills its node (G7).
   await page.goto(base + '#/build/boost');
-  await page.waitForSelector('.card-grid');
+  await present(page, '.card-grid');
   const badges = await page.evaluate(() => document.querySelectorAll('.done-badge').length);
   check('answered boosts carry a mark', () => assert.ok(badges > 0, 'no done badges on an answered grid'));
 
   await page.goto(base + '#/build/structure');
-  await page.waitForSelector('.beat-row');
+  await present(page, '.beat-row');
   const rail = await page.evaluate(() => ({
     written: document.querySelectorAll('.beat-row.is-written').length,
     total: document.querySelectorAll('.beat-row').length,
@@ -577,11 +621,11 @@ try {
 
   // Learn: search, and the link from a card to its entry.
   await page.goto(base + '#/learn');
-  await page.fill('#learn-search', 'Cinderella');
+  await type(page, '#learn-search', 'Cinderella');
   const hits = await settled(page, '.learn-results', /match/);
   check('learn: search finds the booklet examples', () => assert.match(hits, /match/));
   await page.goto(base + '#/deck/card/beat-5');
-  const cardLinks = await page.textContent('#screen');
+  const cardLinks = await read(page, '#screen');
   check('learn: every card links to its entry', () => assert.match(cardLinks, /Read more about this card/));
 
   // The two worked stories, readable from the shelf.
@@ -602,7 +646,7 @@ try {
   await settled(page, '.told-story', /Gretel throws|tricked the witch/);
   const afterPassages = await page.evaluate(() => [...document.querySelectorAll('.told-passage')].map((n) => n.textContent).join(' '));
   check('examples: the boosted version has a sister who saves him', () => assert.match(afterPassages, /Gretel/));
-  const afterCard = await page.textContent('.told-story');
+  const afterCard = await read(page, '.told-story');
   check('examples: and says which card invented her', () => assert.match(afterCard, /came from a boost/));
 
   // Adding a second character is a permission; removing it again has to exist, and confirm.
@@ -630,7 +674,7 @@ try {
   // Removing a storyteller is destructive, so it must confirm and name the loss (§6.1).
   await page.goto(base + '#/stories');
   await tap(page, '.progress-row .button');
-  await page.waitForSelector('.teller-row');
+  await present(page, '.teller-row');
   await tap(page, '.teller-row .button.danger');
   const warning = await settled(page, '.modal p', /stor/);
   check('remove storyteller names what is lost', () => assert.match(warning, /stor(y|ies)/));
@@ -640,7 +684,7 @@ try {
   check('cancel leaves everything alone', () => assert.equal(stillThere, 0));
 
   await page.goto(base + '#/stories');
-  const persisted = await page.textContent('#screen');
+  const persisted = await read(page, '#screen');
   check('walk: story persists on the shelf', () => assert.match(persisted, /The dragon next door/));
   check('walk: the shelf shows the idea as the blurb', () => assert.match(persisted, /a lighthouse that walks/));
 
@@ -651,7 +695,7 @@ try {
     const widePage = await wide.newPage();
     for (const route of ['#/stories', '#/learn']) {
       await widePage.goto(base + route, { waitUntil: 'domcontentloaded' });
-      await widePage.waitForSelector('.two-up');
+      await present(widePage, '.two-up');
       const columns = await widePage.evaluate(() => {
         const box = document.querySelector('.two-up');
         return getComputedStyle(box).gridTemplateColumns.split(' ').filter(Boolean).length;
@@ -671,8 +715,8 @@ try {
   check('the shelf control says it can remove a storyteller', () => assert.match(tellerControl, /remove/i));
 
   await page.goto(base + '#/settings');
-  await page.waitForSelector('#screen h2');
-  const settingsText = await page.textContent('#screen');
+  await present(page, '#screen h2');
+  const settingsText = await read(page, '#screen');
   check('settings offers the storyteller manager', () => assert.match(settingsText, /Switch, add or remove/));
   check('settings offers to delete the open story', () => assert.match(settingsText, /Delete this story/));
 
@@ -685,7 +729,7 @@ try {
 
   // The last storyteller is removable too: a person who wants off this device gets all the way off.
   await tap(page, '.progress-row .button');
-  await page.waitForSelector('.teller-row');
+  await present(page, '.teller-row');
   await tap(page, '.teller-row .button.danger');
   await settled(page, '.modal', /Remove/);
   await tap(page, '.modal-actions .button:not(.secondary)');
@@ -703,7 +747,7 @@ try {
     await seed(barCtx, 'mid-story');
     const barPage = await barCtx.newPage();
     await barPage.goto(base + '#/build/tell', { waitUntil: 'domcontentloaded' });
-    await barPage.waitForSelector('.action-bar');
+    await present(barPage, '.action-bar');
     const tall = [];
     for (let width = 320; width <= 1024; width += 8) {
       await barPage.setViewportSize({ width, height: 800 });
@@ -712,46 +756,6 @@ try {
     }
     check('the action bar stays one bar at every width', () => assert.deepEqual(tall, [], tall.join(', ')));
     await barCtx.close();
-  }
-
-  // Three looks ship at once (§4), and each one is a different stylesheet over the same markup.
-  // A look that overflows, shrinks a tap target or underlines its buttons is as broken as the app
-  // would be, so the measurement contract runs against all of them.
-  for (const look of ['page', 'deck', 'sheet']) {
-    for (const width of [390, 1024]) {
-      const lookCtx = await browser.newContext({ viewport: { width, height: 800 } });
-      await seed(lookCtx, 'mid-story');
-      const lookPage = await lookCtx.newPage();
-      await lookPage.addInitScript((chosen) => {
-        try {
-          const raw = localStorage.getItem('storyMachine.prefs');
-          localStorage.setItem('storyMachine.prefs', JSON.stringify({ ...(raw ? JSON.parse(raw) : {}), look: chosen }));
-        } catch { /* a look nobody can store is the default, which is still a look */ }
-      }, look);
-      const lookErrors = [];
-      lookPage.on('pageerror', (e) => lookErrors.push(String(e)));
-      lookPage.on('console', (m) => { if (m.type() === 'error' && !isMissingArt(m)) lookErrors.push(m.text()); });
-      for (const route of DEEP_ROUTES) {
-        await lookPage.goto(base + route, { waitUntil: 'domcontentloaded' });
-        await lookPage.waitForSelector('#screen h2, #screen label');
-        const seen = await lookPage.evaluate(() => ({
-          look: document.documentElement.getAttribute('data-look'),
-          overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-          small: [...document.querySelectorAll('a, button, summary')]
-            .filter((t) => t.offsetParent !== null && !t.classList.contains('skip-link'))
-            .map((t) => ({ text: (t.textContent || t.getAttribute('aria-label') || '').trim().slice(0, 20), h: Math.round(t.getBoundingClientRect().height) }))
-            .filter((t) => t.h > 0 && t.h < 40),
-          underlined: [...document.querySelectorAll('a.button')]
-            .filter((a) => a.offsetParent !== null && getComputedStyle(a).textDecorationLine !== 'none').length,
-        }));
-        check(`${look} ${width} ${route} applied`, () => assert.equal(seen.look, look));
-        check(`${look} ${width} ${route} overflow`, () => assert.ok(seen.overflow <= 0, `${seen.overflow}px`));
-        check(`${look} ${width} ${route} tap targets`, () => assert.deepEqual(seen.small, [], JSON.stringify(seen.small)));
-        check(`${look} ${width} ${route} buttons`, () => assert.equal(seen.underlined, 0));
-      }
-      check(`${look} ${width} console`, () => assert.deepEqual(lookErrors, []));
-      await lookCtx.close();
-    }
   }
 
   // An adversarial state: emoji, unbroken 600-character words, quotes, angle brackets, right-to-
@@ -764,7 +768,7 @@ try {
   messyPage.on('console', (m) => { if (m.type() === 'error' && !isMissingArt(m)) messyErrors.push(m.text()); });
   for (const route of DEEP_ROUTES.filter((r) => !r.includes('mid-hero-1'))) {
     await messyPage.goto(base + route, { waitUntil: 'domcontentloaded' });
-    await messyPage.waitForSelector('#screen');
+    await present(messyPage, '#screen');
     const over = await messyPage.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     check(`messy ${route} overflow`, () => assert.ok(over <= 0, `${over}px of horizontal overflow`));
     // No stray-text check here: this fixture types "null", "NaN" and "[object Object]" into its
@@ -780,7 +784,7 @@ try {
   await bareContext.route('**/assets/cards/*', (route) => route.abort());
   const barePage = await bareContext.newPage();
   await barePage.goto(base + '#/deck/structure', { waitUntil: 'domcontentloaded' });
-  await barePage.waitForSelector('.card-grid .card');
+  await present(barePage, '.card-grid .card');
   await barePage.waitForTimeout(400);
   const bare = await barePage.evaluate(() => {
     const cards = [...document.querySelectorAll('.card-grid .card')];
@@ -814,10 +818,10 @@ try {
   subPage.on('pageerror', (e) => subErrors.push(String(e)));
   subPage.on('console', (m) => { if (m.type() === 'error' && !isMissingArt(m)) subErrors.push(m.text()); });
   await subPage.goto(subBase, { waitUntil: 'domcontentloaded' });
-  await subPage.waitForSelector('#screen');
+  await present(subPage, '#screen');
   check('deployed under a sub-path: the app boots', () => assert.deepEqual(subErrors, []));
   await subPage.goto(`${subBase}#/deck/structure`);
-  await subPage.waitForSelector('.card-grid .card');
+  await present(subPage, '.card-grid .card');
   await subPage.waitForTimeout(600);
   const subFaces = await subPage.evaluate(() => [...document.querySelectorAll('.card-grid img.card-face')].map((i) => i.naturalWidth > 0));
   check('deployed under a sub-path: the card art resolves', () => {
@@ -833,7 +837,7 @@ try {
   const artContext = await browser.newContext({ viewport: { width: 390, height: 740 } });
   const artPage = await artContext.newPage();
   await artPage.goto(base + '#/deck/structure');
-  await artPage.waitForSelector('.card-grid .card');
+  await present(artPage, '.card-grid .card');
   await artPage.waitForTimeout(300);
   const faces = await artPage.evaluate(() => {
     const cards = [...document.querySelectorAll('.card-grid .card')];

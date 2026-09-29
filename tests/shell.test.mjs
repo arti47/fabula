@@ -47,8 +47,8 @@ test('every stylesheet is structurally sound', () => {
   // A declaration that fell outside every rule sat at the end of styles.css for three commits.
   // The browser drops it silently, so the page looked right and the dark themes quietly used the
   // light theme's paper grain. The parse gate checks JS by filename; this checks CSS the same way.
-  const sheets = ['styles.css', ...readdirSync(join(ROOT, 'skins')).map((f) => join('skins', f))]
-    .filter((f) => f.endsWith('.css'));
+  const sheets = readdirSync(ROOT).filter((f) => f.endsWith('.css'));
+  assert.ok(sheets.includes('styles.css'), 'styles.css is not there to check');
   for (const file of sheets) {
     const raw = readFileSync(join(ROOT, file), 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, '')

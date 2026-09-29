@@ -7,7 +7,6 @@
 // House-drawn chrome, never the deck's art (§10.7, D25): an open book, a nib, a fanned pair of
 // cards, a lamp. Nothing here is a card face and nothing carries the deck's lettering.
 
-import { el } from './core.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
 
@@ -20,12 +19,11 @@ const PATHS = {
   deck: ['M9 4.2h7.5a1.5 1.5 0 0 1 1.5 1.5V19a1.5 1.5 0 0 1-1.5 1.5H9A1.5 1.5 0 0 1 7.5 19V5.7A1.5 1.5 0 0 1 9 4.2z', 'M5.4 7.2 4 7.7a1.5 1.5 0 0 0-.95 1.9l3.2 9.6'],
   // A lamp, lit — the rules library.
   learn: ['M12 3.5a5 5 0 0 1 3.2 8.8c-.7.6-1.1 1.3-1.2 2.2h-4c-.1-.9-.5-1.6-1.2-2.2A5 5 0 0 1 12 3.5z', 'M10 17.5h4', 'M10.6 20.2h2.8'],
-  // Sun and moon, for the theme toggle.
-  light: ['M12 7.4a4.6 4.6 0 1 0 0 9.2 4.6 4.6 0 0 0 0-9.2z', 'M12 2.6v1.8M12 19.6v1.8M2.6 12h1.8M19.6 12h1.8M5.3 5.3l1.3 1.3M17.4 17.4l1.3 1.3M18.7 5.3l-1.3 1.3M6.6 17.4l-1.3 1.3'],
-  dark: ['M20 14.6A8.6 8.6 0 0 1 9.4 4a8.6 8.6 0 1 0 10.6 10.6z'],
   // An empty shelf, and a page with nothing on it — the two empty states a kid actually meets.
   'empty-shelf': ['M3.5 17.5h17', 'M6 17.5V9.2a1 1 0 0 1 1-1h2.4a1 1 0 0 1 1 1v8.3', 'M13.6 17.5v-5.3a1 1 0 0 1 1-1H17a1 1 0 0 1 1 1v5.3', 'M8.6 5.6 12 3l3.4 2.6'],
   'empty-page': ['M6.5 3.5h7.6L18 7.4v13.1H6.5z', 'M14 3.5v4h4', 'M9.3 12.2h5.4M9.3 15.4h5.4'],
+  // Three rules — the way to everywhere else.
+  menu: ['M4 7h16', 'M4 12h16', 'M4 17h16'],
   // A cog — settings.
   settings: ['M12 8.6a3.4 3.4 0 1 0 0 6.8 3.4 3.4 0 0 0 0-6.8z', 'M12 2.8l1.2 2.3 2.6-.5.5 2.6 2.3 1.2-1.3 2.3 1.3 2.3-2.3 1.2-.5 2.6-2.6-.5L12 21.2l-1.2-2.3-2.6.5-.5-2.6-2.3-1.2L6.7 12 5.4 9.7l2.3-1.2.5-2.6 2.6.5z'],
 };
@@ -49,13 +47,6 @@ export function icon(name, { size = 24 } = {}) {
     svg.append(path);
   }
   return svg;
-}
-
-/** The same icon in a span, for places that want a block to align. */
-export function iconSlot(name, className) {
-  const slot = el('span', { class: className, 'aria-hidden': 'true' });
-  slot.append(icon(name));
-  return slot;
 }
 
 /**

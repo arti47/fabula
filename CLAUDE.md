@@ -82,7 +82,7 @@ non-English content.
 | D17 | Boost depth | Create cards **and** rewrite beats | A Boost can spawn an Ingredient card and send you back to edit a beat |
 | D18 | Name | Story Machine | Home screen, install icon, tab title |
 
-### 1.2 Visual decisions (Phase 11, recorded)
+### 1.2 Visual decisions (Phases 11–12, recorded)
 
 | # | Decision | Answer | What it binds |
 |---|---|---|---|
@@ -93,6 +93,13 @@ non-English content.
 | D23 | Tablet | **Two columns, tab bar stays** | Shelf, examples, Learn and Deck sections go two-up at 1024; the tab bar's contents centre to a max-width rather than spreading |
 | D24 | Motion | **Feedback and page transitions** | Press/hover lift, spark fade-in, a die tumble, and a short transition between steps. All gated behind `prefers-reduced-motion`; none of it carries information (§6) |
 | D25 | House-drawn graphics | **Close to the deck, never card-shaped** | Banners, rules and line art may echo the woodcut idiom, but nothing is rendered as a card face, carries a card's lettering, or sits where a real card would. §11 says the chrome is house-drawn |
+| D26 | The revamp's weight | **Both, deck first** | Cards behave like cards before the story becomes an object. Every string, route, card, question and rule is unchanged — only form |
+| D27 | One look | **Card table**, dark | `skins/` is gone; the other two looks are deleted. Dark is the ground, not a theme: vivid art needs something to sit on. **Supersedes §1's "cream paper" and D15** — there is no light theme and no theme toggle |
+| D28 | Card backs | **The four group dividers** | **Amends A2**: a divider may now be rendered as a card *back*. The Idea group has no divider, so its back is the plain group colour |
+| D29 | How far the physicality goes | **All the way into the writing screens** | The field lives on the card. The writing surface stays axis-aligned — a tilted field breaks focus rings, carets and iOS scroll-into-view |
+| D30 | Phone layout for the fan and the storyboard | **One card at a time, swipe** | A fan of ten and a nine-frame board need width. On a phone each is one card with prev/next controls; the fan and the full board appear from 768 |
+| D31 | The frame | **Chrome recedes onto the table** | One 44px bar carrying where you are, the story header beneath it, the action pinned. **The tab bar is gone**; Stories, Build, Deck and Learn live behind one menu button |
+| D32 | Delivery | **Five batches, screenshots between** | Frame · physics · the five forms · the story object · moments and graphics |
 
 ---
 
@@ -192,7 +199,7 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | id | Question | Ruling |
 |---|---|---|
 | A1 | Structure cards 4 and 5 share the headline "But all of a sudden" | Distinguish by number badge and beat name (First Trial / Second Trial); headline is the subtitle |
-| A2 | Is the deck 34 cards or 30? | Both: 34 printed images, of which 4 are group dividers carrying no prompt. The app has 30 playable cards and does not render dividers as cards. A divider may appear as a **wide band** heading its group in the Deck and the rules library (G5) — a strip, never an upright face, never inside a card grid, never tappable |
+| A2 | Is the deck 34 cards or 30? | Both: 34 printed images, of which 4 are group dividers carrying no prompt. The app has 30 playable cards and does not render dividers as cards. A divider may appear as a **wide band** heading its group in the Deck and the rules library (G5), and — amended by D28 — as a card **back**, which is the one place it is rendered card-shaped. It is never a playable face and never sits in a grid as one |
 | A3 | The EN Structure divider is printed "STRUTTURA" | Untranslated in the EN print. Recorded in `CARD_ERRATA`; the app says Structure everywhere |
 | A4 | The die art shows letters at angles that could read as other letters | The booklet is authoritative: faces are P, M, Q, G, N, S |
 | A5 | "Something Happens" is both an Ingredient card and Structure beat 2 (Call to Action) | One story fact, two homes. Beat 2 is **pre-filled** from the Ingredient answer, editable afterwards, and the app says where it came from. One record, never two (§10.11) |
@@ -239,12 +246,12 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
   `feGaussianBlur`, `feDisplacementMap`) inside a CSS background: the browser re-runs it over the
   whole page on every paint, and a three-screen route becomes unpaintable. Texture ships as a small
   tile; a test enforces it.
-- **Three looks, one structure.** `styles.css` owns every measurement; `skins/<id>.css` owns
-  nothing but taste, scoped to `:root[data-look="<id>"]`. **Book page** (default), **Card table**
-  (dark, the story's cover behind the header) and **Paper sheet**. Chosen in Settings, stored with
-  the theme. The whole measurement contract — overflow, tap targets, underlined anchors, console —
-  runs against all three at 390 and 1024; a look that breaks it is as broken as the app. Two of
-  them get deleted once one has won.
+- **One look: the card table** (D27). Dark ground, one 44px bar, the story's cover behind its
+  title. There is no light theme and no theme toggle — the ground is the table. `prefers-contrast:
+  more` still applies.
+- **One bar, one menu** (D31). The tab bar is gone. Stories, Build, Deck and Learn live behind the
+  menu button; the bar names the place you are standing in and marks it `aria-current`. Fixed
+  chrome stays under 140px (160 at 320, where the counts wrap) — it was 210px with a tab bar.
 - **Responsive**: zero horizontal overflow at 320 / 360 / 390px; tablet layouts at 768 and 1024
   that add density rather than stretching (D12).
 
@@ -255,8 +262,7 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | File | Purpose |
 |---|---|
 | `index.html` | App shell: header, story header, section nav, screen mount, module entry |
-| `styles.css` | Structure, measurements and component skeletons — everything that is not a matter of taste |
-| `skins/page.css`, `skins/deck.css`, `skins/sheet.css` | The three looks (§4). One structure, three skins, each scoped to `:root[data-look="…"]` |
+| `styles.css` | Everything: structure, measurements, components and the card-table look (D27) |
 | `data.js` | The deck: all 30 playable cards — headline, group, badge, art path, questions, guidance, examples |
 | `data-examples.js` | The two booklet stories as complete story records (Little Red Riding Hood; Hänsel & Gretel before *and* after Boosts) |
 | `data-sparks.js` | Invented spark tables — five open ones for the Idea screen, and one per input (39) — `HOUSE_AID = true` |
@@ -300,8 +306,7 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | `sparks.js` | Draws three sparks for an input, fills in the names the story has, inserts at the cursor; always labelled a house aid |
 | `settings.js` | Theme, text size, export/import, the storyteller manager, deleting the open story, about — **currently inside `screens.js`** |
 | `tutorial.js` | The ten-step first-story walkthrough, linked from the empty shelf and Settings |
-| `router.js` | Tab routing, section nav (incl. scrolling the current pill into view), live-state badges |
-| `looks.js` | The three looks and their names — one list, read by Settings and by boot (§4) |
+| `router.js` | Hash routing, the menu and the place you are standing in, section nav (incl. scrolling the current pill into view), the story header |
 | `icons.js` | The app's own SVG icons and drawings, stroked in `currentColor` — house-drawn chrome, never the deck's art (D25) |
 | `zoom.js` | The zoom lock: refuses pinch gestures iOS Safari grants despite the viewport meta |
 | `main.js` | Entry point / boot |
@@ -315,26 +320,24 @@ list, then bump `CACHE_VERSION` — in the same change.
 
 ```
 ┌──────────────────────────────┐
-│ app header (Story Machine · theme · settings)   sticky
+│ ☰  Build                    ⚙   sticky, 44px
 ├──────────────────────────────┤
-│ story header: title · Ingredients 3/4 · Beats 5/9 · Boosts 2/10   sticky
+│ the story's cover, its title, and what is still blank   sticky
 ├──────────────────────────────┤
 │ section nav (Idea · Ingredients · Structure · Boost · Tell)
 │ screen content ← scrolls
 ├──────────────────────────────┤
 │ action bar (Next card · Roll · Read my story)   fixed
-├──────────────────────────────┤
-│ tab bar: Stories · Build · Deck · Learn         fixed
 └──────────────────────────────┘
+  ☰ opens: Stories · Build · Deck · Learn
 ```
 
 - The **story header is this app's persistent resource header** (§6.2): the title and the counts
   that tell a kid what is still blank, visible from every in-story screen. It is progress, never a
   score. Two lines, not three — who is telling the story does not change while it is being written,
   and is named on the shelf and in Settings (D22).
-- **Fixed chrome has a budget**: the app header, the story header and the tab bar together stay
-  under 175px (200px at 320, where the four counts need a second line). Asserted on every route at
-  every width.
+- **Fixed chrome has a budget**: the bar and the story header together stay under 140px (160 at
+  320, where the four counts need a second line). Asserted on every route at every width.
 - **Nothing is named twice on one screen.** Where the section nav already carries the step or
   section in the accent colour, the matching `<h2>` stays in the document for the heading outline
   and is not drawn. Asserted.
@@ -490,10 +493,10 @@ horizontal overflow at 320/360/390 and no stretched layout at 768/1024; no stray
 `null`/`undefined`/`NaN` text; nothing under the fixed tab bar; every screen's primary action above
 the fold; section nav reaches every sibling; no tap target under 40px measured on the wrapping
 label; the action bar never grows past one bar; the current section-nav pill stays in view; fixed
-chrome inside its budget; nothing named twice; the two-up layouts really give two columns at 1024
+chrome inside its budget; the counts still on screen after scrolling (§6.2); nothing named twice; the two-up layouts really give two columns at 1024
 and one at 390; the action bar measured continuously from 320 to 1024 in 8px steps, because it is
 the one thing sensitive to width rather than to layout and a five-width sample walked straight past
-a defect band nine pixels wide; and the whole contract again in each of the three looks; the full walk: storyteller → story → roll → idea → ingredients → beats → boost → tell.
+a defect band nine pixels wide; the full walk: storyteller → story → roll → idea → ingredients → beats → boost → tell.
 
 **C. Interaction audit (`npm run audit`, ~2 min).** Visits every route — including the screens
 *inside* a step — clicks every visible control in isolation with storage reset between clicks, and
@@ -519,7 +522,7 @@ stories, a story with 4 heroes, 2 villains, 3 worlds, every beat long, all 10 bo
 text, whitespace-only answers — what a kid types when nobody is watching). `tests/probe-layout.mjs` prints per route: height in viewports, control count,
 primary-action offset, smallest tap target, overflow per width. A probe prints; it does not assert.
 
-**Mutation pass (`npm run mutants`, `-- all` for the browser ones).** Thirty-nine mutants, each breaking
+**Mutation pass (`npm run mutants`, `-- all` for the browser ones).** Forty mutants, each breaking
 one rule the app is supposed to keep — the pre-fill, the snapshot, the die, a permission's control,
 the placeholder path, the update toast, the zoom lock. A mutant that survives is a rule that can break silently,
 and is a finding against the harness rather than the app.
@@ -603,6 +606,7 @@ rather than a broken image, and the harness must pass with `assets/cards/` empty
 
 | Date | Change | Verification | Cache |
 |---|---|---|---|
+| 2026-09-29 | **Revamp batch 1 of 5: one look, one bar.** The interface still read as boring with three skins on it, which settled the question — it was never the palette. Nine modules share one skeleton (heading → explain → note → list → action bar), the deck never behaves like a deck, and five stacked bands of chrome took 210px off a phone before a word of the story appeared. This batch clears the ground: the other two looks are deleted, the **card table** is the only one (D27, dark, no theme toggle — it supersedes §1's cream paper and D15), the tab bar is gone and Stories/Build/Deck/Learn live behind one menu button (D31). 210px of chrome → 126. **Four defects found doing it, three of them mine and one older.** Rewriting `:root` dropped `--tab-h`, so `bottom: calc(var(--tab-h) + …)` became invalid and **the action bar sat 100px below the fold on every screen**. The folded-in skin rule set `position: relative` on the story header, which beat `position: sticky` — §6.2's persistent resource header had quietly stopped being persistent, and nothing had ever tested that it sticks. Removing the tab bar took the app's only labelled `<nav>` landmark and its only `aria-current` with it. And the smoke walk **aborted before printing a single recorded failure** because `page.fill`, `page.waitForSelector` and `page.textContent` were unguarded — the blast-radius bug cycle 9 fixed for clicks, still open for the other three. | `npm test` 90/90; smoke clean over 30 routes × 5 widths with three new checks — the counts stay on screen after scrolling, the bar still names where you are, and the walk now reports instead of dying; interaction (440 controls), a11y and update path clean; `npm run mutants -- all` 40/40 caught, two new (the header unstuck, the bar unmarked) and the runner no longer dies when a mutant's file has been deleted | v24 |
 | 2026-09-29 | Three harness defects, no app defects — the pass turned on itself and was right each time. **Stale mutant**: one still named `--grain`, renamed to `--grain-tile` in this change, so the pass had quietly stopped testing that no SVG filter can return as a page background. **Survivor**: nothing could kill the action bar's two-line clamp, and measuring showed why — the clamp, the non-shrinking buttons and the off-screen rule below 431px are three guards for one behaviour, and with all three gone the bar only breaks its 96px budget between **431 and 440px**, a band narrower than the gap between any two widths in the sweep. A sixth width cost 20% of the sweep and caught nothing; the bar is measured continuously now, 320 to 1024 in 8px steps, and the three-guards-removed mutant dies at 432px. **False alarm**: the interaction audit summarised a screen as its text length plus its first 400 characters, so an Idea spark writing a new line of the same length as the old one read as "changes nothing" — intermittently, depending on the row drawn. It hashes the whole screen now. | `npm run mutants -- all` 39/39 caught, nothing stale; the continuous bar sweep proved to bite by removing all three guards (fails at 432px); the rebuilt audit signature proved to bite in both directions — silencing the spark write reports all five tables, and three consecutive runs with it working are clean; `npm test` 90/90, a11y and update path unchanged | v23 |
 | 2026-09-29 | **Three looks, because the answer to "which direction" was all of them.** `styles.css` keeps every measurement and component skeleton; taste moves out into `skins/page.css`, `skins/deck.css` and `skins/sheet.css`, each scoped to `:root[data-look="…"]`, chosen in Settings beside the theme. Book page is the default. Shared by all three, and the real reason the old interface looked the way it did: **the body font was `--font-ui`** — every note, label, count and button in a storybook app was set in Segoe or Roboto with only the headings in a serif. The reading voice is the serif now; only the mechanical bits stay on the UI face. The screen gutter grew from 8px to 20px, and the story's cover is available behind the header for the looks that want art there. Three defects found on the way, all older than this change: a `--grain` declaration had sat **outside every rule** at the end of `styles.css` since batch 2, so both dark themes had silently been using the light theme's paper; the tablet rule set its own `.screen` padding while the section nav hung off `--gutter`, so at 1024 the nav ran 6px past the viewport **in every look**; and the four progress counts wrapped at 360 once the gutter grew. | `npm test` 90/90 with a new stylesheet-structure guard over all four CSS files — braces balanced, nothing outside a rule; smoke now runs the measurement contract in each of the three looks at 390 and 1024 on every deep route (overflow, tap targets, underlined anchors, console) as well as its own 30 × 5 sweep; interaction (443 controls) and a11y clean; `npm run mutants -- all` 39/39 caught, two new — a declaration escaping its rule, and a look never applied at boot | v23 |
 | 2026-09-29 | The primary action on every screen was an underlined link. `.button` carried no `display` and no `text-decoration`, and about half the buttons in the app are `<a class="button">` — so "Write beat 4", "Keep boosting", "Back to my stories" and "Next" rendered underlined, inline, and a different height from the `<button>` sitting beside them. It survived every harness because nothing measured how a control *looks*, only that it exists, is big enough and does something. Now asserted on every route at every width. | `npm test` 89/89; smoke gains an underlined-anchor check across all 30 routes × 5 widths; a11y clean; a mutant restores the defect and is caught | v22 |
