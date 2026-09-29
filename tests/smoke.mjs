@@ -234,19 +234,34 @@ try {
         });
       }
 
+      // D29: the field is *on* the card, not under it. The first attempt used a negative
+      // `margin-top` in percent, which resolves against width — the overlap never tracked the
+      // card and the panel sat below it on six routes.
+      if (width < 768 && route.match(/\/build\/(structure|ingredients|boost)\/.+/)) {
+        const stage = await page.evaluate(() => {
+          const card = document.querySelector('.stage-card');
+          const panel = document.querySelector('.stage-panel');
+          if (!card || !panel) return null;
+          return { overlap: Math.round(card.getBoundingClientRect().bottom - panel.getBoundingClientRect().top) };
+        });
+        if (stage) check(`${width} ${route} the question sits on the card`, () => assert.ok(stage.overlap > 0, `panel starts ${-stage.overlap}px below the card`));
+      }
+
       // A tablet must add density, not stretch (§16.2): the card sits beside its question, and
       // the reading column stays a readable width instead of running the full viewport.
       if (width >= 768 && (route.includes('/build/structure/') || route.includes('/build/ingredients/') || route.includes('/build/boost/'))) {
         const layout = await page.evaluate(() => {
-          const face = document.querySelector('.answer-face');
-          const body = document.querySelector('.answer-body');
+          // Either shape counts: the Idea screen still uses the two-column `answerLayout`, the
+          // question screens use the stage, which becomes two columns from 768 (D29).
+          const face = document.querySelector('.answer-face, .stage-card');
+          const body = document.querySelector('.answer-body, .stage-panel');
           if (!face || !body) return null;
           const f = face.getBoundingClientRect();
           const b = body.getBoundingClientRect();
           return { sideBySide: f.right <= b.left + 1, bodyWidth: b.width, viewport: window.innerWidth };
         });
         check(`${width} ${route} tablet adds density`, () => {
-          assert.ok(layout, 'no answer layout on an answering screen');
+          assert.ok(layout, 'no answering layout on an answering screen');
           assert.ok(layout.sideBySide, 'the card is stacked above the question rather than beside it');
           assert.ok(layout.bodyWidth < layout.viewport * 0.8, 'the answer column just stretched to fill the width');
         });
@@ -369,7 +384,7 @@ try {
 
   // The card's own printed questions are on the art. At 96px, with zoom locked (§4), opening it
   // big is the only way to read them.
-  await tap(page, '.answer-face .face-button');
+  await tap(page, '.stage-card .face-button, .answer-face .face-button');
   const lightbox = await settled(page, '.modal', /\w/);
   check('a card face opens big', () => assert.ok(lightbox.length > 0, 'no lightbox'));
   const bigFace = await page.evaluate(() => {

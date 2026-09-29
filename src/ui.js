@@ -270,6 +270,23 @@ export function groupBanner(groupId) {
  * The answering layout: a card face and the question about it. One column on a phone, two on a
  * tablet — the card stays visible beside the field instead of scrolling away above it (D12).
  */
+/**
+ * The answering stage (D29): the card at its real proportion, and the question written on it.
+ *
+ * The field sits on a panel laid over the card's lower half, so the illustration is visible above
+ * and around it and the thing you are writing on is the card rather than a form with a thumbnail.
+ * The panel is axis-aligned and opaque — a tilted or translucent writing surface breaks focus
+ * rings, carets and iOS scroll-into-view, which is where "physical" stops being worth it.
+ * From 768 it goes back to two columns, where there is width for the card to stand beside.
+ */
+export function answerStage(face, body) {
+  return add(
+    el('div', { class: 'answer-stage' }),
+    add(el('div', { class: 'stage-card' }), face),
+    add(el('div', { class: 'stage-panel' }), ...body),
+  );
+}
+
 export function answerLayout(face, body) {
   return add(
     el('div', { class: 'answer-layout' }),

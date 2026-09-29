@@ -297,6 +297,13 @@ const MUTANTS = [
     harness: 'smoke',
   },
   {
+    name: 'the question falls off the card again (D29)',
+    file: 'styles.css',
+    from: '  margin: -18px var(--step) 0;',
+    to: '  margin: 18px var(--step) 0;',
+    harness: 'smoke',
+  },
+  {
     name: 'the update toast never offers a new version',
     file: 'src/main.js',
     from: "          showToast('A new version is ready — reload to get it', 6000);",

@@ -377,9 +377,11 @@ input[type="file"] {
 
 /* ---------- one question at a time ---------- */
 
-.pips { display: flex; gap: var(--step); flex-wrap: wrap; margin: var(--step) 0; }
+/* Six pips at 44px and an 8px gap need 304px; a 320 phone has 276, so they wrapped to a second
+   row and pushed the field off the screen. 40px is the floor the tap-target rule allows. */
+.pips { display: flex; gap: 5px; flex-wrap: wrap; margin: var(--step) 0; }
 .pip {
-  min-width: 44px; min-height: 44px; padding: 0 6px;
+  min-width: 40px; min-height: 40px; padding: 0 4px;
   display: inline-flex; align-items: center; justify-content: center; gap: 4px;
   border: 1px solid var(--rule); border-radius: 999px;
   background: var(--paper-raised); color: var(--ink-soft);
@@ -406,6 +408,51 @@ input[type="file"] {
   border-radius: var(--radius); border: 1px solid var(--rule);
 }
 .answer-body > :first-child { margin-top: 0; }
+
+/* The answering stage (D29). The card is the screen; the question is written on it. */
+.answer-stage { position: relative; margin-bottom: var(--step); }
+/* The card is bounded in height rather than overlapped by a percentage: a negative `margin-top`
+   resolves against the container's *width*, so the overlap never tracked the card and the field
+   fell below the fold on six routes. Bounding the card makes the field's position predictable. */
+.stage-card {
+  position: relative;
+  height: min(32vh, 60vw);
+  border-radius: var(--card-radius);
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 0.5), 0 14px 34px rgb(0 0 0 / 0.5);
+}
+.stage-card .flipper, .stage-card .flipper-inner, .stage-card .face-button { height: 100%; }
+.stage-card .card-face, .stage-card .card-face-missing, .stage-card .card-back {
+  width: 100%; height: 100%;
+  aspect-ratio: auto;
+  object-fit: cover;
+  object-position: 50% 16%;
+  border-radius: 0;
+  border: 0;
+  box-shadow: none;
+}
+.stage-panel {
+  position: relative;
+  margin: -18px var(--step) 0;
+  padding: var(--step) 14px 14px;
+  border-radius: var(--card-radius);
+  background: var(--paper-raised);
+  box-shadow: 0 -1px 0 rgb(242 233 216 / 0.1), 0 -10px 26px rgb(0 0 0 / 0.55);
+}
+.stage-panel > :first-child { margin-top: 0; }
+
+@media (min-width: 768px) {
+  /* Width enough for the card to stand beside the question instead of under it. */
+  .answer-stage {
+    display: grid;
+    grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+    gap: calc(var(--step) * 2);
+    align-items: start;
+  }
+  .stage-card { position: sticky; top: calc(var(--header-h) + 96px); height: auto; }
+  .stage-card .card-face, .stage-card .card-back { aspect-ratio: 955 / 1190; object-fit: cover; }
+  .stage-panel { margin: 0; max-width: 62ch; background: none; box-shadow: none; padding: 0; }
+}
 
 /* ---------- the nine beats ---------- */
 
