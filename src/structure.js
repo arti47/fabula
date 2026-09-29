@@ -55,8 +55,15 @@ export function structureList(story) {
   const list = el('ol', { class: 'beat-list' });
   for (const beat of BEATS) {
     const text = beatText(story, beat.n);
-    // A written beat fills its node on the rail, so the arc shows how far the story has got (G7).
+    // A frame on a board, not a row in a list: the beat's own card sits behind what you wrote on
+    // it, so the nine of them read as one arc rather than nine paragraphs (D30, amended).
     const row = el('a', { class: `beat-row${isBlank(text) ? '' : ' is-written'}`, href: `#/build/structure/${beat.n}` });
+    const art = el('img', {
+      class: 'frame-art', alt: '', loading: 'lazy', decoding: 'async',
+      src: `assets/cards/${beat.art}.webp`,
+    });
+    art.addEventListener('error', () => art.remove());
+    add(row, art);
     add(row, el('span', { class: 'beat-number', text: String(beat.n) }));
     add(row, add(
       el('span', { class: 'beat-body' }),

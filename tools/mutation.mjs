@@ -304,6 +304,13 @@ const MUTANTS = [
     harness: 'smoke',
   },
   {
+    name: 'the storyboard goes back to being a list (D30)',
+    file: 'src/structure.js',
+    from: '    add(row, art);',
+    to: '    void art;',
+    harness: 'smoke',
+  },
+  {
     name: 'the update toast never offers a new version',
     file: 'src/main.js',
     from: "          showToast('A new version is ready — reload to get it', 6000);",

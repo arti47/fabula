@@ -646,6 +646,26 @@ try {
 
   await page.goto(base + '#/build/structure');
   await present(page, '.beat-row');
+  // A frame whose text is clipped out of sight is a picture with a number on it. Laying the body
+  // out in flow inside a fixed-ratio frame did exactly that on all nine.
+  const frameText = await page.evaluate(() => [...document.querySelectorAll('.beat-row.is-written')].map((row) => {
+    const body = row.querySelector('.beat-body');
+    const frame = row.getBoundingClientRect();
+    const b = body.getBoundingClientRect();
+    return { visible: b.height > 0 && b.bottom <= frame.bottom + 1 && b.top >= frame.top - 1, text: row.textContent.trim().slice(0, 18) };
+  }));
+  const frameArt = await page.evaluate(() => ({
+    frames: document.querySelectorAll('.beat-row').length,
+    withArt: document.querySelectorAll('.beat-row .frame-art').length,
+  }));
+  check('every beat frame wears its own card', () => assert.equal(frameArt.withArt, frameArt.frames));
+
+  check('every written frame shows what is written on it', () => {
+    const hidden = frameText.filter((f) => !f.visible);
+    assert.deepEqual(hidden, [], `${hidden.length} frames clip their own text`);
+    assert.ok(frameText.length > 0, 'no written frames to check');
+  });
+
   const rail = await page.evaluate(() => ({
     written: document.querySelectorAll('.beat-row.is-written').length,
     total: document.querySelectorAll('.beat-row').length,

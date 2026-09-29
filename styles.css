@@ -456,14 +456,49 @@ input[type="file"] {
 
 /* ---------- the nine beats ---------- */
 
-.beat-list { list-style: none; margin: 0 0 var(--step); padding: 0; display: flex; flex-direction: column; gap: var(--step); }
+/* The nine beats as a board (D30, amended): two frames across on a phone, the whole arc in view.
+   Each frame wears its own card, dimmed to whatever the text needs to stay readable. */
+.beat-list {
+  list-style: none; margin: 0 0 var(--step); padding: 0;
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--step);
+}
+.beat-list > li { display: flex; }
+.frame-art {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: 50% 12%;
+  opacity: 0.34;
+}
+.beat-row.is-written .frame-art { opacity: 0.58; }
+/* The text sits *over* the art, not after it: laid out in flow inside a fixed-ratio box it was
+   pushed past the bottom edge and clipped, leaving nine frames with nothing but a number on them. */
 .beat-row {
-  display: flex; gap: var(--step); align-items: flex-start;
-  padding: var(--step); min-height: 44px;
-  border: 1px solid var(--rule); border-left: 4px solid var(--group-structure);
-  border-radius: var(--radius); background: var(--paper-raised);
+  position: relative; isolation: isolate; overflow: hidden;
+  flex: 1 1 auto;
+  /* Wider than the card's own 0.80, so `cover` crops top-and-bottom and the card's printed
+     banner falls outside the frame. Narrower than that and it crops sideways, leaving the card's
+     lettering underneath ours. */
+  aspect-ratio: 1 / 1;
+  border: 1px solid var(--rule);
+  border-radius: var(--card-radius);
+  background: var(--paper-sunken);
   text-decoration: none; color: inherit;
 }
+.beat-row .beat-number { position: absolute; top: 8px; left: 8px; }
+/* The caption gets its own plate. A frame-wide wash left the writing fighting a bright
+   illustration; text on art needs something solid under it, not less art. */
+.beat-row .beat-body {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 18px 10px 10px;
+  background: linear-gradient(to top, rgb(11 9 6 / 0.97) 62%, rgb(11 9 6 / 0));
+}
+/* A wash under the text rather than over the art: baked gradient, no paint-time filter (§4). */
+.beat-row::before {
+  content: ""; position: absolute; inset: 0; z-index: 0;
+  background: rgb(13 11 8 / 0.3);
+}
+.beat-row > * { position: relative; z-index: 1; }
+.beat-row.is-written { border-color: var(--group-structure); }
 .beat-number {
   flex: 0 0 auto; width: 30px; height: 30px;
   display: flex; align-items: center; justify-content: center;
@@ -472,8 +507,8 @@ input[type="file"] {
   color: var(--group-structure); font-family: var(--font); font-weight: 700;
 }
 .beat-body { display: flex; flex-direction: column; min-width: 0; }
-.beat-headline { font-family: var(--font-display); font-size: 1rem; }
-.beat-name { font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--group-structure); }
+.beat-headline { font-family: var(--font-display); font-size: 0.98rem; line-height: 1.2; }
+.beat-name { font-family: var(--font-ui); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--group-structure); }
 .beat-preview {
   font-size: 0.85rem; color: var(--ink-soft); margin-top: 4px;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
@@ -588,7 +623,7 @@ input[type="file"] {
 
   /* More of the story visible at once: the nine beats, the shelf and the library go two-up.
      Density, never stretch (D12/D23) — a full-width row of one story was half a dead screen. */
-  .beat-list { display: grid; grid-template-columns: 1fr 1fr; gap: var(--step); }
+  .beat-list { grid-template-columns: repeat(3, 1fr); }
   .two-up { display: grid; grid-template-columns: 1fr 1fr; gap: var(--step); align-items: start; }
   .two-up > * { margin-bottom: 0; }
   .told-story { column-gap: calc(var(--step) * 3); }
@@ -658,16 +693,6 @@ input[type="file"] {
 
 /* ---------- the nine beats as one arc (G7) ---------- */
 
-@media (max-width: 1023px) {
-  .beat-list { position: relative; }
-  /* One line behind the numbers: nine detached boxes were nine things; this is one story. */
-  .beat-list::before {
-    content: ""; position: absolute; z-index: 0;
-    left: 22px; top: 26px; bottom: 26px; width: 3px;
-    background: var(--blank-dot); opacity: 0.55; border-radius: 2px;
-  }
-  .beat-row { position: relative; z-index: 1; }
-}
 .beat-row { border-left-width: 1px; }
 .beat-number { background: var(--paper-raised); }
 .beat-row.is-written .beat-number {
@@ -842,26 +867,21 @@ input[type="file"] {
 
 /* ---- lists ---- */
 
-.beat-row {
-  background: none;
-  border: 0;
-  border-bottom: 1px solid var(--rule);
-  border-radius: 0;
-  padding: 14px 0;
-}
-.beat-list::before { display: none; }
+/* The beat frames' own treatment lives with the board above; only the badge is set here, where
+   the group colours are. A leftover flat-row block used to sit here and, coming later in the
+   file, quietly beat the board back into a list. */
 .beat-number {
-  width: 27px; height: 27px;
-  border: 0; border-radius: 50%;
-  background: var(--paper-raised);
-  color: var(--ink-faint);
-  font-family: var(--font-ui); font-size: 0.74rem; font-weight: 700;
+  width: 28px; height: 28px;
+  border: 0; border-radius: 8px;
+  background: rgb(13 11 8 / 0.72);
+  color: var(--ink-soft);
+  font-family: var(--font-ui); font-size: 0.78rem; font-weight: 700;
 }
 .beat-row.is-written .beat-number {
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: var(--group-structure);
+  color: #fff;
 }
-.beat-name { color: var(--ink-faint); }
+.beat-name { color: var(--ink-soft); }
 
 .card {
   border: 0;
