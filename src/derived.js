@@ -143,6 +143,9 @@ export function assemble(story, version = 'now') {
 
   return {
     title: story.title,
+    // The card the story wears, carried on the view model rather than looked up again by the
+    // renderer: one record, one renderer (§10.9).
+    cover: coverCard(story).art,
     idea: (source.idea?.text || '').trim(),
     version,
     takenAt: version === 'before' ? story.snapshot?.takenAt || null : null,

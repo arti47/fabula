@@ -86,8 +86,19 @@ export function tellScreen(story, { readOnly = false } = {}) {
 }
 
 function storyMarkup(assembled) {
-  const box = el('div');
-  add(box, el('h2', { class: 'told-title', id: 'told-top', text: assembled.title }));
+  // Named, because the page's margins hang off it: styling `.told-story > *` reached this wrapper
+  // instead of the parts inside it and capped the cover block to the reading measure.
+  const box = el('div', { class: 'told-body' });
+  // A title block rather than a heading: the story wears its cover, the way it does on the shelf
+  // and in the bar. This is the payoff screen — it is allowed to look like a page of a book.
+  const head = el('div', { class: 'told-head' });
+  add(head, el('div', {
+    class: 'told-head-art',
+    'aria-hidden': 'true',
+    style: `background-image: url("assets/cards/${assembled.cover}.webp")`,
+  }));
+  add(head, el('h2', { class: 'told-title', id: 'told-top', text: assembled.title }));
+  add(box, head);
 
   // A told story is legitimately long, so it gets a jump row rather than losing anything (§6.5).
   const sections = [
@@ -114,7 +125,7 @@ function storyMarkup(assembled) {
   if (assembled.version === 'before') {
     add(box, el('p', { class: 'note', text: 'This is the draft you had when you started boosting.' }));
   }
-  if (assembled.idea) add(box, el('p', { class: 'told-idea', text: `The story of ${assembled.idea}` }));
+  if (assembled.idea) add(head, el('p', { class: 'told-idea', text: `The story of ${assembled.idea}` }));
   add(box, el('div', { id: 'told-story-text' }));
 
   if (!assembled.passages.length) {

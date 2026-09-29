@@ -311,6 +311,13 @@ const MUTANTS = [
     harness: 'smoke',
   },
   {
+    name: 'the told story loses its cover block (G11)',
+    file: 'styles.css',
+    from: '.told-body > *:not(.told-head) { margin-left: 18px; margin-right: 18px; }',
+    to: '.told-body > * { margin-left: 18px; margin-right: 18px; max-width: 30ch; }',
+    harness: 'smoke',
+  },
+  {
     name: 'the update toast never offers a new version',
     file: 'src/main.js',
     from: "          showToast('A new version is ready — reload to get it', 6000);",

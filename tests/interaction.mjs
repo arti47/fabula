@@ -22,6 +22,21 @@ const findings = [];
 let clicked = 0;
 
 /** What the page looks like right now, in one comparable string. */
+/**
+ * Wait for the screen to stop moving before measuring it.
+ *
+ * A card that arrives face-down turns over across half a second, and a card rotated near 90°
+ * projects to almost no width — measured mid-turn it looks like a control that cannot be clicked.
+ * That is the audit catching the wrong moment, not a broken button. Bounded, so an animation that
+ * never ends is a slow audit rather than a hung one.
+ */
+async function settled(page) {
+  await page.evaluate(() => Promise.race([
+    Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {}))),
+    new Promise((resolve) => setTimeout(resolve, 1500)),
+  ]));
+}
+
 const SIGNATURE = () => ({
   hash: location.hash,
   printed: window.__printed || 0,
@@ -60,6 +75,7 @@ try {
   for (const route of ROUTES) {
     await page.goto(base + route, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#screen', { timeout: 5000 });
+    await settled(page);
 
     const count = await page.evaluate(() => document.querySelectorAll(
       '#screen a, #screen button, #screen summary, .action-bar a, .action-bar button',
@@ -69,6 +85,7 @@ try {
       // Reset between clicks so every control is judged in isolation.
       await page.goto(base + route, { waitUntil: 'domcontentloaded' });
       await page.waitForSelector('#screen', { timeout: 5000 });
+      await settled(page);
 
       const errors = [];
       const onConsole = (m) => { if (m.type() === 'error' && !isMissingArt(m)) errors.push(m.text()); };

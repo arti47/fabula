@@ -590,6 +590,16 @@ try {
   });
 
   const toggles = await page.evaluate(() => [...document.querySelectorAll('.version-toggle button')].map((b) => b.textContent));
+  // The cover block runs the width of the story card. Styling `.told-story > *` reached the single
+  // wrapper div inside it instead of the parts, and capped the cover to the reading measure.
+  const head = await page.evaluate(() => {
+    const story = document.querySelector('.told-story');
+    const block = document.querySelector('.told-head');
+    if (!story || !block) return null;
+    return Math.round(story.getBoundingClientRect().width - block.getBoundingClientRect().width);
+  });
+  check('the told story opens on a full-width cover', () => assert.ok(head !== null && head <= 2, `cover is ${head}px narrower than the page`));
+
   check('D10: both versions are offered', () => assert.deepEqual(toggles, ['Before the boosts', 'After the boosts']));
   await tap(page, '.version-toggle button');
   const beforeText = await settled(page, '.told-story', /draft you had when you started boosting/);

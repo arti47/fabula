@@ -524,18 +524,70 @@ input[type="file"] {
 .version-toggle .button[aria-pressed="true"] {
   background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700;
 }
+/* The payoff screen is allowed to look like a page of a book (G11). */
 .told-story {
   border: 1px solid var(--rule); border-radius: var(--card-radius);
-  background: var(--paper-raised); padding: calc(var(--step) * 2);
+  background: var(--paper-raised);
+  padding: 0 0 calc(var(--step) * 2);
   box-shadow: var(--shadow);
+  overflow: hidden;
 }
-.told-title { margin-top: 0; }
+.told-body > *:not(.told-head) { margin-left: 18px; margin-right: 18px; }
+
+/* A title block wearing the story's cover, not a heading on a white page. */
+.told-head {
+  position: relative; isolation: isolate;
+  padding: 58px 18px 16px;
+  margin-bottom: 14px;
+}
+.told-head-art {
+  position: absolute; inset: 0; z-index: -2;
+  background-size: cover; background-position: 50% 18%;
+  opacity: 0.9;
+}
+.told-head::after {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(to top, var(--paper-raised) 12%, rgb(11 9 6 / 0.82) 55%, rgb(11 9 6 / 0.45));
+}
+.told-title {
+  margin: 0;
+  font-size: 1.9rem; font-weight: 400; line-height: 1.15;
+  /* `.screen h2` draws a rule under every heading; on top of the cover art it reads as a scratch. */
+  background-image: none; padding: 0;
+}
+.told-head .told-idea { margin: 6px 0 0; }
 .told-idea { font-style: italic; color: var(--ink-soft); }
-.told-passage { font-family: var(--font); font-size: 1.05rem; line-height: 1.65; margin: 0 0 1em; }
+.told-passage { font-family: var(--font); font-size: 1.08rem; line-height: 1.72; margin: 0 0 1.15em; }
 .told-story, .beat-preview, .card-sub, .card-headline, .spark-chip, .story-header-title,
 .told-idea, .empty, .note { overflow-wrap: anywhere; }
 .told-connector { font-family: var(--font-display); font-variant-caps: small-caps; letter-spacing: 0.04em; color: var(--accent); }
 .told-blanks { border-top: 1px solid var(--rule); padding-top: var(--step); }
+
+/* The jump row sits on the story card, which is the same colour the pills use — they were
+   invisible until they had a ground of their own. */
+.told-story .jump-pill {
+  background: var(--paper-sunken);
+  border-color: var(--rule);
+  color: var(--ink);
+}
+
+/* Each part of the told story opens on a drawn rule, the way the screen headings do. */
+.told-story h3 {
+  margin-top: calc(var(--step) * 2.5);
+  font-size: 0.72rem; letter-spacing: 0.17em; text-transform: uppercase;
+  font-family: var(--font-ui); color: var(--accent);
+  padding-bottom: 10px;
+  background-image: var(--hand-rule);
+  background-repeat: no-repeat;
+  background-position: left bottom;
+  background-size: 150px 8px;
+}
+
+@media (min-width: 768px) {
+  .told-head { padding: 96px 28px 22px; }
+  .told-title { font-size: 2.6rem; }
+  .told-body > *:not(.told-head) { margin-left: 28px; margin-right: 28px; max-width: 64ch; }
+}
 
 @media print {
   .told-story { border: 0; box-shadow: none; padding: 0; background: #fff; }
