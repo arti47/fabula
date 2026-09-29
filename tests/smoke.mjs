@@ -600,6 +600,31 @@ try {
   });
   check('the told story opens on a full-width cover', () => assert.ok(head !== null && head <= 2, `cover is ${head}px narrower than the page`));
 
+  // G12: a story read to the end closes on a flourish rather than just stopping. It is decoration,
+  // so it is `aria-hidden` and must carry no text of its own.
+  const ending = await page.evaluate(() => {
+    const end = document.querySelector('.told-end');
+    // Not `:last-of-type`: that is the last `p`, which on a story with blanks is the note under it.
+    const passages = [...document.querySelectorAll('.told-passage')];
+    if (!end || !passages.length) return null;
+    const box = end.getBoundingClientRect();
+    return {
+      after: end.compareDocumentPosition(passages.at(-1)) === Node.DOCUMENT_POSITION_PRECEDING,
+      w: Math.round(box.width), h: Math.round(box.height),
+      hidden: end.getAttribute('aria-hidden') === 'true',
+      text: end.textContent.trim(),
+      drawn: Boolean(end.querySelector('svg path')),
+    };
+  });
+  check('the told story closes on its ornament', () => {
+    assert.ok(ending, 'no closing ornament on a story with passages');
+    assert.ok(ending.after, 'the ornament is not after the last passage');
+    assert.ok(ending.drawn, 'the ornament draws nothing');
+    assert.ok(ending.w > 80 && ending.h > 8, `${ending.w}×${ending.h}`);
+    assert.equal(ending.hidden, true);
+    assert.equal(ending.text, '');
+  });
+
   check('D10: both versions are offered', () => assert.deepEqual(toggles, ['Before the boosts', 'After the boosts']));
   await tap(page, '.version-toggle button');
   const beforeText = await settled(page, '.told-story', /draft you had when you started boosting/);
@@ -671,6 +696,22 @@ try {
   await present(page, '.card-grid');
   const deckDown = await page.evaluate(() => document.querySelectorAll('.card-grid .card-back').length);
   check('the Deck shows every face', () => assert.equal(deckDown, 0));
+
+  // Every card names its group in text (§6), and now draws the group's own sigil beside it —
+  // `GROUPS[].badge` named these from Phase 0 and nothing drew one (§0.1).
+  const sigils = await page.evaluate(() => {
+    const rows = [...document.querySelectorAll('.card-grid .card-group')];
+    return {
+      rows: rows.length,
+      drawn: rows.filter((r) => r.querySelector('svg path')).length,
+      named: rows.filter((r) => r.textContent.trim().length > 0).length,
+    };
+  });
+  check('every card wears its group sigil', () => {
+    assert.ok(sigils.rows > 0, 'no card group lines');
+    assert.equal(sigils.drawn, sigils.rows);
+    assert.equal(sigils.named, sigils.rows, 'a sigil is the only channel');
+  });
 
   // A finished card says so from across the room (G9), and a written beat fills its node (G7).
   await page.goto(base + '#/build/boost');

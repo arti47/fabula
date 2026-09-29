@@ -3,6 +3,7 @@
 
 import { el, add, clear, qs } from './core.js';
 import { GROUPS, DIVIDERS } from '../data.js';
+import { icon } from './icons.js';
 
 // ---------------------------------------------------------------------------
 // explain(): the "what this does" note. Collapsed by default, on every screen (§6.2).
@@ -193,7 +194,12 @@ export function cardTile(card, { href, sub, blank = false, done = false } = {}) 
     ),
     add(
       el('div', { class: 'card-body' }),
-      el('div', { class: 'card-group', text: group?.name || '' }),
+      // The group's own sigil beside its name — the deck's five badges, finally drawn (G10).
+      add(
+        el('div', { class: 'card-group' }),
+        group?.badge ? icon(group.badge, { size: 13 }) : null,
+        el('span', { text: group?.name || '' }),
+      ),
       add(
         el('p', { class: 'card-headline' }),
         document.createTextNode(card.headline),

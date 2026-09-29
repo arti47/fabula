@@ -35,10 +35,12 @@ test('every drawing is asked for somewhere', () => {
 
 test('the icon set carries nothing nobody asks for', () => {
   // A drawn icon nobody names is dead art, the same defect class as dead data (§0.1).
-  const src = readdirSync(`${ROOT}src`)
-    .filter((f) => f.endsWith('.js') && f !== 'icons.js')
-    .map((f) => readFileSync(`${ROOT}src/${f}`, 'utf8'))
-    .join('\n');
+  // A name can be asked for by a `data.js` field as well as by a literal in a module: the five
+  // group sigils are named by `GROUPS[].badge` and reached through it.
+  const src = [
+    ...readdirSync(`${ROOT}src`).filter((f) => f.endsWith('.js') && f !== 'icons.js').map((f) => `src/${f}`),
+    'data.js',
+  ].map((f) => readFileSync(`${ROOT}${f}`, 'utf8')).join('\n');
   for (const name of ICON_NAMES) {
     assert.match(src, new RegExp(`'${name}'`), `${name} is drawn but never used`);
   }

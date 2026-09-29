@@ -332,6 +332,21 @@ const MUTANTS = [
     harness: 'smoke',
   },
   {
+    // §0.1 in its purest form: the sigils sat in `data.js` from Phase 0 and nothing drew one.
+    name: 'a card stops drawing its group sigil',
+    file: 'src/ui.js',
+    from: "        group?.badge ? icon(group.badge, { size: 13 }) : null,",
+    to: '        null,',
+    harness: 'smoke',
+  },
+  {
+    name: 'the told story stops closing on its ornament',
+    file: 'src/tell.js',
+    from: "  if (assembled.passages.length) {",
+    to: '  if (false) {',
+    harness: 'smoke',
+  },
+  {
     name: 'the update toast never offers a new version',
     file: 'src/main.js',
     from: "          showToast('A new version is ready — reload to get it', 6000);",

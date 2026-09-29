@@ -3,7 +3,7 @@
 // Nothing is withheld here and nothing is scored (ruling A10). A story with three beats written
 // reads back as three beats, and the page says how many are still blank without making a fuss.
 
-import { icon } from './icons.js';
+import { icon, illustration } from './icons.js';
 import { el, add, clear } from './core.js';
 import { actionBar, showToast } from './ui.js';
 import { assemble, asPlainText, hasBothVersions } from './derived.js';
@@ -136,11 +136,23 @@ function storyMarkup(assembled) {
     ));
   }
 
-  for (const passage of assembled.passages) {
+  // M4: the story arrives in the order it is told, one passage after another rather than all at
+  // once. The stagger is an index the stylesheet turns into a delay, so it costs nothing when
+  // `prefers-reduced-motion` is set and nothing is hidden if the animation never runs — the text
+  // is in the document either way.
+  assembled.passages.forEach((passage, i) => {
     add(box, add(
-      el('p', { class: 'told-passage' }),
+      el('p', { class: 'told-passage', style: `--i: ${i}` }),
       el('span', { class: 'told-connector', text: `${passage.connector} ` }),
       document.createTextNode(passage.text),
+    ));
+  });
+
+  // The story was read to the end: close it the way a page closes (G12).
+  if (assembled.passages.length) {
+    add(box, add(
+      el('div', { class: 'told-end', 'aria-hidden': 'true', style: `--i: ${assembled.passages.length}` }),
+      illustration('story-end'),
     ));
   }
 
