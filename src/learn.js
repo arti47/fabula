@@ -77,9 +77,13 @@ export function learnScreen({ openId } = {}) {
   for (const chapter of LEARN_CHAPTERS) {
     add(wrap, el('h3', { text: chapter.title }));
     if (chapter.intro) add(wrap, el('p', { class: 'note', text: chapter.intro }));
+    // Two columns on a tablet: forty identical boxes down one side was four and a half screens
+    // of scrolling with the other half of the screen empty (D23).
+    const column = el('div', { class: 'two-up' });
     for (const entry of entries.filter((e) => e.chapter === chapter.id)) {
-      add(wrap, entryDetails(entry, { open: entry.id === openId }));
+      add(column, entryDetails(entry, { open: entry.id === openId }));
     }
+    add(wrap, column);
   }
   return wrap;
 }

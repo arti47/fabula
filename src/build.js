@@ -29,7 +29,10 @@ export function buildScreen({ step, entryId, qIndex = 0, beatNumber, boostId, fr
   const screen = el('div');
 
   add(screen, stepNav(current.id, blanks));
-  add(screen, el('h2', { text: `${current.n}. ${current.name}` }));
+  // The nav pill above already says "3. Structure" in the accent colour; a heading two centimetres
+  // below saying it again cost 45px on a phone and told nobody anything. It stays in the document
+  // for the heading outline and for a screen reader, and stops being drawn twice.
+  add(screen, el('h2', { class: 'visually-hidden', text: `${current.n}. ${current.name}` }));
   add(screen, explain(
     STEP_BLURB[current.id],
     'You do not have to do these in order, and you can leave anything blank and come back to it. The story is yours.',

@@ -320,8 +320,16 @@ list, then bump `CACHE_VERSION` — in the same change.
 └──────────────────────────────┘
 ```
 
-- The **story header is this app's persistent resource header** (§6.2): the counts that tell a kid
-  what is still blank, visible from every in-story screen. It is progress, never a score.
+- The **story header is this app's persistent resource header** (§6.2): the title and the counts
+  that tell a kid what is still blank, visible from every in-story screen. It is progress, never a
+  score. Two lines, not three — who is telling the story does not change while it is being written,
+  and is named on the shelf and in Settings (D22).
+- **Fixed chrome has a budget**: the app header, the story header and the tab bar together stay
+  under 175px (200px at 320, where the four counts need a second line). Asserted on every route at
+  every width.
+- **Nothing is named twice on one screen.** Where the section nav already carries the step or
+  section in the accent colour, the matching `<h2>` stays in the document for the heading outline
+  and is not drawn. Asserted.
 - **Group colour is semantic**: red Prompts, yellow Ingredients, blue Structure, green Boosts —
   the deck's own code, and never the only channel (every card names its group in text too).
 - **The primary action is above the fold on every screen**, pinned in the action bar where content
@@ -469,11 +477,13 @@ every tab and header control has an icon and no icon is dead; no SVG filter in a
 one example; every art path resolves; the die is uniform over 60k rolls within tolerance; export →
 import round-trips a full story byte-identically; an old-shape fixture normalizes.
 
-**B. Browser smoke (`npm run smoke`, ~1 min).** 28 routes × 5 widths (320/360/390/768/1024), seeded mid-story, run with the card art present and absent. Every route renders with zero console errors; zero
+**B. Browser smoke (`npm run smoke`, ~1 min).** 30 routes × 5 widths (320/360/390/768/1024), seeded mid-story, run with the card art present and absent. Every route renders with zero console errors; zero
 horizontal overflow at 320/360/390 and no stretched layout at 768/1024; no stray
 `null`/`undefined`/`NaN` text; nothing under the fixed tab bar; every screen's primary action above
 the fold; section nav reaches every sibling; no tap target under 40px measured on the wrapping
-label; the full walk: storyteller → story → roll → idea → ingredients → beats → boost → tell.
+label; the action bar never grows past one bar; the current section-nav pill stays in view; fixed
+chrome inside its budget; nothing named twice; the two-up layouts really give two columns at 1024
+and one at 390; the full walk: storyteller → story → roll → idea → ingredients → beats → boost → tell.
 
 **C. Interaction audit (`npm run audit`, ~2 min).** Visits every route — including the screens
 *inside* a step — clicks every visible control in isolation with storage reset between clicks, and
@@ -496,7 +506,7 @@ stories, a story with 4 heroes, 2 villains, 3 worlds, every beat long, all 10 bo
 text, whitespace-only answers — what a kid types when nobody is watching). `tests/probe-layout.mjs` prints per route: height in viewports, control count,
 primary-action offset, smallest tap target, overflow per width. A probe prints; it does not assert.
 
-**Mutation pass (`npm run mutants`, `-- all` for the browser ones).** Twenty-nine mutants, each breaking
+**Mutation pass (`npm run mutants`, `-- all` for the browser ones).** Thirty-one mutants, each breaking
 one rule the app is supposed to keep — the pre-fill, the snapshot, the die, a permission's control,
 the placeholder path, the update toast, the zoom lock. A mutant that survives is a rule that can break silently,
 and is a finding against the harness rather than the app.
@@ -580,6 +590,7 @@ rather than a broken image, and the harness must pass with `assets/cards/` empty
 
 | Date | Change | Verification | Cache |
 |---|---|---|---|
+| 2026-09-29 | UX/UI audit, batch 3 of 4: the screen itself. **Chrome** (D22): 248px of header, story header, nav and tab bar stood between a kid and the first word of their story — 29% of a 390×844 phone — and every build screen then printed the step name a second time, 45px under the nav pill that already said it in the accent colour. The story header is two lines now, the duplicate heading stays in the document for the outline and stops being drawn, and the nav pills are shorter: 248px → 210px, and the writing field on a question screen moves up about 95px. Both are budgets with tests behind them now, not one-off fixes. **Tablet** (D23): only the beat list added density; the shelf, the examples and the rules library ran one stretched column with the other half of the screen empty. They go two-up at 1024, and the tab bar's four tabs keep a phone's measure and centre instead of spreading over a metre. **And `explain()` stopped looking like an empty text field** — it carried an input's border, radius, raised background and width on every screen; it is a left rule and a caret now, at a readable measure. | `npm test` 88/88; smoke gains five contract checks over every route × width — chrome budget, nothing named twice, and the two-up columns proved at both 1024 and 390; interaction (440 controls) and a11y clean; `npm run mutants -- all` 31/31 caught, two new — the tablet flattened back to one column, and the step named twice again. At 1024 the rules library drops 4.5 → 2.9 screens and the worked Hänsel and Gretel 6.8 → 3.2 | v20 |
 | 2026-09-29 | UX/UI audit, batch 2 of 4: the visual system (D19). The app now looks like it belongs to the deck rather than beside it. **A display face**: IM Fell English, Igino Marini's revival of a 17th-century punchcut, SIL-OFL, subset to what the app sets and bundled at 42KB — headings, card headlines, beat headlines and the told story's connectors. It replaces a stack that resolved to Iowan on iOS and Georgia on Android, so the app looked like two different apps. **Paper**: a noise tile at a few percent under everything, one per theme. **A drawn rule** under every screen heading — house-made, hand-wobbled, never the deck's lettering (D25). **Icons**: the four tabs, the theme toggle and Settings were emoji, which rendered as four different glyphs on four devices and as empty boxes where the glyph was missing; they are inline SVG now, stroked in `currentColor`. **Motion** (D24): press and hover feedback, a 140ms screen arrival, a die that tumbles when thrown and not when merely shown again, sparks that fade in — all behind `prefers-reduced-motion`. Found while building it, and now a rule in §4 with a test behind it: the paper grain was first an `feTurbulence` filter, which the browser re-runs over the whole page on every paint — `#/build/ingredients` became literally unpaintable, a full-page screenshot never returning. Decoration is baked from now on. Also fixed on the way: the drawn rule rendered invisibly because its `#` was double-encoded, and IM Fell's old-style figures made the beat badges read as letters, so badges keep the reading serif. | `npm test` 88/88 with four new guards (icon coverage both ways, no SVG filter in a background); smoke 30 routes × 5 widths, interaction 440 controls, a11y and update path all clean; `npm run mutants -- all` 29/29 caught, two new — a tab losing its icon, and a live filter coming back as a background. Paint time at 390 on the stress fixture: unbounded → 185–304ms per route | v19 |
 | 2026-09-29 | UX/UI audit, batch 1 of 4: the three things measurement said were broken. **A card face could not be read.** `cardFace()` returned a bare `<img>` — the Ingredient cards print their six questions on the art, the answering layout shows that art at 96px, and since v16 a kid cannot pinch it open either, so the card's own words were unreadable everywhere they mattered. Every face outside a card tile is now a button opening a lightbox (D20). **The action bar grew to 171px on the Tell page at 390×844** — an unclamped context line wrapped to eight rows and crushed the two buttons it was meant to explain; it now clamps to two rows and the buttons stop shrinking. **The section nav never scrolled the current pill into view**, so from step 5 the one pill that says where you are sat off the right edge. Also recorded: the Phase 11 visual decisions D19–D25. | `npm test` 84/84; smoke gains eight checks — the lightbox opens, is at least 240px wide and closes; the action bar stays ≤96px and the current pill stays inside the nav, both asserted on every route × width; interaction (440 controls) and a11y clean; `npm run mutants -- all` 27/27 caught, three of them new: the lightbox unwired, the context clamp removed, the pill-centring dropped. Measured before/after at 390×844: Tell's action bar 171px → 63px, current pill off-screen → visible | v18 |
 | 2026-09-02 | Deleting a storyteller or a story made findable. Both controls have existed since Phase 1 and both worked; neither could be found. The only route to removing a storyteller was a button labelled **Switch**, a word that does not mean remove, and Settings — the first place a person looks to delete themselves or the thing they are working on — offered neither. The shelf control is now **Storytellers**, labelled for all three verbs it performs; Settings gains a storyteller section that opens the same manager, and a "Delete this story" for the story currently open, both at the end of the scroll and out of the thumb's arc (§6.1). Removing the last storyteller was already allowed and is now asserted: it returns the app to first run rather than stranding it. This is §0.2 in a new coat — a control that exists but cannot be reached is a permission the app has removed. | `npm test` 84/84; smoke gains six checks — the shelf control's own label, both Settings controls, the confirmation naming what goes, the story actually going, and the last storyteller removable; interaction (430 controls) and a11y clean; `npm run mutants -- all` 24/24 caught, including three new ones: the label reverted to "Switch", the Settings delete wired to nothing, and the last storyteller made unremovable | v17 |

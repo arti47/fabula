@@ -2,7 +2,7 @@
 
 import { el, add, clear, qs } from './core.js';
 import { iconSlot } from './icons.js';
-import { getCurrentStory, getCurrentStoryteller } from './store.js';
+import { getCurrentStory } from './store.js';
 import { progress } from './derived.js';
 import { deckScreen, cardScreen, settingsScreen, notFoundScreen } from './screens.js';
 import { learnScreen } from './learn.js';
@@ -68,9 +68,10 @@ export function renderStoryHeader() {
     return;
   }
   const p = progress(story);
-  const teller = getCurrentStoryteller();
   clear(header);
   header.hidden = false;
+  // Two lines, not three. Who is telling the story does not change while you write it, and it is
+  // named on the shelf and in Settings; the counts do change, which is what this header is for.
   add(header, el('p', { class: 'story-header-title', text: story.title }));
   add(header, add(
     el('div', { class: 'progress-row' }),
@@ -78,7 +79,6 @@ export function renderStoryHeader() {
     item('Ingredients', `${p.ingredients.done}/${p.ingredients.total}`),
     item('Beats', `${p.beats.done}/${p.beats.total}`),
     item('Boosts', `${p.boosts.done}/${p.boosts.total}`),
-    teller ? el('span', { class: 'progress-item', text: `${teller.emoji} ${teller.name}` }) : null,
   ));
 }
 

@@ -68,11 +68,14 @@ function shelf(teller) {
     ));
   }
 
+  // Two shelves side by side on a tablet, one on a phone (D23).
+  const rows = el('div', { class: 'two-up' });
   for (const meta of stories) {
     const story = getStory(meta.id);
     if (!story) continue;
-    add(screen, storyRow(story));
+    add(rows, storyRow(story));
   }
+  add(screen, rows);
 
   add(screen, exampleShelf());
 
@@ -100,6 +103,7 @@ function exampleShelf() {
   const box = el('div');
   add(box, el('h3', { text: 'Two stories from the book' }));
   add(box, el('p', { class: 'note', text: 'Built with these same cards, and readable like your own. Handy when you are stuck on what a beat is supposed to do.' }));
+  const rows = el('div', { class: 'two-up' });
   for (const example of EXAMPLE_STORIES) {
     const row = el('a', { class: 'card example-row', href: `#/example/${example.id}` });
     add(row, add(
@@ -107,8 +111,9 @@ function exampleShelf() {
       el('p', { class: 'card-headline', text: example.title }),
       el('div', { class: 'card-sub', text: example.blurb }),
     ));
-    add(box, row);
+    add(rows, row);
   }
+  add(box, rows);
   return box;
 }
 

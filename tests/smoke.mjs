@@ -126,6 +126,33 @@ try {
       });
       check(`${width} ${route} the current step is visible in the nav`, () => assert.equal(strayPill, null, `${strayPill} is scrolled out of sight`));
 
+      // Chrome is what the screen costs before a word of the story appears (D22).
+      const chrome = await page.evaluate(() => {
+        const h = (sel) => { const n = document.querySelector(sel); return n && !n.hidden ? n.getBoundingClientRect().height : 0; };
+        return Math.round(h('.app-header') + h('.story-header') + h('.tab-bar'));
+      });
+      // At 320 the four counts need a second line — 298px of text will not fit in 304px, and
+      // dropping one of them would cost a kid the thing this header exists to show.
+      const chromeBudget = width <= 320 ? 200 : 175;
+      check(`${width} ${route} fixed chrome stays out of the way`, () => assert.ok(chrome <= chromeBudget, `${chrome}px of chrome`));
+
+      // The nav pill and a heading two centimetres below it saying the same thing is one of them
+      // wasted. The heading stays in the outline; it stops being drawn.
+      const saidTwice = await page.evaluate(() => {
+        const pill = document.querySelector('.section-nav [aria-current]');
+        if (!pill) return null;
+        const label = pill.textContent.trim();
+        // `.visually-hidden` is absolutely positioned and clipped, so it still has an
+        // offsetParent — measure the box instead of asking the layout tree.
+        return [...document.querySelectorAll('#screen h2')]
+          .filter((h) => {
+            const box = h.getBoundingClientRect();
+            return box.width > 2 && box.height > 2 && h.textContent.trim() === label;
+          })
+          .length ? label : null;
+      });
+      check(`${width} ${route} the step is not named twice`, () => assert.equal(saidTwice, null, `"${saidTwice}" is on screen twice`));
+
       const small = await page.evaluate(() => {
         const targets = [...document.querySelectorAll('a, button, input[type="range"], input[type="file"], summary')];
         return targets
@@ -564,6 +591,23 @@ try {
   const persisted = await page.textContent('#screen');
   check('walk: story persists on the shelf', () => assert.match(persisted, /The dragon next door/));
   check('walk: the shelf shows the idea as the blurb', () => assert.match(persisted, /a lighthouse that walks/));
+
+  // D23: the tablet adds columns rather than stretching a phone layout across a metre.
+  for (const [w, wanted] of [[1024, 2], [390, 1]]) {
+    const wide = await browser.newContext({ viewport: { width: w, height: 800 } });
+    await seed(wide, 'stress');
+    const widePage = await wide.newPage();
+    for (const route of ['#/stories', '#/learn']) {
+      await widePage.goto(base + route, { waitUntil: 'domcontentloaded' });
+      await widePage.waitForSelector('.two-up');
+      const columns = await widePage.evaluate(() => {
+        const box = document.querySelector('.two-up');
+        return getComputedStyle(box).gridTemplateColumns.split(' ').filter(Boolean).length;
+      });
+      check(`${w} ${route} columns`, () => assert.equal(columns, wanted, `${columns} columns at ${w}`));
+    }
+    await wide.close();
+  }
 
   // Getting rid of things. Both controls existed before and neither was findable: the storyteller
   // one hid behind a button that said "Switch", and Settings — where a person looks to delete

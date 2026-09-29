@@ -215,6 +215,20 @@ const MUTANTS = [
     harness: 'test',
   },
   {
+    name: 'the tablet goes back to one stretched column (D23)',
+    file: 'styles.css',
+    from: '  .two-up { display: grid; grid-template-columns: 1fr 1fr;',
+    to: '  .two-up { display: grid; grid-template-columns: 1fr;',
+    harness: 'smoke',
+  },
+  {
+    name: 'the step gets named twice again',
+    file: 'src/build.js',
+    from: "  add(screen, el('h2', { class: 'visually-hidden', text: `${current.n}. ${current.name}` }));",
+    to: "  add(screen, el('h2', { text: `${current.n}. ${current.name}` }));",
+    harness: 'smoke',
+  },
+  {
     name: 'the update toast never offers a new version',
     file: 'src/main.js',
     from: "          showToast('A new version is ready — reload to get it', 6000);",

@@ -42,7 +42,9 @@ export function deckScreen(params) {
     section.id,
   ));
 
-  add(screen, el('h2', { text: section.label }));
+  // The nav pill above already names the section in the accent colour (§6). The heading stays in
+  // the outline for a screen reader and stops being drawn a second time.
+  add(screen, el('h2', { class: 'visually-hidden', text: section.label }));
   add(screen, explain(
     'Every card in the deck, to look at whenever you like.',
     'Tap one to read what it is for and how the book uses it. Nothing here changes your story — this is the shelf, not the workbench.',

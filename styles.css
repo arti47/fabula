@@ -125,7 +125,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 600; letter-spacing:
 
 /* A screen heading sits on a drawn rule rather than plain space. Top-level headings only:
    inside a card panel a rule under every h3 would be clutter, not structure. */
-.screen h2, .screen > h3 {
+.screen h2:not(.visually-hidden), .screen > h3 {
   padding-bottom: 10px;
   background-image: var(--hand-rule);
   background-repeat: no-repeat;
@@ -175,36 +175,36 @@ a { color: var(--accent); }
 /* The persistent resource header: story title + what is still blank. */
 .story-header {
   position: sticky; top: var(--header-h); z-index: 25;
-  padding: calc(var(--step) * 0.75) var(--step);
+  padding: 5px var(--step) 6px;
   background: var(--paper-sunken);
   border-bottom: 1px solid var(--rule);
 }
 .story-header-title {
-  font-family: var(--font-display); font-size: 1rem; margin: 0 0 2px;
+  font-family: var(--font-display); font-size: 0.98rem; line-height: 1.25; margin: 0;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .progress-row { display: flex; flex-wrap: wrap; gap: calc(var(--step) * 1.25); font-size: 0.8rem; color: var(--ink-soft); }
 .progress-item { display: inline-flex; align-items: baseline; gap: 0.35em; }
 .progress-item b { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
 
-.screen { padding: var(--step) var(--step) 0; max-width: 900px; margin: 0 auto; }
+.screen { padding: 10px var(--step) 0; max-width: 900px; margin: 0 auto; }
 .screen:focus { outline: none; }
-.screen h2 { margin: calc(var(--step) * 1.5) 0 var(--step); font-size: 1.35rem; }
+.screen h2 { margin: 2px 0 var(--step); font-size: 1.35rem; }
 
 /* Section nav: first thing inside the scroll area, one pill per sibling route. */
 .section-nav {
-  display: flex; gap: var(--step); overflow-x: auto; scrollbar-width: none;
-  margin: 0 calc(var(--step) * -1); padding: 0 var(--step) var(--step);
+  display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
+  margin: 0 calc(var(--step) * -1); padding: 0 var(--step) 6px;
 }
 .section-nav::-webkit-scrollbar { display: none; }
 .section-nav .jump-pill {
-  flex: 0 0 auto; padding: 8px 14px; min-height: 40px;
+  flex: 0 0 auto; padding: 6px 13px; min-height: 40px;
   border: 1px solid var(--rule); border-radius: 999px;
   background: var(--paper-raised); color: var(--ink-soft);
   font: inherit; font-size: 0.9rem; cursor: pointer;
 }
 .section-nav a {
-  flex: 0 0 auto; padding: 8px 14px; min-height: 40px;
+  flex: 0 0 auto; padding: 6px 13px; min-height: 40px;
   display: inline-flex; align-items: center; gap: 0.4em;
   border: 1px solid var(--rule); border-radius: 999px;
   background: var(--paper-raised); color: var(--ink-soft);
@@ -261,17 +261,30 @@ a { color: var(--accent); }
 .button.danger { background: var(--paper-raised); color: var(--group-prompt); border-color: var(--group-prompt); }
 .button:disabled { opacity: 0.5; cursor: not-allowed; }
 
+/* It is a thing you open, not a thing you type in. It used to carry an input's border, radius and
+   raised background at an input's width, and read as an empty field on every screen. */
 .explain {
-  margin: 0 0 var(--step);
-  border: 1px solid var(--rule); border-radius: var(--radius);
-  background: var(--paper-raised);
+  margin: 0 0 var(--step); max-width: 70ch;
+  border: 0; border-left: 3px solid var(--rule); border-radius: 0;
+  background: none;
 }
 .explain > summary {
-  padding: 10px var(--step); min-height: 44px;
-  display: flex; align-items: center;
+  padding: 8px 0 8px 10px; min-height: 44px;
+  display: flex; align-items: center; gap: 0.5em;
   cursor: pointer; font-size: 0.9rem; color: var(--ink-soft);
+  list-style: none;
 }
-.explain > div { padding: 0 var(--step) var(--step); font-size: 0.92rem; color: var(--ink-soft); }
+.explain > summary::-webkit-details-marker { display: none; }
+/* The caret is the affordance: it says this opens, and which way it is facing. */
+.explain > summary::before {
+  content: ""; flex: 0 0 auto; width: 0; height: 0;
+  border-left: 6px solid currentColor;
+  border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent;
+  transition: transform 120ms ease;
+}
+.explain[open] > summary::before { transform: rotate(90deg); }
+.explain[open] { border-left-color: var(--accent); }
+.explain > div { padding: 0 var(--step) var(--step) 10px; font-size: 0.92rem; color: var(--ink-soft); }
 .explain > div p { margin: 0 0 0.6em; }
 
 .note { color: var(--ink-soft); font-size: 0.9rem; }
@@ -464,7 +477,7 @@ input[type="file"] {
 
 /* ---------- the rules library ---------- */
 
-.learn-entry { margin-bottom: var(--step); }
+.learn-entry { margin-bottom: var(--step); max-width: none; }
 .learn-entry > summary { font-family: var(--font-display); color: var(--ink); }
 .learn-results:not(:empty) { margin: var(--step) 0; }
 
@@ -532,9 +545,19 @@ input[type="file"] {
   .card-grid { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
   .answer-layout { grid-template-columns: minmax(240px, 320px) minmax(0, 1fr); }
 
-  /* More of the story visible at once: the nine beats and the shelf go two-up. */
+  /* More of the story visible at once: the nine beats, the shelf and the library go two-up.
+     Density, never stretch (D12/D23) — a full-width row of one story was half a dead screen. */
   .beat-list { display: grid; grid-template-columns: 1fr 1fr; gap: var(--step); }
+  .two-up { display: grid; grid-template-columns: 1fr 1fr; gap: var(--step); align-items: start; }
+  .two-up > * { margin-bottom: 0; }
   .told-story { column-gap: calc(var(--step) * 3); }
+}
+
+/* The tab bar is a phone control. Stretched over a metre of tablet the four tabs stop reading as
+   one group, so its contents keep a phone's measure and centre. */
+@media (min-width: 768px) {
+  .tab-bar { justify-content: center; }
+  .tab-bar a { flex: 0 1 180px; }
 }
 
 /* ---------- motion (D24) ----------
