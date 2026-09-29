@@ -51,11 +51,17 @@ export function ideaStep(story) {
   add(wrap, dieArea);
   add(wrap, rollHistory(current));
 
-  const showPrompt = (letter) => {
+  const showPrompt = (letter, { tumble = false } = {}) => {
     const prompt = PROMPTS.find((p) => p.letter === letter);
     clear(dieArea);
     add(dieArea, promptPanel(prompt, () => roll()));
-    dieArea.querySelector('.die-letter')?.focus();
+    const die = dieArea.querySelector('.die-letter');
+    die?.focus();
+    // The die tumbles when it is thrown, never when a stored roll is simply shown again (D24).
+    if (die && tumble) {
+      die.classList.add('is-rolling');
+      die.addEventListener('animationend', () => die.classList.remove('is-rolling'), { once: true });
+    }
   };
 
   const roll = () => {
@@ -65,7 +71,7 @@ export function ideaStep(story) {
       ...current,
       idea: { ...current.idea, fromPrompt: letter, rolls: [...current.idea.rolls, { letter, ts: nowIso() }] },
     });
-    showPrompt(letter);
+    showPrompt(letter, { tumble: true });
     const history = wrap.querySelector('.roll-history');
     if (history) history.replaceWith(rollHistory(current));
     renderStoryHeader();

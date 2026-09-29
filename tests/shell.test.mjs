@@ -30,3 +30,15 @@ test('the app shell names nothing that is not shipped', () => {
 test('every shipped module has a row in the module map', () => {
   for (const f of modules) assert.match(spec, new RegExp('`' + f.replace('.', '\\.') + '`'), `${f} is missing from CLAUDE.md §5.1`);
 });
+
+test('no live SVG filter is used as a background', () => {
+  // A `feTurbulence` inside a tiled background is re-run by the browser over the whole page on
+  // every paint. It looked right and made a three-screen route unpaintable: the screenshot of
+  // #/build/ingredients never returned. Noise is baked into a tile instead.
+  const css = readFileSync(join(ROOT, 'styles.css'), 'utf8');
+  for (const match of css.matchAll(/url\(["']?data:image\/svg\+xml,([^"')]*)/g)) {
+    const svg = decodeURIComponent(match[1]);
+    assert.doesNotMatch(svg, /<filter|feTurbulence|feDisplacementMap|feGaussianBlur/,
+      'an SVG filter in a background repaints the whole page');
+  }
+});

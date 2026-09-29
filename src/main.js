@@ -4,7 +4,16 @@ import { qs } from './core.js';
 import { getPrefs, setPref } from './store.js';
 import { startRouter } from './router.js';
 import { showToast } from './ui.js';
+import { icon } from './icons.js';
 import { lockZoom } from './zoom.js';
+
+/** The header's own icons, and the toggle showing what it will switch you to. */
+function paintHeaderIcons() {
+  const settings = document.querySelector('[data-settings-icon]');
+  if (settings) { settings.replaceChildren(icon('settings')); }
+  const theme = document.querySelector('[data-theme-icon]');
+  if (theme) { theme.replaceChildren(icon(currentlyDark() ? 'light' : 'dark')); }
+}
 
 function applyPrefs() {
   const prefs = getPrefs();
@@ -26,6 +35,7 @@ function wireThemeToggle() {
   button.addEventListener('click', () => {
     setPref('theme', currentlyDark() ? 'light' : 'dark');
     applyPrefs();
+    paintHeaderIcons();
   });
 }
 
@@ -45,6 +55,7 @@ function registerServiceWorker() {
 }
 
 applyPrefs();
+paintHeaderIcons();
 lockZoom();
 wireThemeToggle();
 startRouter();

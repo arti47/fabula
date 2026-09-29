@@ -132,7 +132,7 @@ export function showToast(text, ms = 2600) {
 // placeholder rather than a broken image (CLAUDE.md §11).
 // ---------------------------------------------------------------------------
 
-export function cardFace(card) {
+function cardFace(card) {
   const alt = `${GROUPS[card.group]?.name || ''} card: ${card.headline}`;
   const img = el('img', { class: 'card-face', src: `assets/cards/${card.art}.webp`, alt, loading: 'lazy', decoding: 'async' });
   const holder = el('div');
@@ -165,7 +165,7 @@ export function zoomableFace(card) {
 }
 
 /** The card, as big as the screen allows, over whatever you were doing. */
-export function cardLightbox(card) {
+function cardLightbox(card) {
   modal({
     title: card.headline,
     body: [add(el('div', { class: 'lightbox' }), cardFace(card))],

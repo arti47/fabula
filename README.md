@@ -62,6 +62,11 @@ This app is a **personal play aid** built from a copy of the deck. The card text
 limited to the headlines and the printed questions; everything else is paraphrased in the app's own
 voice. The illustrations are Matteo Ufocinque's and are included here so the app shows real cards.
 
+The display typeface is **IM Fell English** by Igino Marini, under the SIL Open Font License 1.1;
+the licence sits beside the font in `assets/fonts/OFL.txt`. The app's icons, its paper texture and
+its drawn rules are house-made for this project — they echo the deck's idiom, but none of them is a
+card, carries the deck's lettering, or is presented as Sefirot's.
+
 **If you share this app beyond your own household, licensing is your responsibility**, and
 permission from Sefirot is the right way to get it. Card faces are referenced by stable id from a
 single data file (`data.js`), so original artwork can be substituted wholesale if you need a version

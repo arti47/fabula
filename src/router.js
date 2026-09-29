@@ -1,6 +1,7 @@
 // Hash routing, the tab bar, the persistent story header.
 
 import { el, add, clear, qs } from './core.js';
+import { iconSlot } from './icons.js';
 import { getCurrentStory, getCurrentStoryteller } from './store.js';
 import { progress } from './derived.js';
 import { deckScreen, cardScreen, settingsScreen, notFoundScreen } from './screens.js';
@@ -10,10 +11,10 @@ import { storiesScreen, exampleScreen } from './library.js';
 import { buildScreen } from './build.js';
 
 const TABS = [
-  { id: 'stories', label: 'Stories', icon: '❐', href: '#/stories', match: /^#\/(stories|example)/ },
-  { id: 'build', label: 'Build', icon: '✎', href: '#/build', match: /^#\/build/ },
-  { id: 'deck', label: 'Deck', icon: '🂠', href: '#/deck', match: /^#\/deck/ },
-  { id: 'learn', label: 'Learn', icon: '?', href: '#/learn', match: /^#\/(learn|tutorial)/ },
+  { id: 'stories', label: 'Stories', href: '#/stories', match: /^#\/(stories|example)/ },
+  { id: 'build', label: 'Build', href: '#/build', match: /^#\/build/ },
+  { id: 'deck', label: 'Deck', href: '#/deck', match: /^#\/deck/ },
+  { id: 'learn', label: 'Learn', href: '#/learn', match: /^#\/(learn|tutorial)/ },
 ];
 
 const ROUTES = [
@@ -50,7 +51,7 @@ function renderTabs() {
   for (const tab of TABS) {
     add(bar, add(
       el('a', { href: tab.href, 'aria-current': tab.match.test(hash) ? 'page' : null }),
-      el('span', { class: 'tab-icon', 'aria-hidden': 'true', text: tab.icon }),
+      iconSlot(tab.id, 'tab-icon'),
       el('span', { text: tab.label }),
     ));
   }
@@ -106,6 +107,11 @@ function render() {
   const hash = location.hash || '#/stories';
   const screen = qs('#screen');
   clear(screen);
+
+  // The screen arrives (D24). The class is removed as soon as the animation ends so a re-render
+  // during it never leaves the screen stuck mid-fade.
+  screen.classList.add('is-entering');
+  screen.addEventListener('animationend', () => screen.classList.remove('is-entering'), { once: true });
 
   const route = ROUTES.find((r) => r.pattern.test(hash));
   const match = route ? hash.match(route.pattern) : null;

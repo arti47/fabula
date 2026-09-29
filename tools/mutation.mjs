@@ -201,6 +201,20 @@ const MUTANTS = [
     harness: 'smoke',
   },
   {
+    name: 'a tab loses its icon',
+    file: 'src/icons.js',
+    from: "  stories: [",
+    to: "  storiesx: [",
+    harness: 'test',
+  },
+  {
+    name: 'a live SVG filter comes back as a page background',
+    file: 'styles.css',
+    from: '  --grain: url("data:image/png;base64,',
+    to: '  --grain: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3CfeTurbulence%2F%3E%3C%2Fsvg%3E");\n  --unused: url("data:image/png;base64,',
+    harness: 'test',
+  },
+  {
     name: 'the update toast never offers a new version',
     file: 'src/main.js',
     from: "          showToast('A new version is ready — reload to get it', 6000);",
