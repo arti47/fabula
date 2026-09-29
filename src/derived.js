@@ -190,3 +190,30 @@ export function coverCard(story) {
   if (hero) return INGREDIENTS.find((i) => i.kind === 'hero') || IDEA_CARD;
   return IDEA_CARD;
 }
+
+/**
+ * What the story has invented so far (S3): every character and world with something written on
+ * it, in the order they were made, with the card each one wears. Derived, never stored.
+ */
+export function castStrip(story) {
+  const heroCard = INGREDIENTS.find((i) => i.kind === 'hero');
+  const villainCard = INGREDIENTS.find((i) => i.kind === 'villain');
+  const worldCard = INGREDIENTS.find((i) => i.kind === 'world');
+  const people = (story.cast || []).filter(hasAnyAnswer).map((c) => ({
+    id: c.id,
+    kind: c.kind,
+    art: (c.kind === 'villain' ? villainCard : heroCard)?.art,
+    name: isBlank(c.answers?.name)
+      ? (c.kind === 'villain' ? 'The antagonist' : 'The main character')
+      : c.answers.name,
+    href: `#/build/ingredients/${c.id}`,
+  }));
+  const places = (story.worlds || []).filter(hasAnyAnswer).map((w) => ({
+    id: w.id,
+    kind: 'world',
+    art: worldCard?.art,
+    name: isBlank(w.answers?.whereWhen) ? 'That place' : w.answers.whereWhen,
+    href: `#/build/ingredients/${w.id}`,
+  }));
+  return [...people, ...places];
+}

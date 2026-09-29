@@ -205,6 +205,28 @@ export function cardTile(card, { href, sub, blank = false, done = false } = {}) 
 }
 
 /**
+ * The cast strip (S3): who and where the story has, pinned above the work.
+ *
+ * Steps one to four are forms; without this a kid writes for twenty minutes and never sees what
+ * they have made. Each chip wears the card its answers live on and links back to it. Returns null
+ * when the story has invented nobody, so an empty strip never takes up room.
+ */
+export function castRow(entries) {
+  if (!entries.length) return null;
+  const strip = el('div', { class: 'cast-strip' });
+  add(strip, el('h3', { class: 'visually-hidden', text: 'Who and where, so far' }));
+  for (const entry of entries) {
+    const chip = el('a', { class: `cast-chip is-${entry.kind}`, href: entry.href });
+    const art = el('span', { class: 'cast-art', 'aria-hidden': 'true' });
+    if (entry.art) art.style.backgroundImage = `url("assets/cards/${entry.art}.webp")`;
+    add(chip, art);
+    add(chip, el('span', { class: 'cast-name', text: entry.name }));
+    add(strip, chip);
+  }
+  return strip;
+}
+
+/**
  * A card that arrives face-down and turns over (D26/D29).
  *
  * One at a time, never a grid: two sides in the DOM is fine for the card you are looking at and a

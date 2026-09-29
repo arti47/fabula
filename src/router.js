@@ -5,6 +5,8 @@ import { modal } from './ui.js';
 import { icon } from './icons.js';
 import { getCurrentStory } from './store.js';
 import { progress, coverCard } from './derived.js';
+import { BEATS } from '../data.js';
+import { isBlank } from './core.js';
 import { deckScreen, cardScreen, settingsScreen, notFoundScreen } from './screens.js';
 import { learnScreen } from './learn.js';
 import { tutorialScreen } from './tutorial.js';
@@ -116,6 +118,13 @@ export function renderStoryHeader() {
     style: `background-image: url("assets/cards/${cover.art}.webp")`,
   }));
   add(header, el('p', { class: 'story-header-title', text: story.title }));
+  // The nine beats as an object rather than a fraction (S1): it thickens as the story is written.
+  // A second channel for what the counts already say in words — never the only one (§6).
+  const spine = el('div', { class: 'spine', 'aria-hidden': 'true' });
+  for (const beat of BEATS) {
+    add(spine, el('span', { class: `spine-bone${isBlank(story.beats?.[beat.n]?.text) ? '' : ' is-written'}` }));
+  }
+  add(header, spine);
   add(header, add(
     el('div', { class: 'progress-row' }),
     item('Idea', p.idea ? 'yes' : 'not yet'),

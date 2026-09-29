@@ -318,6 +318,20 @@ const MUTANTS = [
     harness: 'smoke',
   },
   {
+    name: 'the story stops showing what it has made (S3)',
+    file: 'src/build.js',
+    from: '  if (surveying) add(screen, castRow(castStrip(story)));',
+    to: '  void surveying;',
+    harness: 'smoke',
+  },
+  {
+    name: 'the spine stops thickening (S1)',
+    file: 'src/router.js',
+    from: "    add(spine, el('span', { class: `spine-bone${isBlank(story.beats?.[beat.n]?.text) ? '' : ' is-written'}` }));",
+    to: "    add(spine, el('span', { class: 'spine-bone' }));",
+    harness: 'smoke',
+  },
+  {
     name: 'the update toast never offers a new version',
     file: 'src/main.js',
     from: "          showToast('A new version is ready — reload to get it', 6000);",

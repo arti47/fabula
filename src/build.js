@@ -3,10 +3,10 @@
 
 import { icon } from './icons.js';
 import { el, add } from './core.js';
-import { explain, clearActionBar } from './ui.js';
+import { explain, clearActionBar, castRow } from './ui.js';
 import { STEPS } from '../data.js';
 import { getCurrentStory } from './store.js';
-import { blankSteps } from './derived.js';
+import { blankSteps, castStrip } from './derived.js';
 import { ideaStep } from './idea.js';
 import { ingredientsGrid, ingredientQuestion } from './ingredients.js';
 import { structureList, beatScreen } from './structure.js';
@@ -34,6 +34,10 @@ export function buildScreen({ step, entryId, qIndex = 0, beatNumber, boostId, fr
   // below saying it again cost 45px on a phone and told nobody anything. It stays in the document
   // for the heading outline and for a screen reader, and stops being drawn twice.
   add(screen, el('h2', { class: 'visually-hidden', text: `${current.n}. ${current.name}` }));
+  // What the story has made, above the work it is making (S3) — on the screens that survey the
+  // step, never on the one-question screens, where it pushed the writing field off a 320 phone.
+  const surveying = !entryId && !beatNumber && !boostId;
+  if (surveying) add(screen, castRow(castStrip(story)));
   add(screen, explain(
     STEP_BLURB[current.id],
     'You do not have to do these in order, and you can leave anything blank and come back to it. The story is yours.',

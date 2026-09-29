@@ -834,6 +834,47 @@ input[type="file"] {
   transform: rotateY(180deg);
 }
 
+/* ---------- what the story has made (S1, S3) ---------- */
+
+/* The nine beats as a thing that thickens, not a fraction. */
+/* The spine is the header's own bottom edge: a second channel that costs no height, because the
+   chrome budget is 140px and a row of its own put 320 over it. */
+.spine {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  display: flex; gap: 2px;
+}
+.spine-bone {
+  flex: 1 1 auto; height: 3px; border-radius: 0;
+  background: rgb(242 233 216 / 0.16);
+}
+.spine-bone.is-written { background: var(--group-structure); }
+
+/* Who and where the story has, above the work. */
+.cast-strip {
+  display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
+  margin: 0 calc(var(--gutter) * -1) var(--step);
+  padding: 0 var(--gutter) 2px;
+}
+.cast-strip::-webkit-scrollbar { display: none; }
+.cast-chip {
+  flex: 0 0 auto;
+  display: inline-flex; align-items: center; gap: 7px;
+  min-height: 40px; padding: 4px 12px 4px 4px;
+  border: 1px solid var(--rule); border-radius: 999px;
+  background: var(--paper-raised); color: var(--ink);
+  text-decoration: none; font-size: 0.82rem;
+  max-width: 200px;
+}
+.cast-art {
+  flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%;
+  background-color: var(--paper-sunken);
+  background-size: cover; background-position: 50% 16%;
+}
+.cast-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cast-chip.is-villain { border-color: var(--group-prompt); }
+.cast-chip.is-world { border-color: var(--group-structure); }
+.cast-chip.is-hero { border-color: var(--group-ingredient); }
+
 /* ---------- the menu (D31) ---------- */
 
 .app-nav { display: flex; align-items: center; gap: 2px; min-width: 0; }

@@ -627,6 +627,30 @@ try {
     assert.equal(banner.inGrid, false, 'a divider is sitting in the card grid');
   });
 
+  // S1/S3: the story has to be visible as a thing, not only as a fraction.
+  await page.goto(base + '#/build/ingredients');
+  await present(page, '.card-grid');
+  const madeSoFar = await page.evaluate(() => ({
+    chips: [...document.querySelectorAll('.cast-chip')].map((c) => c.textContent.trim()),
+    bones: document.querySelectorAll('.spine-bone').length,
+    written: document.querySelectorAll('.spine-bone.is-written').length,
+  }));
+  check('the strip shows who the story has', () => assert.ok(madeSoFar.chips.length >= 2, JSON.stringify(madeSoFar.chips)));
+  check('the spine has one bone per beat', () => assert.equal(madeSoFar.bones, 9));
+  check('and fills the ones that are written', () => {
+    assert.ok(madeSoFar.written > 0, 'no beat marked written');
+    assert.ok(madeSoFar.written < madeSoFar.bones, 'every beat marked written');
+  });
+
+  // Never on a one-question screen: there it pushed the writing field off a 320 phone.
+  // Reached through the grid, because the walk builds its own story and the fixture's ids are
+  // not in it — a hardcoded id here lands on "no such card" and proves nothing.
+  const firstCard = await page.evaluate(() => document.querySelector('.card-grid a')?.getAttribute('href'));
+  await page.goto(base + firstCard);
+  await present(page, '.stage-card');
+  const onQuestion = await page.evaluate(() => document.querySelectorAll('.cast-chip').length);
+  check('the strip keeps off the question screens', () => assert.equal(onQuestion, 0));
+
   // A deck has two sides (D28). A card with nothing written on it is lying face-down; answering
   // it turns it over. The back has to be somewhere a kid actually sees it, or it is dead art.
   await page.goto(base + '#/build/boost');
