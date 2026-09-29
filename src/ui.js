@@ -185,7 +185,9 @@ export function cardTile(card, { href, sub, blank = false, done = false } = {}) 
     tile,
     add(
       el('div', { class: 'card-face-holder' }),
-      cardFace(card),
+      // Nothing written on it yet means it has not been turned over yet (D28). The headline below
+      // still names the card, so face-down hides the picture, never which card it is.
+      blank ? cardBack(card.group) : cardFace(card),
       // The word below says it too; the mark says it from across the room (G9).
       done ? el('span', { class: 'done-badge', 'aria-hidden': 'true', text: '✓' }) : null,
     ),
@@ -200,6 +202,42 @@ export function cardTile(card, { href, sub, blank = false, done = false } = {}) 
       sub ? el('div', { class: 'card-sub', text: sub }) : null,
     ),
   );
+}
+
+/**
+ * A card that arrives face-down and turns over (D26/D29).
+ *
+ * One at a time, never a grid: two sides in the DOM is fine for the card you are looking at and a
+ * paint budget problem for thirty of them (§4). `deal` starts it face-down and turns it on the
+ * next frame; reduced motion collapses the turn to nothing, which is the same card either way.
+ */
+export function dealtFace(card, { deal = false } = {}) {
+  const wrap = el('div', { class: `flipper${deal ? ' is-face-down' : ''}` });
+  add(wrap, add(
+    el('div', { class: 'flipper-inner' }),
+    add(el('div', { class: 'flipper-side is-front' }), zoomableFace(card)),
+    add(el('div', { class: 'flipper-side is-back' }), cardBack(card.group)),
+  ));
+  if (deal) requestAnimationFrame(() => requestAnimationFrame(() => wrap.classList.remove('is-face-down')));
+  return wrap;
+}
+
+/**
+ * The back of a card (D28).
+ *
+ * The deck ships no back, so the group's divider becomes one: scaled to fill, washed in the
+ * group's colour and framed. A2 is amended for exactly this — a divider may be card-shaped when it
+ * is a back, never when it is a face. The Idea group has no divider and gets the plain colour.
+ */
+export function cardBack(groupId) {
+  const divider = DIVIDERS.find((d) => d.group === groupId);
+  const back = el('div', {
+    class: 'card-back',
+    'aria-hidden': 'true',
+    style: `--card-color: var(${GROUPS[groupId]?.colorVar || '--rule'})`,
+  });
+  if (divider) back.style.backgroundImage = `url("assets/cards/${divider.art}.webp")`;
+  return add(back, el('span', { class: 'card-back-frame' }));
 }
 
 /**

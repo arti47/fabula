@@ -290,6 +290,13 @@ const MUTANTS = [
     harness: 'a11y',
   },
   {
+    name: 'every card lies face-up again, and the back becomes dead art (D28)',
+    file: 'src/ui.js',
+    from: '      blank ? cardBack(card.group) : cardFace(card),',
+    to: '      cardFace(card),',
+    harness: 'smoke',
+  },
+  {
     name: 'the update toast never offers a new version',
     file: 'src/main.js',
     from: "          showToast('A new version is ready — reload to get it', 6000);",

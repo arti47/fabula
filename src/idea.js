@@ -4,7 +4,7 @@
 // Prompt card gives you something. Nothing here is ever refused.
 
 import { el, add, clear, randomInt, debounce, isBlank, nowIso } from './core.js';
-import { actionBar, zoomableFace, exampleLine, answerLayout } from './ui.js';
+import { actionBar, zoomableFace, dealtFace, exampleLine, answerLayout } from './ui.js';
 import { PROMPTS, IDEA_CARD, DIE_FACES } from '../data.js';
 import { ideaSparkSection } from './sparks.js';
 import { saveStory } from './store.js';
@@ -54,7 +54,8 @@ export function ideaStep(story) {
   const showPrompt = (letter, { tumble = false } = {}) => {
     const prompt = PROMPTS.find((p) => p.letter === letter);
     clear(dieArea);
-    add(dieArea, promptPanel(prompt, () => roll()));
+    // Thrown, the card is dealt face-down and turned over; merely shown again, it is just there.
+    add(dieArea, promptPanel(prompt, () => roll(), { deal: tumble }));
     const die = dieArea.querySelector('.die-letter');
     die?.focus();
     // The die tumbles when it is thrown, never when a stored roll is simply shown again (D24).
@@ -93,14 +94,14 @@ export function ideaStep(story) {
   return wrap;
 }
 
-function promptPanel(prompt, onRoll) {
+function promptPanel(prompt, onRoll, { deal = false } = {}) {
   const panel = el('div', { class: 'prompt-panel', style: 'border-top-color: var(--group-prompt)' });
   add(panel, el('div', {
     class: 'die-letter', tabindex: '-1',
     'aria-live': 'polite',
     text: prompt.letter,
   }));
-  add(panel, zoomableFace(prompt));
+  add(panel, dealtFace(prompt, { deal }));
   add(panel, el('h3', { class: 'prompt-headline', text: prompt.headline }));
   add(panel, el('p', { text: prompt.guidance }));
 

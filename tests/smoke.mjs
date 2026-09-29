@@ -602,6 +602,27 @@ try {
     assert.equal(banner.inGrid, false, 'a divider is sitting in the card grid');
   });
 
+  // A deck has two sides (D28). A card with nothing written on it is lying face-down; answering
+  // it turns it over. The back has to be somewhere a kid actually sees it, or it is dead art.
+  await page.goto(base + '#/build/boost');
+  await present(page, '.card-grid');
+  const sides = await page.evaluate(() => [...document.querySelectorAll('.card-grid .card')].map((c) => ({
+    down: Boolean(c.querySelector('.card-back')),
+    blank: Boolean(c.querySelector('.card-blank')),
+  })));
+  check('an unanswered card lies face-down', () => {
+    const wrong = sides.filter((c) => c.down !== c.blank);
+    assert.deepEqual(wrong, [], `${wrong.length} cards show the wrong side`);
+    assert.ok(sides.some((c) => c.down), 'no card is face-down');
+    assert.ok(sides.some((c) => !c.down), 'every card is face-down');
+  });
+
+  // The Deck is the reference shelf: there, every card is face-up whatever the story has done.
+  await page.goto(base + '#/deck/boosts');
+  await present(page, '.card-grid');
+  const deckDown = await page.evaluate(() => document.querySelectorAll('.card-grid .card-back').length);
+  check('the Deck shows every face', () => assert.equal(deckDown, 0));
+
   // A finished card says so from across the room (G9), and a written beat fills its node (G7).
   await page.goto(base + '#/build/boost');
   await present(page, '.card-grid');
