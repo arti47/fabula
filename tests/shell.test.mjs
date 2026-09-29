@@ -42,3 +42,35 @@ test('no live SVG filter is used as a background', () => {
       'an SVG filter in a background repaints the whole page');
   }
 });
+
+test('every stylesheet is structurally sound', () => {
+  // A declaration that fell outside every rule sat at the end of styles.css for three commits.
+  // The browser drops it silently, so the page looked right and the dark themes quietly used the
+  // light theme's paper grain. The parse gate checks JS by filename; this checks CSS the same way.
+  const sheets = ['styles.css', ...readdirSync(join(ROOT, 'skins')).map((f) => join('skins', f))]
+    .filter((f) => f.endsWith('.css'));
+  for (const file of sheets) {
+    const raw = readFileSync(join(ROOT, file), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/"[^"]*"|'[^']*'/g, '""');
+
+    let depth = 0;
+    let chunk = '';
+    for (const ch of raw) {
+      if (ch === '{') {
+        if (depth === 0 && chunk.includes(';') && !chunk.trim().startsWith('@')) {
+          assert.fail(`${file}: a declaration sits outside every rule near "${chunk.trim().slice(0, 60)}"`);
+        }
+        depth++; chunk = '';
+      } else if (ch === '}') {
+        depth--;
+        assert.ok(depth >= 0, `${file}: one } too many`);
+        chunk = '';
+      } else if (depth === 0) {
+        chunk += ch;
+      }
+    }
+    assert.equal(depth, 0, `${file}: ${depth} unclosed rule(s)`);
+    assert.ok(!chunk.includes(';'), `${file}: a declaration sits after the last rule`);
+  }
+});

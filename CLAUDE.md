@@ -86,7 +86,7 @@ non-English content.
 
 | # | Decision | Answer | What it binds |
 |---|---|---|---|
-| D19 | How far the style moves | **Lean into the deck** | The UI stops competing with the art and starts framing it: paper grain, ribbon headings, a bundled display face, drop caps, decorative rules |
+| D19 | How far the style moves | **Lean into the deck**, and build all three directions rather than picking one | The UI stops competing with the art and starts framing it: paper grain, ribbon headings, a bundled display face, drop caps, decorative rules |
 | D20 | Reading a card face | **Lightbox overlay** | Any face opens full-screen over the current screen, focus restored. Never leaves the step. The only way to read a card's printed questions since the zoom lock |
 | D21 | Typeface | **One bundled display face** | SIL-OFL, subset to Latin + the booklet's accents, in `assets/`; headings, card headlines and small-caps connectors. Body text stays on the system serif stack |
 | D22 | Chrome | **Trim, keep everything sticky** | Story header to one row, no duplicate step heading, shorter nav pills. §6.2's persistent resource header stays persistent |
@@ -239,6 +239,12 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
   `feGaussianBlur`, `feDisplacementMap`) inside a CSS background: the browser re-runs it over the
   whole page on every paint, and a three-screen route becomes unpaintable. Texture ships as a small
   tile; a test enforces it.
+- **Three looks, one structure.** `styles.css` owns every measurement; `skins/<id>.css` owns
+  nothing but taste, scoped to `:root[data-look="<id>"]`. **Book page** (default), **Card table**
+  (dark, the story's cover behind the header) and **Paper sheet**. Chosen in Settings, stored with
+  the theme. The whole measurement contract — overflow, tap targets, underlined anchors, console —
+  runs against all three at 390 and 1024; a look that breaks it is as broken as the app. Two of
+  them get deleted once one has won.
 - **Responsive**: zero horizontal overflow at 320 / 360 / 390px; tablet layouts at 768 and 1024
   that add density rather than stretching (D12).
 
@@ -249,7 +255,8 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | File | Purpose |
 |---|---|
 | `index.html` | App shell: header, story header, section nav, screen mount, module entry |
-| `styles.css` | Storybook theme (light + dark) + all component styles |
+| `styles.css` | Structure, measurements and component skeletons — everything that is not a matter of taste |
+| `skins/page.css`, `skins/deck.css`, `skins/sheet.css` | The three looks (§4). One structure, three skins, each scoped to `:root[data-look="…"]` |
 | `data.js` | The deck: all 30 playable cards — headline, group, badge, art path, questions, guidance, examples |
 | `data-examples.js` | The two booklet stories as complete story records (Little Red Riding Hood; Hänsel & Gretel before *and* after Boosts) |
 | `data-sparks.js` | Invented spark tables — five open ones for the Idea screen, and one per input (39) — `HOUSE_AID = true` |
@@ -262,7 +269,7 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | `tests/` + `package.json` | Dev-only harnesses (`npm test`); `node_modules` gitignored; not in the SW app shell |
 | `tools/parse-gate.mjs` | Syntax-checks every shipped file by filename before the suite runs |
 | `tools/dead-data.mjs` | The dead-data scan (§9): exports nothing reads, imports nothing uses |
-| `tests/shell.test.mjs` | The shipped-file invariants: every module cached offline and listed in §5.1, and no live SVG filter in a background |
+| `tests/shell.test.mjs` | The shipped-file invariants: every module cached offline and listed in §5.1, no live SVG filter in a background, and every stylesheet structurally sound |
 | `tests/icons.test.mjs` | Every tab and header control has an icon, and no icon is drawn that nothing asks for |
 | `tests/harness.mjs` | Shared server, browser and fixture loading, and the one route list every harness measures |
 | `tests/make-fixtures.mjs` | Regenerates the three seed states (`npm run fixtures`) |
@@ -294,6 +301,7 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | `settings.js` | Theme, text size, export/import, the storyteller manager, deleting the open story, about — **currently inside `screens.js`** |
 | `tutorial.js` | The ten-step first-story walkthrough, linked from the empty shelf and Settings |
 | `router.js` | Tab routing, section nav (incl. scrolling the current pill into view), live-state badges |
+| `looks.js` | The three looks and their names — one list, read by Settings and by boot (§4) |
 | `icons.js` | The app's own SVG icons and drawings, stroked in `currentColor` — house-drawn chrome, never the deck's art (D25) |
 | `zoom.js` | The zoom lock: refuses pinch gestures iOS Safari grants despite the viewport meta |
 | `main.js` | Entry point / boot |
@@ -483,11 +491,16 @@ horizontal overflow at 320/360/390 and no stretched layout at 768/1024; no stray
 the fold; section nav reaches every sibling; no tap target under 40px measured on the wrapping
 label; the action bar never grows past one bar; the current section-nav pill stays in view; fixed
 chrome inside its budget; nothing named twice; the two-up layouts really give two columns at 1024
-and one at 390; the full walk: storyteller → story → roll → idea → ingredients → beats → boost → tell.
+and one at 390; the action bar measured continuously from 320 to 1024 in 8px steps, because it is
+the one thing sensitive to width rather than to layout and a five-width sample walked straight past
+a defect band nine pixels wide; and the whole contract again in each of the three looks; the full walk: storyteller → story → roll → idea → ingredients → beats → boost → tell.
 
 **C. Interaction audit (`npm run audit`, ~2 min).** Visits every route — including the screens
 *inside* a step — clicks every visible control in isolation with storage reset between clicks, and
-flags: a JS error, an unclickable control, and a control that changes nothing. Self-links carrying
+flags: a JS error, an unclickable control, and a control that changes nothing. The screen is
+compared by **a hash of its whole text**, never by length and a prefix: summarised that way, text
+swapped for text of the same length further down the page was invisible, and the audit cried wolf
+at a control that had just worked. Self-links carrying
 `aria-current` are meant to be no-ops; `window.print` is counted rather than excused. Poll for the
 change; never a fixed wait (D-15).
 
@@ -506,7 +519,7 @@ stories, a story with 4 heroes, 2 villains, 3 worlds, every beat long, all 10 bo
 text, whitespace-only answers — what a kid types when nobody is watching). `tests/probe-layout.mjs` prints per route: height in viewports, control count,
 primary-action offset, smallest tap target, overflow per width. A probe prints; it does not assert.
 
-**Mutation pass (`npm run mutants`, `-- all` for the browser ones).** Thirty-seven mutants, each breaking
+**Mutation pass (`npm run mutants`, `-- all` for the browser ones).** Thirty-nine mutants, each breaking
 one rule the app is supposed to keep — the pre-fill, the snapshot, the die, a permission's control,
 the placeholder path, the update toast, the zoom lock. A mutant that survives is a rule that can break silently,
 and is a finding against the harness rather than the app.
@@ -590,6 +603,8 @@ rather than a broken image, and the harness must pass with `assets/cards/` empty
 
 | Date | Change | Verification | Cache |
 |---|---|---|---|
+| 2026-09-29 | Three harness defects, no app defects — the pass turned on itself and was right each time. **Stale mutant**: one still named `--grain`, renamed to `--grain-tile` in this change, so the pass had quietly stopped testing that no SVG filter can return as a page background. **Survivor**: nothing could kill the action bar's two-line clamp, and measuring showed why — the clamp, the non-shrinking buttons and the off-screen rule below 431px are three guards for one behaviour, and with all three gone the bar only breaks its 96px budget between **431 and 440px**, a band narrower than the gap between any two widths in the sweep. A sixth width cost 20% of the sweep and caught nothing; the bar is measured continuously now, 320 to 1024 in 8px steps, and the three-guards-removed mutant dies at 432px. **False alarm**: the interaction audit summarised a screen as its text length plus its first 400 characters, so an Idea spark writing a new line of the same length as the old one read as "changes nothing" — intermittently, depending on the row drawn. It hashes the whole screen now. | `npm run mutants -- all` 39/39 caught, nothing stale; the continuous bar sweep proved to bite by removing all three guards (fails at 432px); the rebuilt audit signature proved to bite in both directions — silencing the spark write reports all five tables, and three consecutive runs with it working are clean; `npm test` 90/90, a11y and update path unchanged | v23 |
+| 2026-09-29 | **Three looks, because the answer to "which direction" was all of them.** `styles.css` keeps every measurement and component skeleton; taste moves out into `skins/page.css`, `skins/deck.css` and `skins/sheet.css`, each scoped to `:root[data-look="…"]`, chosen in Settings beside the theme. Book page is the default. Shared by all three, and the real reason the old interface looked the way it did: **the body font was `--font-ui`** — every note, label, count and button in a storybook app was set in Segoe or Roboto with only the headings in a serif. The reading voice is the serif now; only the mechanical bits stay on the UI face. The screen gutter grew from 8px to 20px, and the story's cover is available behind the header for the looks that want art there. Three defects found on the way, all older than this change: a `--grain` declaration had sat **outside every rule** at the end of `styles.css` since batch 2, so both dark themes had silently been using the light theme's paper; the tablet rule set its own `.screen` padding while the section nav hung off `--gutter`, so at 1024 the nav ran 6px past the viewport **in every look**; and the four progress counts wrapped at 360 once the gutter grew. | `npm test` 90/90 with a new stylesheet-structure guard over all four CSS files — braces balanced, nothing outside a rule; smoke now runs the measurement contract in each of the three looks at 390 and 1024 on every deep route (overflow, tap targets, underlined anchors, console) as well as its own 30 × 5 sweep; interaction (443 controls) and a11y clean; `npm run mutants -- all` 39/39 caught, two new — a declaration escaping its rule, and a look never applied at boot | v23 |
 | 2026-09-29 | The primary action on every screen was an underlined link. `.button` carried no `display` and no `text-decoration`, and about half the buttons in the app are `<a class="button">` — so "Write beat 4", "Keep boosting", "Back to my stories" and "Next" rendered underlined, inline, and a different height from the `<button>` sitting beside them. It survived every harness because nothing measured how a control *looks*, only that it exists, is big enough and does something. Now asserted on every route at every width. | `npm test` 89/89; smoke gains an underlined-anchor check across all 30 routes × 5 widths; a11y clean; a mutant restores the defect and is caught | v22 |
 | 2026-09-29 | UX/UI audit, batch 4 of 4: the graphics. **The four group dividers stopped being dead art** — they shipped in `assets/` and appeared on no screen at all, which is §0.1 in another coat. Each now heads its group in the Deck and the rules library as a wide band: a strip, never an upright face, never inside a card grid, so A2 holds. **A story wears a cover** on the shelf — the main-character card once a hero is answered, the Idea card before that, derived from the story rather than stored. **The nine beats became one arc**: a rail runs behind the numbers and a written beat fills its node, so how far the story has got is visible without reading a word. **A finished card carries a mark**, not just the word "Answered". **The first screen anybody sees** was 500px of empty paper under a one-line form; it has a drawing now — an open book and three sparks, house-drawn, in the deck's idiom but unmistakably not a card (D25). Plus torn-paper spark chips, `prefers-contrast: more` tokens, and `explain()` ornament. Dropped after building it: the told story's drop cap — every passage opens with its card's phrase in small caps, and dropping the first letter of "Once upon a time" leaves a giant O in front of "NCE UPON A TIME"; the connector is already the flourish and got the room instead. Found by the interaction audit while finishing: an Idea spark could hand back the line already on screen, one draw in sixteen, and a button that appears to do nothing reads as broken. | `npm test` 89/89; smoke gains five checks — the divider is a band and not in a grid, answered cards carry their mark, the rail marks what is written, and a spark never repeats itself over twelve taps; interaction (440 controls, twice) and a11y clean; `npm run mutants -- all` 36/36 caught, five new | v21 |
 | 2026-09-29 | UX/UI audit, batch 3 of 4: the screen itself. **Chrome** (D22): 248px of header, story header, nav and tab bar stood between a kid and the first word of their story — 29% of a 390×844 phone — and every build screen then printed the step name a second time, 45px under the nav pill that already said it in the accent colour. The story header is two lines now, the duplicate heading stays in the document for the outline and stops being drawn, and the nav pills are shorter: 248px → 210px, and the writing field on a question screen moves up about 95px. Both are budgets with tests behind them now, not one-off fixes. **Tablet** (D23): only the beat list added density; the shelf, the examples and the rules library ran one stretched column with the other half of the screen empty. They go two-up at 1024, and the tab bar's four tabs keep a phone's measure and centre instead of spreading over a metre. **And `explain()` stopped looking like an empty text field** — it carried an input's border, radius, raised background and width on every screen; it is a left rule and a caret now, at a readable measure. | `npm test` 88/88; smoke gains five contract checks over every route × width — chrome budget, nothing named twice, and the two-up columns proved at both 1024 and 390; interaction (440 controls) and a11y clean; `npm run mutants -- all` 31/31 caught, two new — the tablet flattened back to one column, and the step named twice again. At 1024 the rules library drops 4.5 → 2.9 screens and the worked Hänsel and Gretel 6.8 → 3.2 | v20 |

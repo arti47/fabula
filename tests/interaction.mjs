@@ -27,8 +27,19 @@ const SIGNATURE = () => ({
   printed: window.__printed || 0,
   scroll: Math.round(window.scrollY / 20), // scrolling somewhere is a real change
 
-  screen: document.querySelector('#screen')?.textContent?.length || 0,
-  screenText: (document.querySelector('#screen')?.textContent || '').slice(0, 400),
+  // A hash of the whole screen, not its length and its first 400 characters. Summarised that way,
+  // any text swapped for text of the same length further down the page was invisible — the audit
+  // reported "changes nothing" for a spark button that had just written a new line, intermittently,
+  // depending on how long the line it drew happened to be.
+  screen: (() => {
+    const text = document.querySelector('#screen')?.textContent || '';
+    let hash = 2166136261;
+    for (let i = 0; i < text.length; i++) {
+      hash ^= text.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return `${text.length}:${(hash >>> 0).toString(36)}`;
+  })(),
   modals: document.querySelectorAll('.modal').length,
   toasts: document.querySelectorAll('.toast').length,
   storage: Object.keys(localStorage).map((k) => `${k}:${(localStorage.getItem(k) || '').length}`).join('|'),

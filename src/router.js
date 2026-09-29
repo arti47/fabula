@@ -3,7 +3,7 @@
 import { el, add, clear, qs } from './core.js';
 import { iconSlot } from './icons.js';
 import { getCurrentStory } from './store.js';
-import { progress } from './derived.js';
+import { progress, coverCard } from './derived.js';
 import { deckScreen, cardScreen, settingsScreen, notFoundScreen } from './screens.js';
 import { learnScreen } from './learn.js';
 import { tutorialScreen } from './tutorial.js';
@@ -72,6 +72,14 @@ export function renderStoryHeader() {
   header.hidden = false;
   // Two lines, not three. Who is telling the story does not change while you write it, and it is
   // named on the shelf and in Settings; the counts do change, which is what this header is for.
+  // The cover the story wears (G6). Only the looks that want art behind their header show it;
+  // the others hide it in CSS, so the markup is the same either way.
+  const cover = coverCard(story);
+  add(header, el('div', {
+    class: 'story-header-art',
+    'aria-hidden': 'true',
+    style: `background-image: url("assets/cards/${cover.art}.webp")`,
+  }));
   add(header, el('p', { class: 'story-header-title', text: story.title }));
   add(header, add(
     el('div', { class: 'progress-row' }),

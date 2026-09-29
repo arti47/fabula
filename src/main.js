@@ -2,6 +2,7 @@
 
 import { qs } from './core.js';
 import { getPrefs, setPref } from './store.js';
+import { LOOKS } from './looks.js';
 import { startRouter } from './router.js';
 import { showToast } from './ui.js';
 import { icon } from './icons.js';
@@ -15,11 +16,13 @@ function paintHeaderIcons() {
   if (theme) { theme.replaceChildren(icon(currentlyDark() ? 'light' : 'dark')); }
 }
 
-function applyPrefs() {
+export function applyPrefs() {
   const prefs = getPrefs();
   const root = document.documentElement;
   if (prefs.theme === 'light' || prefs.theme === 'dark') root.setAttribute('data-theme', prefs.theme);
   else root.removeAttribute('data-theme');
+  // Three looks, switchable, while we work out which one this app wants to be (§4).
+  root.setAttribute('data-look', LOOKS.some((l) => l.id === prefs.look) ? prefs.look : 'page');
   root.style.setProperty('--text-scale', String(prefs.textScale || 1));
 }
 

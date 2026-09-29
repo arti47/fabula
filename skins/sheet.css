@@ -1,0 +1,152 @@
+/* Look 3 — Paper sheet.
+   The story sits on a raised sheet over a tinted ground, and the deck's own group colour does the
+   accenting. The most conventional of the three, and the most legible: high contrast between the
+   sheet and everything around it, so the eye always knows where the content is. */
+
+:root[data-look="sheet"] {
+  --paper: #ece3d1;
+  --paper-raised: #fffdf7;
+  --paper-sunken: #f2ecdd;
+  --ink: #22201c;
+  --ink-soft: #6a6255;
+  --ink-faint: #9a917f;
+  --rule: #e4dbc7;
+  --accent: #2f5d8c;
+  --accent-ink: #ffffff;
+  --blank-dot: #c3b696;
+  --grain: none;
+  --gutter: 20px;
+  --radius: 14px;
+  --card-radius: 14px;
+  --shadow: 0 1px 2px rgb(34 32 28 / 0.08), 0 6px 18px rgb(34 32 28 / 0.07);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-look="sheet"]:not([data-theme="light"]) {
+    --paper: #100e0b;
+    --paper-raised: #1c1914;
+    --paper-sunken: #161310;
+    --ink: #f2e9d8;
+    --ink-soft: #b6ab97;
+    --ink-faint: #877d6b;
+    --rule: #2a251d;
+    --accent: #7aa8d4;
+    --accent-ink: #10131a;
+  }
+}
+:root[data-look="sheet"][data-theme="dark"] {
+  --paper: #100e0b;
+  --paper-raised: #1c1914;
+  --paper-sunken: #161310;
+  --ink: #f2e9d8;
+  --ink-soft: #b6ab97;
+  --ink-faint: #877d6b;
+  --rule: #2a251d;
+  --accent: #7aa8d4;
+  --accent-ink: #10131a;
+}
+
+/* ---- the sheet ---- */
+
+:root[data-look="sheet"] .app-header {
+  background: var(--paper);
+  border-bottom: 0;
+}
+:root[data-look="sheet"] .brand {
+  font-family: var(--font-ui);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+:root[data-look="sheet"] .brand-mark { display: none; }
+
+:root[data-look="sheet"] .story-header {
+  background: var(--paper-raised);
+  border-bottom: 0;
+  border-radius: 20px 20px 0 0;
+  padding-top: 14px;
+  margin-top: 6px;
+}
+:root[data-look="sheet"] .story-header-art { display: none; }
+:root[data-look="sheet"] .story-header-title { font-size: 1.4rem; font-weight: 400; }
+
+/* The screen continues the sheet the story header starts. */
+:root[data-look="sheet"] .screen {
+  background: var(--paper-raised);
+  border-radius: 20px 20px 0 0;
+  padding-top: 18px;
+  min-height: 70vh;
+}
+:root[data-look="sheet"] .story-header + .screen,
+:root[data-look="sheet"] .story-header:not([hidden]) + .screen { border-radius: 0; margin-top: 0; }
+
+:root[data-look="sheet"] .section-nav a,
+:root[data-look="sheet"] .section-nav .jump-pill {
+  background: var(--paper-sunken);
+  border-color: transparent;
+  font-weight: 600;
+}
+:root[data-look="sheet"] .section-nav a[aria-current] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* ---- lists ---- */
+
+:root[data-look="sheet"] .beat-row {
+  background: none;
+  border: 0;
+  border-radius: 0;
+  padding: 15px 0;
+}
+:root[data-look="sheet"] .beat-list > li + li .beat-row { border-top: 1px solid var(--rule); }
+:root[data-look="sheet"] .beat-list::before { display: none; }
+:root[data-look="sheet"] .beat-number {
+  width: 30px; height: 30px;
+  border: 0; border-radius: 9px;
+  background: var(--paper-sunken);
+  color: var(--ink-faint);
+  font-family: var(--font-ui); font-size: 0.8rem; font-weight: 700;
+}
+:root[data-look="sheet"] .beat-row.is-written .beat-number {
+  background: var(--group-structure);
+  color: #fff;
+}
+
+:root[data-look="sheet"] .card {
+  border: 1px solid var(--rule);
+  border-top: 1px solid var(--rule);
+  box-shadow: var(--shadow);
+}
+:root[data-look="sheet"] .story-row { border-left: 4px solid var(--card-color, var(--group-structure)); }
+:root[data-look="sheet"] .group-banner { border-left: 0; }
+
+/* ---- controls ---- */
+
+:root[data-look="sheet"] .button {
+  border-radius: 12px;
+  border-color: transparent;
+  box-shadow: 0 2px 0 rgb(0 0 0 / 0.18);
+}
+:root[data-look="sheet"] .button.secondary {
+  background: var(--paper-sunken);
+  color: var(--ink);
+  border-color: transparent;
+  box-shadow: none;
+}
+:root[data-look="sheet"] .action-bar {
+  background: var(--paper-raised);
+  border-top: 1px solid var(--rule);
+}
+:root[data-look="sheet"] .tab-bar { background: var(--paper-raised); }
+:root[data-look="sheet"] input[type="text"],
+:root[data-look="sheet"] input[type="search"],
+:root[data-look="sheet"] textarea,
+:root[data-look="sheet"] select {
+  background: var(--paper-sunken);
+  border-color: transparent;
+  border-radius: 12px;
+}

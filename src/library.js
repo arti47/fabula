@@ -3,9 +3,8 @@
 import { el, add, relativeTime } from './core.js';
 import { icon, illustration } from './icons.js';
 import { explain, actionBar, promptModal, confirmModal, showToast, modal } from './ui.js';
-import { storyBlurb, progress, hasAnyAnswer } from './derived.js';
+import { storyBlurb, progress, coverCard } from './derived.js';
 import { EXAMPLE_STORIES, getExample } from '../data-examples.js';
-import { INGREDIENTS, IDEA_CARD } from '../data.js';
 import { tellScreen } from './tell.js';
 import {
   getStorytellers, addStoryteller, removeStoryteller, getCurrentStoryteller, setCurrentStoryteller,
@@ -241,18 +240,6 @@ function promptModalAddPerson(list) {
       { label: 'Close', kind: 'secondary' },
     ],
   });
-}
-
-/**
- * A cover for a story: the card it is most about (G6).
- *
- * The main-character card once a hero has been answered, the Idea card before that. Derived from
- * the story, never stored — a cover kept on the record could disagree with the story (§10.11).
- */
-function coverCard(story) {
-  const hero = (story.cast || []).find((c) => c.kind === 'hero' && hasAnyAnswer(c));
-  if (hero) return INGREDIENTS.find((i) => i.kind === 'hero') || IDEA_CARD;
-  return IDEA_CARD;
 }
 
 function storyRow(story) {

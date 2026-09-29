@@ -187,10 +187,14 @@ const MUTANTS = [
     harness: 'smoke',
   },
   {
-    name: 'the action bar context wraps without limit',
+    // Both guards are load-bearing and each alone is enough, so breaking one leaves the other
+    // holding: an earlier mutant that removed only the clamp survived, and one that removed only
+    // the off-screen rule survived too. The behaviour is what has to be broken, so this takes the
+    // bar back to the unconstrained `flex: 1` the defect was found in.
+    name: 'the action bar context is free to crush the buttons again',
     file: 'styles.css',
-    from: '  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;',
-    to: '  overflow: visible;',
+    from: '  flex: 1 1 auto; min-width: 0;\n  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;\n}\n.action-bar .button { flex: 0 0 auto; }',
+    to: '  flex: 1;\n}\n.action-bar .button { }',
     harness: 'smoke',
   },
   {
@@ -210,8 +214,8 @@ const MUTANTS = [
   {
     name: 'a live SVG filter comes back as a page background',
     file: 'styles.css',
-    from: '  --grain: url("data:image/png;base64,',
-    to: '  --grain: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3CfeTurbulence%2F%3E%3C%2Fsvg%3E");\n  --unused: url("data:image/png;base64,',
+    from: '  --grain-tile: url("data:image/png;base64,',
+    to: '  --grain-tile: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3CfeTurbulence%2F%3E%3C%2Fsvg%3E");\n  --unused: url("data:image/png;base64,',
     harness: 'test',
   },
   {
@@ -261,6 +265,20 @@ const MUTANTS = [
     file: 'styles.css',
     from: '  font: inherit; font-weight: 600; text-align: center; text-decoration: none;',
     to: '  font: inherit; font-weight: 600; text-align: center;',
+    harness: 'smoke',
+  },
+  {
+    name: 'a declaration escapes its rule again',
+    file: 'skins/page.css',
+    from: ':root[data-look="page"] .brand-mark { display: none; }',
+    to: ':root[data-look="page"] .brand-mark { display: none; }\n--stray: 1px;',
+    harness: 'test',
+  },
+  {
+    name: 'a look stops being applied at boot',
+    file: 'src/main.js',
+    from: "  root.setAttribute('data-look', LOOKS.some((l) => l.id === prefs.look) ? prefs.look : 'page');",
+    to: "  root.setAttribute('data-look', 'page');",
     harness: 'smoke',
   },
   {

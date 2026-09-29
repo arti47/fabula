@@ -131,9 +131,11 @@ try {
         const h = (sel) => { const n = document.querySelector(sel); return n && !n.hidden ? n.getBoundingClientRect().height : 0; };
         return Math.round(h('.app-header') + h('.story-header') + h('.tab-bar'));
       });
-      // At 320 the four counts need a second line — 298px of text will not fit in 304px, and
-      // dropping one of them would cost a kid the thing this header exists to show.
-      const chromeBudget = width <= 320 ? 200 : 175;
+      // Under 390 the four counts need a second line — they are 288px of text and a 360px phone
+      // has 316px of room once the gutters are taken. Shrinking them below 0.75rem to win 8px
+      // would cost a kid legibility on the one thing this header exists to show, so the budget
+      // carries the extra line instead.
+      const chromeBudget = width <= 360 ? 200 : 175;
       check(`${width} ${route} fixed chrome stays out of the way`, () => assert.ok(chrome <= chromeBudget, `${chrome}px of chrome`));
 
       // The nav pill and a heading two centimetres below it saying the same thing is one of them
@@ -691,6 +693,66 @@ try {
   check('the last storyteller can be removed', () => assert.match(firstRun, /Who is telling stories/));
 
   await context.close();
+
+  // The action bar is the one measurement that is sensitive to width rather than to layout: the
+  // context line shares a row with buttons that will not shrink. Sampling five widths missed it —
+  // with both guards removed the bar only breaks its budget between 431 and 440px, a band narrower
+  // than the gap between any two widths in the sweep. So this one walks the range.
+  {
+    const barCtx = await browser.newContext({ viewport: { width: 320, height: 800 } });
+    await seed(barCtx, 'mid-story');
+    const barPage = await barCtx.newPage();
+    await barPage.goto(base + '#/build/tell', { waitUntil: 'domcontentloaded' });
+    await barPage.waitForSelector('.action-bar');
+    const tall = [];
+    for (let width = 320; width <= 1024; width += 8) {
+      await barPage.setViewportSize({ width, height: 800 });
+      const height = await barPage.evaluate(() => Math.round(document.querySelector('.action-bar').getBoundingClientRect().height));
+      if (height > 96) tall.push(`${width}px → ${height}px`);
+    }
+    check('the action bar stays one bar at every width', () => assert.deepEqual(tall, [], tall.join(', ')));
+    await barCtx.close();
+  }
+
+  // Three looks ship at once (§4), and each one is a different stylesheet over the same markup.
+  // A look that overflows, shrinks a tap target or underlines its buttons is as broken as the app
+  // would be, so the measurement contract runs against all of them.
+  for (const look of ['page', 'deck', 'sheet']) {
+    for (const width of [390, 1024]) {
+      const lookCtx = await browser.newContext({ viewport: { width, height: 800 } });
+      await seed(lookCtx, 'mid-story');
+      const lookPage = await lookCtx.newPage();
+      await lookPage.addInitScript((chosen) => {
+        try {
+          const raw = localStorage.getItem('storyMachine.prefs');
+          localStorage.setItem('storyMachine.prefs', JSON.stringify({ ...(raw ? JSON.parse(raw) : {}), look: chosen }));
+        } catch { /* a look nobody can store is the default, which is still a look */ }
+      }, look);
+      const lookErrors = [];
+      lookPage.on('pageerror', (e) => lookErrors.push(String(e)));
+      lookPage.on('console', (m) => { if (m.type() === 'error' && !isMissingArt(m)) lookErrors.push(m.text()); });
+      for (const route of DEEP_ROUTES) {
+        await lookPage.goto(base + route, { waitUntil: 'domcontentloaded' });
+        await lookPage.waitForSelector('#screen h2, #screen label');
+        const seen = await lookPage.evaluate(() => ({
+          look: document.documentElement.getAttribute('data-look'),
+          overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          small: [...document.querySelectorAll('a, button, summary')]
+            .filter((t) => t.offsetParent !== null && !t.classList.contains('skip-link'))
+            .map((t) => ({ text: (t.textContent || t.getAttribute('aria-label') || '').trim().slice(0, 20), h: Math.round(t.getBoundingClientRect().height) }))
+            .filter((t) => t.h > 0 && t.h < 40),
+          underlined: [...document.querySelectorAll('a.button')]
+            .filter((a) => a.offsetParent !== null && getComputedStyle(a).textDecorationLine !== 'none').length,
+        }));
+        check(`${look} ${width} ${route} applied`, () => assert.equal(seen.look, look));
+        check(`${look} ${width} ${route} overflow`, () => assert.ok(seen.overflow <= 0, `${seen.overflow}px`));
+        check(`${look} ${width} ${route} tap targets`, () => assert.deepEqual(seen.small, [], JSON.stringify(seen.small)));
+        check(`${look} ${width} ${route} buttons`, () => assert.equal(seen.underlined, 0));
+      }
+      check(`${look} ${width} console`, () => assert.deepEqual(lookErrors, []));
+      await lookCtx.close();
+    }
+  }
 
   // An adversarial state: emoji, unbroken 600-character words, quotes, angle brackets, right-to-
   // left text, whitespace-only answers. A kid holding a key down should not break a layout.

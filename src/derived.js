@@ -1,7 +1,7 @@
 // Everything computed from a story: progress, what is still blank, assembly for the Tell page.
 // Pure functions over a normalized story record.
 
-import { BEATS, BOOSTS, INGREDIENTS } from '../data.js';
+import { BEATS, BOOSTS, INGREDIENTS, IDEA_CARD } from '../data.js';
 import { isBlank } from './core.js';
 
 /** Has this character/world/event card been answered at all? */
@@ -175,4 +175,15 @@ export function asPlainText(assembled) {
     lines.push('');
   }
   return lines.join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n';
+}
+
+/**
+ * The card a story is most about (G6): the main-character card once a hero has been answered, the
+ * Idea card before that. Derived, never stored — a cover kept on the record could disagree with
+ * the story it belongs to (§10.11). Read by the shelf and by the story header.
+ */
+export function coverCard(story) {
+  const hero = (story.cast || []).find((c) => c.kind === 'hero' && hasAnyAnswer(c));
+  if (hero) return INGREDIENTS.find((i) => i.kind === 'hero') || IDEA_CARD;
+  return IDEA_CARD;
 }

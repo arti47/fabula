@@ -6,6 +6,7 @@ import { explain, cardTile, exampleLine, clearActionBar, showToast, confirmModal
 import { PROMPTS, INGREDIENTS, BEATS, BOOSTS, IDEA_CARD, GROUPS, getCard, CARD_ERRATA } from '../data.js';
 import { getPrefs, setPref, exportAll, importAll, describeImport, getCurrentStory, deleteStory } from './store.js';
 import { storytellerManager } from './library.js';
+import { LOOKS, DEFAULT_LOOK } from './looks.js';
 
 function sectionNav(items, currentId) {
   const nav = el('nav', { class: 'section-nav', 'aria-label': 'Sections' });
@@ -129,6 +130,29 @@ export function settingsScreen() {
     'Everything about how the app looks, and how to keep a copy of your stories.',
     'Your stories are saved on this device only. Nothing is sent anywhere, and nobody else can see them.',
   ));
+
+  add(screen, el('h3', { text: 'Look' }));
+  add(screen, el('p', { class: 'note', text: 'Three ways this app can look. Try them and keep the one you like.' }));
+  const looks = el('div', { class: 'look-choices', role: 'radiogroup', 'aria-label': 'Look' });
+  for (const look of LOOKS) {
+    const chosen = (prefs.look || DEFAULT_LOOK) === look.id;
+    const choice = el('button', {
+      type: 'button',
+      class: `look-choice${chosen ? ' is-chosen' : ''}`,
+      role: 'radio',
+      'aria-checked': chosen ? 'true' : 'false',
+      onclick: () => {
+        setPref('look', look.id);
+        document.documentElement.setAttribute('data-look', look.id);
+        showToast(`Look: ${look.name}`);
+        window.dispatchEvent(new HashChangeEvent('hashchange'));
+      },
+    });
+    add(choice, el('span', { class: 'look-name', text: look.name }));
+    add(choice, el('span', { class: 'look-blurb', text: look.blurb }));
+    add(looks, choice);
+  }
+  add(screen, looks);
 
   add(screen, el('h3', { text: 'Text size' }));
   const scale = el('input', {
