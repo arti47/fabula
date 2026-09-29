@@ -145,6 +145,34 @@ export function cardFace(card) {
   return add(holder, img).firstChild;
 }
 
+/**
+ * The same face, as a button that opens it big.
+ *
+ * The Ingredient cards print their six questions on the art itself, and the answering layout shows
+ * that art at 96px. Since the zoom lock (§4) a kid cannot pinch it open either, so without this the
+ * card's own words are unreadable everywhere they matter. Not used inside `cardTile`, where the
+ * whole tile is already a link.
+ */
+export function zoomableFace(card) {
+  const group = GROUPS[card.group]?.name || 'card';
+  const button = el('button', {
+    type: 'button',
+    class: 'face-button',
+    'aria-label': `Look closely at the ${group} card: ${card.headline}`,
+    onclick: () => cardLightbox(card),
+  });
+  return add(button, cardFace(card));
+}
+
+/** The card, as big as the screen allows, over whatever you were doing. */
+export function cardLightbox(card) {
+  modal({
+    title: card.headline,
+    body: [add(el('div', { class: 'lightbox' }), cardFace(card))],
+    actions: [{ label: 'Close', kind: 'secondary' }],
+  });
+}
+
 /** One card in a grid. `blank` shows the gentle dot for an untouched card. */
 export function cardTile(card, { href, sub, blank = false } = {}) {
   const group = GROUPS[card.group];

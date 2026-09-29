@@ -8,7 +8,7 @@
 //                                            control that names what it would discard
 
 import { el, add, debounce, isBlank } from './core.js';
-import { actionBar, cardTile, cardFace, exampleLine, showToast, confirmModal, answerLayout } from './ui.js';
+import { actionBar, cardTile, zoomableFace, exampleLine, showToast, confirmModal, answerLayout } from './ui.js';
 import { BOOSTS, BEATS, INGREDIENTS, getCard } from '../data.js';
 import { saveStory, ensureSnapshot, takeSnapshot } from './store.js';
 import { spawnedBy } from './derived.js';
@@ -205,7 +205,7 @@ export function boostScreen(story, boostId) {
     push(body, list);
   }
 
-  add(wrap, answerLayout(cardFace(boost), body));
+  add(wrap, answerLayout(zoomableFace(boost), body));
 
   const index = BOOSTS.findIndex((b) => b.id === boost.id);
   const next = BOOSTS[index + 1];

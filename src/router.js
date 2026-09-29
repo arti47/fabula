@@ -85,6 +85,23 @@ function item(label, value) {
   return add(el('span', { class: 'progress-item' }), document.createTextNode(`${label} `), el('b', { text: value }));
 }
 
+/**
+ * Scroll the section nav so the pill you are standing on is visible.
+ *
+ * The nav scrolls horizontally and started at zero every render, so from step 5 the current pill
+ * sat off the right edge: the one pill that says where you are was the one you could not see.
+ * Measured from boxes rather than `scrollIntoView`, which would also scroll the page.
+ */
+function centreCurrentPill() {
+  for (const nav of document.querySelectorAll('.section-nav')) {
+    const current = nav.querySelector('[aria-current]');
+    if (!current) continue;
+    const navBox = nav.getBoundingClientRect();
+    const pill = current.getBoundingClientRect();
+    nav.scrollLeft += (pill.left - navBox.left) - (navBox.width - pill.width) / 2;
+  }
+}
+
 function render() {
   const hash = location.hash || '#/stories';
   const screen = qs('#screen');
@@ -97,6 +114,7 @@ function render() {
   renderTabs();
   markHeaderLinks();
   renderStoryHeader();
+  centreCurrentPill();
   window.scrollTo(0, 0);
 }
 

@@ -82,6 +82,18 @@ non-English content.
 | D17 | Boost depth | Create cards **and** rewrite beats | A Boost can spawn an Ingredient card and send you back to edit a beat |
 | D18 | Name | Story Machine | Home screen, install icon, tab title |
 
+### 1.2 Visual decisions (Phase 11, recorded)
+
+| # | Decision | Answer | What it binds |
+|---|---|---|---|
+| D19 | How far the style moves | **Lean into the deck** | The UI stops competing with the art and starts framing it: paper grain, ribbon headings, a bundled display face, drop caps, decorative rules |
+| D20 | Reading a card face | **Lightbox overlay** | Any face opens full-screen over the current screen, focus restored. Never leaves the step. The only way to read a card's printed questions since the zoom lock |
+| D21 | Typeface | **One bundled display face** | SIL-OFL, subset to Latin + the booklet's accents, in `assets/`; headings, card headlines and small-caps connectors. Body text stays on the system serif stack |
+| D22 | Chrome | **Trim, keep everything sticky** | Story header to one row, no duplicate step heading, shorter nav pills. §6.2's persistent resource header stays persistent |
+| D23 | Tablet | **Two columns, tab bar stays** | Shelf, examples, Learn and Deck sections go two-up at 1024; the tab bar's contents centre to a max-width rather than spreading |
+| D24 | Motion | **Feedback and page transitions** | Press/hover lift, spark fade-in, a die tumble, and a short transition between steps. All gated behind `prefers-reduced-motion`; none of it carries information (§6) |
+| D25 | House-drawn graphics | **Close to the deck, never card-shaped** | Banners, rules and line art may echo the woodcut idiom, but nothing is rendered as a card face, carries a card's lettering, or sits where a real card would. §11 says the chrome is house-drawn |
+
 ---
 
 ## 2. Sources and precedence
@@ -221,7 +233,8 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
   `touchmove`, and a ctrl/⌘ wheel. Double-tap is held by `touch-action: manipulation`; the
   browser's own zoom UI is untouched. Inputs stay ≥16px so focusing a field never scrolls-and-
   scales. The lock **is paid back** with a text-size control in Settings that scales the app's own
-  type, persisted with the theme — reflow rather than pan, which is what a small reader needs.
+  type, persisted with the theme — reflow rather than pan, which is what a small reader needs — and by the
+  card lightbox (D20): the deck prints its questions on the art, so every face opens full-screen on a tap.
 - **Responsive**: zero horizontal overflow at 320 / 360 / 390px; tablet layouts at 768 and 1024
   that add density rather than stretching (D12).
 
@@ -258,7 +271,7 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | Module | Responsibility |
 |---|---|
 | `core.js` | Constants, DOM/util helpers (incl. null-safe `add`), `roll()` on `crypto`. No imports |
-| `ui.js` | Modals, toasts, confirms, the collapsible `explain()` note, the pinned action bar, the card component, the two-column `answerLayout` |
+| `ui.js` | Modals, toasts, confirms, the collapsible `explain()` note, the pinned action bar, the card component, the card lightbox, the two-column `answerLayout` |
 | `cards.js` | One lookup per kind of thing: `getCard(id)` resolves any card in any group, including nothing else (§10.16) |
 | `store.js` | Storytellers, stories, autosave, `takeSnapshot`/`ensureSnapshot`, JSON export/import, the die-roll log |
 | `derived.js` | Progress counts, "what's still blank", `assemble`/`asPlainText` for the Tell page |
@@ -274,7 +287,7 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | `sparks.js` | Draws three sparks for an input, fills in the names the story has, inserts at the cursor; always labelled a house aid |
 | `settings.js` | Theme, text size, export/import, the storyteller manager, deleting the open story, about — **currently inside `screens.js`** |
 | `tutorial.js` | The ten-step first-story walkthrough, linked from the empty shelf and Settings |
-| `router.js` | Tab routing, section nav, live-state badges |
+| `router.js` | Tab routing, section nav (incl. scrolling the current pill into view), live-state badges |
 | `zoom.js` | The zoom lock: refuses pinch gestures iOS Safari grants despite the viewport meta |
 | `main.js` | Entry point / boot |
 
@@ -475,7 +488,7 @@ stories, a story with 4 heroes, 2 villains, 3 worlds, every beat long, all 10 bo
 text, whitespace-only answers — what a kid types when nobody is watching). `tests/probe-layout.mjs` prints per route: height in viewports, control count,
 primary-action offset, smallest tap target, overflow per width. A probe prints; it does not assert.
 
-**Mutation pass (`npm run mutants`, `-- all` for the browser ones).** Twenty-four mutants, each breaking
+**Mutation pass (`npm run mutants`, `-- all` for the browser ones).** Twenty-seven mutants, each breaking
 one rule the app is supposed to keep — the pre-fill, the snapshot, the die, a permission's control,
 the placeholder path, the update toast, the zoom lock. A mutant that survives is a rule that can break silently,
 and is a finding against the harness rather than the app.
@@ -554,6 +567,7 @@ rather than a broken image, and the harness must pass with `assets/cards/` empty
 
 | Date | Change | Verification | Cache |
 |---|---|---|---|
+| 2026-09-29 | UX/UI audit, batch 1 of 4: the three things measurement said were broken. **A card face could not be read.** `cardFace()` returned a bare `<img>` — the Ingredient cards print their six questions on the art, the answering layout shows that art at 96px, and since v16 a kid cannot pinch it open either, so the card's own words were unreadable everywhere they mattered. Every face outside a card tile is now a button opening a lightbox (D20). **The action bar grew to 171px on the Tell page at 390×844** — an unclamped context line wrapped to eight rows and crushed the two buttons it was meant to explain; it now clamps to two rows and the buttons stop shrinking. **The section nav never scrolled the current pill into view**, so from step 5 the one pill that says where you are sat off the right edge. Also recorded: the Phase 11 visual decisions D19–D25. | `npm test` 84/84; smoke gains eight checks — the lightbox opens, is at least 240px wide and closes; the action bar stays ≤96px and the current pill stays inside the nav, both asserted on every route × width; interaction (440 controls) and a11y clean; `npm run mutants -- all` 27/27 caught, three of them new: the lightbox unwired, the context clamp removed, the pill-centring dropped. Measured before/after at 390×844: Tell's action bar 171px → 63px, current pill off-screen → visible | v18 |
 | 2026-09-02 | Deleting a storyteller or a story made findable. Both controls have existed since Phase 1 and both worked; neither could be found. The only route to removing a storyteller was a button labelled **Switch**, a word that does not mean remove, and Settings — the first place a person looks to delete themselves or the thing they are working on — offered neither. The shelf control is now **Storytellers**, labelled for all three verbs it performs; Settings gains a storyteller section that opens the same manager, and a "Delete this story" for the story currently open, both at the end of the scroll and out of the thumb's arc (§6.1). Removing the last storyteller was already allowed and is now asserted: it returns the app to first run rather than stranding it. This is §0.2 in a new coat — a control that exists but cannot be reached is a permission the app has removed. | `npm test` 84/84; smoke gains six checks — the shelf control's own label, both Settings controls, the confirmation naming what goes, the story actually going, and the last storyteller removable; interaction (430 controls) and a11y clean; `npm run mutants -- all` 24/24 caught, including three new ones: the label reverted to "Switch", the Settings delete wired to nothing, and the last storyteller made unremovable | v17 |
 | 2026-09-02 | The zoom lock made real. The viewport meta has said `user-scalable=no` since Phase 0, and iOS Safari has ignored that since iOS 10 — so on the phone this app is most likely to be held, pinch-zoom still worked and the locked layout was a claim rather than a fact. `src/zoom.js` refuses the gestures themselves: iOS `gesturestart`/`change`/`end`, any two-finger `touchmove`, and a ctrl/⌘ wheel (a trackpad pinch). One-finger scrolling and a plain wheel are explicitly left alone, and double-tap stays with `touch-action: manipulation` rather than a touchend guard that would eat the second tap on a button. The accessibility debt is unchanged and still paid in Settings. Added with it: `tests/shell.test.mjs`, because §5 has always required a new module to reach the app-shell list and the module map, and nothing enforced it — a module missing from the shell is invisible until the app is opened with no signal. | `npm test` 84/84 (the shell guard proved to bite: it went red on `zoom.js` before the module map had a row for it); smoke gains five zoom checks over 30 routes × 5 widths; interaction, a11y, update path clean; `npm run mutants -- all` 21/21 caught | v16 |
 | 2026-09-01 | Machine audit stopped, by decision rather than by the stopping rule: eleven cycles, 48 findings, the last cycle producing three. `docs/AUDIT.md` gains a closing section — the cycle-by-cycle count, the lesson that changing the method found something every time while repeating one found almost nothing, the five things most likely still wrong (wording for a 12-year-old first among them), and the methods left untried. The next finding should come from a kid, or from you, holding a phone. | Final state: `npm test` 81/81 · smoke 30 routes × 5 widths + adversarial, sub-path and no-art sweeps · interaction audit on two fixtures · a11y · update path · 17/17 mutants caught | v15 |

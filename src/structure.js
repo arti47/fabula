@@ -7,7 +7,7 @@
 // Ruling A9: the order is presentational. Any beat is answerable at any time, and blank is legal.
 
 import { el, add, debounce, isBlank } from './core.js';
-import { actionBar, cardFace, exampleLine, answerLayout } from './ui.js';
+import { actionBar, zoomableFace, exampleLine, answerLayout } from './ui.js';
 import { fieldWithSparks } from './sparks.js';
 import { BEATS, getCard } from '../data.js';
 import { saveStory } from './store.js';
@@ -175,7 +175,7 @@ export function beatScreen(story, n, fromBoost) {
     body.push(list);
   }
 
-  add(wrap, answerLayout(cardFace(beat), body));
+  add(wrap, answerLayout(zoomableFace(beat), body));
 
   const next = BEATS.find((b) => b.n === n + 1);
   const prev = BEATS.find((b) => b.n === n - 1);

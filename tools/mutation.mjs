@@ -180,6 +180,27 @@ const MUTANTS = [
     harness: 'smoke',
   },
   {
+    name: 'a card face stops opening big (§4)',
+    file: 'src/ui.js',
+    from: "    onclick: () => cardLightbox(card),",
+    to: '    onclick: () => {},',
+    harness: 'smoke',
+  },
+  {
+    name: 'the action bar context wraps without limit',
+    file: 'styles.css',
+    from: '  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;',
+    to: '  overflow: visible;',
+    harness: 'smoke',
+  },
+  {
+    name: 'the section nav forgets to show the current step',
+    file: 'src/router.js',
+    from: '  centreCurrentPill();',
+    to: '  void centreCurrentPill;',
+    harness: 'smoke',
+  },
+  {
     name: 'the update toast never offers a new version',
     file: 'src/main.js',
     from: "          showToast('A new version is ready — reload to get it', 6000);",

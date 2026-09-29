@@ -4,7 +4,7 @@
 // Prompt card gives you something. Nothing here is ever refused.
 
 import { el, add, clear, randomInt, debounce, isBlank, nowIso } from './core.js';
-import { actionBar, cardFace, exampleLine, answerLayout } from './ui.js';
+import { actionBar, zoomableFace, exampleLine, answerLayout } from './ui.js';
 import { PROMPTS, IDEA_CARD, DIE_FACES } from '../data.js';
 import { ideaSparkSection } from './sparks.js';
 import { saveStory } from './store.js';
@@ -34,7 +34,7 @@ export function ideaStep(story) {
   const ideaExamples = el('ul');
   for (const ex of IDEA_CARD.examples) add(ideaExamples, exampleLine(ex));
 
-  add(wrap, answerLayout(cardFace(IDEA_CARD), [
+  add(wrap, answerLayout(zoomableFace(IDEA_CARD), [
     el('h2', { class: 'question-label', text: IDEA_CARD.headline }),
     el('p', { class: 'question-card-name', text: IDEA_CARD.starter }),
     field,
@@ -94,7 +94,7 @@ function promptPanel(prompt, onRoll) {
     'aria-live': 'polite',
     text: prompt.letter,
   }));
-  add(panel, cardFace(prompt));
+  add(panel, zoomableFace(prompt));
   add(panel, el('h3', { class: 'prompt-headline', text: prompt.headline }));
   add(panel, el('p', { text: prompt.guidance }));
 

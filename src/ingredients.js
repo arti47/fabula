@@ -10,7 +10,7 @@
 // reachable in any order from the pips, so the permission survives the format.
 
 import { el, add, uid, debounce, isBlank } from './core.js';
-import { actionBar, cardTile, cardFace, showToast, answerLayout, confirmModal } from './ui.js';
+import { actionBar, cardTile, zoomableFace, showToast, answerLayout, confirmModal } from './ui.js';
 import { fieldWithSparks } from './sparks.js';
 import { INGREDIENTS } from '../data.js';
 import { saveStory, removeEntry } from './store.js';
@@ -223,7 +223,7 @@ export function ingredientQuestion(story, entryId, qIndex) {
     ));
   }
 
-  add(wrap, answerLayout(cardFace(card), body));
+  add(wrap, answerLayout(zoomableFace(card), body));
 
   // Adding one of these is a permission (P3); taking it away again has to be possible too.
   // Destructive, so it sits at the end of the scroll rather than in the thumb's arc (§6.3.11).

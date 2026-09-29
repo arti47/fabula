@@ -186,7 +186,14 @@ a { color: var(--accent); }
   padding: var(--step);
   background: var(--paper-raised); border-top: 1px solid var(--rule);
 }
-.action-bar .context { font-size: 0.8rem; color: var(--ink-soft); flex: 1; }
+/* The context line explains the button; it must never crowd it. Unclamped it wrapped to eight
+   lines on the Tell page at 390 and pushed the bar to 171px, squeezing both buttons. */
+.action-bar .context {
+  font-size: 0.8rem; color: var(--ink-soft);
+  flex: 1 1 auto; min-width: 0;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.action-bar .button { flex: 0 0 auto; }
 .action-bar-spacer { height: 76px; }
 
 .tab-bar {
@@ -261,6 +268,19 @@ a { color: var(--accent); }
 .card-headline { font-family: var(--font); font-size: 0.95rem; margin: 2px 0 0; }
 .card-sub { font-size: 0.8rem; color: var(--ink-soft); }
 .card-blank { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--blank-dot); margin-left: 0.4em; }
+
+/* A card face you can open. The art carries the card's own printed words, and at 96px — with
+   pinch-zoom locked (§4) — this is the only way to read them. */
+.face-button {
+  display: block; width: 100%; padding: 0;
+  border: 0; background: none; cursor: pointer;
+  border-radius: var(--radius);
+}
+.lightbox { display: flex; justify-content: center; }
+.lightbox .card-face, .lightbox .card-face-missing {
+  width: auto; max-width: 100%; max-height: 68dvh;
+  border-radius: var(--radius); border: 1px solid var(--rule);
+}
 
 .house-flag {
   display: inline-block; font-size: 0.7rem; color: var(--ink-faint);

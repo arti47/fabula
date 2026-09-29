@@ -107,10 +107,24 @@ try {
         const b = document.querySelector('.action-bar');
         if (!b) return null;
         const r = b.getBoundingClientRect();
-        return { top: r.top, viewport: window.innerHeight };
+        return { top: r.top, viewport: window.innerHeight, height: Math.round(r.height) };
       });
       if (bar) check(`${width} ${route} primary action above the fold`, () => assert.ok(bar.top < bar.viewport, 'action bar is off-screen'));
       else if (width === 390) noBar.add(route);
+      // An unclamped context line wrapped to eight lines and grew the bar to 171px, crushing the
+      // buttons it was meant to explain. Two rows of context plus a 44px button is the ceiling.
+      if (bar) check(`${width} ${route} action bar stays one bar`, () => assert.ok(bar.height <= 96, `${bar.height}px tall`));
+
+      // The pill that says where you are is the one that must be on screen.
+      const strayPill = await page.evaluate(() => {
+        const nav = document.querySelector('.section-nav');
+        const current = nav?.querySelector('[aria-current]');
+        if (!nav || !current) return null;
+        const n = nav.getBoundingClientRect();
+        const p = current.getBoundingClientRect();
+        return (p.left >= n.left - 1 && p.right <= n.right + 1) ? null : current.textContent.trim();
+      });
+      check(`${width} ${route} the current step is visible in the nav`, () => assert.equal(strayPill, null, `${strayPill} is scrolled out of sight`));
 
       const small = await page.evaluate(() => {
         const targets = [...document.querySelectorAll('a, button, input[type="range"], input[type="file"], summary')];
@@ -261,6 +275,21 @@ try {
   await tap(page, '.action-bar .button:not(.secondary)');
   const secondQ = await settled(page, '.question-label', /What do they look like\?/);
   check('ingredients: Next advances', () => assert.match(secondQ, /What do they look like\?/));
+
+  // The card's own printed questions are on the art. At 96px, with zoom locked (§4), opening it
+  // big is the only way to read them.
+  await tap(page, '.answer-face .face-button');
+  const lightbox = await settled(page, '.modal', /\w/);
+  check('a card face opens big', () => assert.ok(lightbox.length > 0, 'no lightbox'));
+  const bigFace = await page.evaluate(() => {
+    const img = document.querySelector('.lightbox .card-face');
+    return img ? Math.round(img.getBoundingClientRect().width) : 0;
+  });
+  check('and it is actually big', () => assert.ok(bigFace >= 240, `${bigFace}px wide`));
+  await tap(page, '.modal-actions .button');
+  await page.waitForTimeout(100);
+  const closed = await page.evaluate(() => document.querySelectorAll('.modal').length);
+  check('and it closes again', () => assert.equal(closed, 0));
 
   // Jump straight to the name question via the pips (P2 survives the one-at-a-time format).
   await tap(page, '.pips .pip:nth-child(6)');
