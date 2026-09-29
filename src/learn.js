@@ -2,7 +2,7 @@
 // opened. Every card in the app links here (CLAUDE.md §6.2 layer 2).
 
 import { el, add, clear } from './core.js';
-import { explain, clearActionBar, exampleLine } from './ui.js';
+import { explain, clearActionBar, exampleLine, groupBanner } from './ui.js';
 import { LEARN_CHAPTERS, DRAWING_TIPS } from '../data-learn.js';
 import { getCard, GROUPS } from '../data.js';
 
@@ -76,6 +76,10 @@ export function learnScreen({ openId } = {}) {
   const entries = learnEntries();
   for (const chapter of LEARN_CHAPTERS) {
     add(wrap, el('h3', { text: chapter.title }));
+    // A chapter about a group of cards gets that group's own divider as a band (G5). Derived from
+    // the first card it lists, so no chapter has to carry a second copy of which group it is.
+    const firstCard = chapter.cards?.length ? getCard(chapter.cards[0]) : null;
+    if (firstCard) add(wrap, groupBanner(firstCard.group));
     if (chapter.intro) add(wrap, el('p', { class: 'note', text: chapter.intro }));
     // Two columns on a tablet: forty identical boxes down one side was four and a half screens
     // of scrolling with the other half of the screen empty (D23).

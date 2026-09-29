@@ -55,7 +55,8 @@ export function structureList(story) {
   const list = el('ol', { class: 'beat-list' });
   for (const beat of BEATS) {
     const text = beatText(story, beat.n);
-    const row = el('a', { class: 'beat-row', href: `#/build/structure/${beat.n}` });
+    // A written beat fills its node on the rail, so the arc shows how far the story has got (G7).
+    const row = el('a', { class: `beat-row${isBlank(text) ? '' : ' is-written'}`, href: `#/build/structure/${beat.n}` });
     add(row, el('span', { class: 'beat-number', text: String(beat.n) }));
     add(row, add(
       el('span', { class: 'beat-body' }),

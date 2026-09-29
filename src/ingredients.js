@@ -104,6 +104,7 @@ export function ingredientsGrid(story) {
         href: `#/build/ingredients/${entry.id}`,
         sub: `${answered} of ${card.questions.length} answered`,
         blank: !hasAnyAnswer(entry),
+        done: answered === card.questions.length,
       }));
       const tile = grid.lastChild;
       tile.querySelector('.card-headline').textContent = entryLabel(card, entry, i, entries.length);

@@ -2,7 +2,7 @@
 // the art placeholders), and stubs that name what is coming, per the roadmap.
 
 import { el, add } from './core.js';
-import { explain, cardTile, exampleLine, clearActionBar, showToast, confirmModal } from './ui.js';
+import { explain, cardTile, exampleLine, clearActionBar, showToast, confirmModal, groupBanner } from './ui.js';
 import { PROMPTS, INGREDIENTS, BEATS, BOOSTS, IDEA_CARD, GROUPS, getCard, CARD_ERRATA } from '../data.js';
 import { getPrefs, setPref, exportAll, importAll, describeImport, getCurrentStory, deleteStory } from './store.js';
 import { storytellerManager } from './library.js';
@@ -24,11 +24,11 @@ function sectionNav(items, currentId) {
 // ---------------------------------------------------------------------------
 
 const DECK_SECTIONS = [
-  { id: 'idea', label: 'The Idea', cards: () => [IDEA_CARD] },
-  { id: 'prompts', label: 'Prompts', cards: () => PROMPTS },
-  { id: 'ingredients', label: 'Ingredients', cards: () => INGREDIENTS },
-  { id: 'structure', label: 'Structure', cards: () => BEATS },
-  { id: 'boosts', label: 'Boosts', cards: () => BOOSTS },
+  { id: 'idea', label: 'The Idea', group: 'idea', cards: () => [IDEA_CARD] },
+  { id: 'prompts', label: 'Prompts', group: 'prompt', cards: () => PROMPTS },
+  { id: 'ingredients', label: 'Ingredients', group: 'ingredient', cards: () => INGREDIENTS },
+  { id: 'structure', label: 'Structure', group: 'structure', cards: () => BEATS },
+  { id: 'boosts', label: 'Boosts', group: 'boost', cards: () => BOOSTS },
 ];
 
 export function deckScreen(params) {
@@ -45,6 +45,7 @@ export function deckScreen(params) {
   // The nav pill above already names the section in the accent colour (§6). The heading stays in
   // the outline for a screen reader and stops being drawn a second time.
   add(screen, el('h2', { class: 'visually-hidden', text: section.label }));
+  add(screen, groupBanner(section.group));
   add(screen, explain(
     'Every card in the deck, to look at whenever you like.',
     'Tap one to read what it is for and how the book uses it. Nothing here changes your story — this is the shelf, not the workbench.',

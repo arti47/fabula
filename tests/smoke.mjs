@@ -286,6 +286,16 @@ try {
   const houseFlag = await page.textContent('.spark-note .house-flag');
   check('idea: sparks are labelled as ours', () => assert.match(houseFlag, /not the deck/));
 
+  // Tapping the same spark twice must not hand back the same line — it reads as a dead button.
+  const repeats = await page.evaluate(async () => {
+    const button = document.querySelector('.spark-row .button');
+    const out = document.querySelector('.spark-out');
+    const seen = [];
+    for (let i = 0; i < 12; i++) { button.click(); seen.push(out.textContent); }
+    return seen.filter((text, i) => i > 0 && text === seen[i - 1]).length;
+  });
+  check('idea: a spark never repeats the line already showing', () => assert.equal(repeats, 0, `${repeats} repeats in 12 taps`));
+
   await page.goto(base + '#/build/idea');
   const savedIdea = await page.inputValue('#idea-text');
   check('idea: the sentence persists', () => assert.equal(savedIdea, 'a lighthouse that walks'));
@@ -522,6 +532,38 @@ try {
   const afterText = await settled(page, '.told-story', /abandoned twice/);
   check('D10: after the boosts holds the rewritten beat', () => assert.match(afterText, /abandoned twice/));
   check('D10: and the before-version did not', () => assert.ok(!/abandoned twice/.test(beforeText)));
+
+  // The deck's own dividers, as bands rather than cards (G5, A2).
+  await page.goto(base + '#/deck/prompts');
+  const banner = await page.evaluate(() => {
+    const b = document.querySelector('.group-banner');
+    if (!b) return null;
+    const box = b.getBoundingClientRect();
+    return { h: Math.round(box.height), w: Math.round(box.width), inGrid: Boolean(b.closest('.card-grid')) };
+  });
+  check('a deck section wears its divider', () => assert.ok(banner, 'no group banner'));
+  check('the divider is a band, not a card', () => {
+    assert.ok(banner.h <= 120, `${banner.h}px tall`);
+    assert.ok(banner.w > banner.h * 2, 'too tall to read as a band');
+    assert.equal(banner.inGrid, false, 'a divider is sitting in the card grid');
+  });
+
+  // A finished card says so from across the room (G9), and a written beat fills its node (G7).
+  await page.goto(base + '#/build/boost');
+  await page.waitForSelector('.card-grid');
+  const badges = await page.evaluate(() => document.querySelectorAll('.done-badge').length);
+  check('answered boosts carry a mark', () => assert.ok(badges > 0, 'no done badges on an answered grid'));
+
+  await page.goto(base + '#/build/structure');
+  await page.waitForSelector('.beat-row');
+  const rail = await page.evaluate(() => ({
+    written: document.querySelectorAll('.beat-row.is-written').length,
+    total: document.querySelectorAll('.beat-row').length,
+  }));
+  check('the beat rail marks what is written', () => {
+    assert.ok(rail.written > 0, 'no beat is marked written');
+    assert.ok(rail.written < rail.total, 'every beat is marked written');
+  });
 
   // Learn: search, and the link from a card to its entry.
   await page.goto(base + '#/learn');

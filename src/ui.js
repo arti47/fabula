@@ -2,7 +2,7 @@
 // No native alert/confirm/prompt anywhere in this app (CLAUDE.md §4).
 
 import { el, add, clear, qs } from './core.js';
-import { GROUPS } from '../data.js';
+import { GROUPS, DIVIDERS } from '../data.js';
 
 // ---------------------------------------------------------------------------
 // explain(): the "what this does" note. Collapsed by default, on every screen (§6.2).
@@ -174,7 +174,7 @@ function cardLightbox(card) {
 }
 
 /** One card in a grid. `blank` shows the gentle dot for an untouched card. */
-export function cardTile(card, { href, sub, blank = false } = {}) {
+export function cardTile(card, { href, sub, blank = false, done = false } = {}) {
   const group = GROUPS[card.group];
   const tile = el(href ? 'a' : 'div', {
     class: 'card',
@@ -183,7 +183,12 @@ export function cardTile(card, { href, sub, blank = false } = {}) {
   });
   return add(
     tile,
-    cardFace(card),
+    add(
+      el('div', { class: 'card-face-holder' }),
+      cardFace(card),
+      // The word below says it too; the mark says it from across the room (G9).
+      done ? el('span', { class: 'done-badge', 'aria-hidden': 'true', text: '✓' }) : null,
+    ),
     add(
       el('div', { class: 'card-body' }),
       el('div', { class: 'card-group', text: group?.name || '' }),
@@ -195,6 +200,32 @@ export function cardTile(card, { href, sub, blank = false } = {}) {
       sub ? el('div', { class: 'card-sub', text: sub }) : null,
     ),
   );
+}
+
+/**
+ * The deck's own group divider, as a band across the head of its section.
+ *
+ * The four divider images shipped in `assets/` and appeared on no screen at all — dead art, the
+ * §0.1 defect in another coat. A2 says the app does not render a divider *as a card*, so this is a
+ * wide strip rather than an upright face: it cannot be mistaken for something to tap, and it never
+ * sits in a card grid (D25, G5). Returns null for a group with no divider, so the Idea section
+ * simply has none.
+ */
+export function groupBanner(groupId) {
+  const divider = DIVIDERS.find((d) => d.group === groupId);
+  if (!divider) return null;
+  const band = el('div', {
+    class: 'group-banner',
+    style: `--card-color: var(${GROUPS[groupId]?.colorVar || '--rule'})`,
+  });
+  const img = el('img', {
+    src: `assets/cards/${divider.art}.webp`,
+    alt: '',
+    loading: 'lazy',
+    decoding: 'async',
+  });
+  img.addEventListener('error', () => band.remove());
+  return add(band, img);
 }
 
 /**

@@ -512,6 +512,12 @@ input[type="file"] {
 .modal h2 { margin-top: 0; }
 .modal-actions { display: flex; gap: var(--step); flex-wrap: wrap; margin-top: calc(var(--step) * 2); }
 
+/* A story wears the card it is most about (G6). Derived from the story, never stored. */
+.story-row { flex-direction: row; align-items: stretch; }
+.story-cover { flex: 0 0 62px; background: var(--paper-sunken); overflow: hidden; }
+.story-cover img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 16%; display: block; }
+.story-row .card-body { flex: 1 1 auto; min-width: 0; }
+
 .example-row { display: block; border-top-color: var(--group-idea); margin-bottom: var(--step); text-decoration: none; color: inherit; }
 .row-actions { display: flex; gap: var(--step); flex-wrap: wrap; margin-top: var(--step); }
 
@@ -590,6 +596,95 @@ input[type="file"] {
 .spark-row .spark-chip { animation: spark-in 160ms ease-out both; }
 .spark-row .spark-chip:nth-child(2) { animation-delay: 50ms; }
 .spark-row .spark-chip:nth-child(3) { animation-delay: 100ms; }
+
+/* ---------- the deck's group dividers, as bands (G5) ---------- */
+
+/* A strip, never an upright face: A2 says the app does not render a divider as a card, and this
+   cannot be mistaken for one. The art's own banner sits at the foot of the card, so the crop takes
+   the middle — the heading beside it says the group's name in our own voice. */
+.group-banner {
+  height: 80px; margin: 0 0 var(--step);
+  border-radius: var(--radius);
+  border-left: 4px solid var(--card-color, var(--rule));
+  overflow: hidden; background: var(--paper-sunken);
+}
+.group-banner img {
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: 50% 32%;
+  display: block;
+}
+@media (min-width: 768px) { .group-banner { height: 110px; } }
+
+/* ---------- a card that is finished says so (G9) ---------- */
+
+.card-face-holder { position: relative; }
+.done-badge {
+  position: absolute; right: 6px; top: 6px;
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--group-boost); color: var(--paper-raised);
+  font-size: 0.85rem; font-weight: 700; line-height: 1;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
+}
+
+/* ---------- the nine beats as one arc (G7) ---------- */
+
+@media (max-width: 1023px) {
+  .beat-list { position: relative; }
+  /* One line behind the numbers: nine detached boxes were nine things; this is one story. */
+  .beat-list::before {
+    content: ""; position: absolute; z-index: 0;
+    left: 22px; top: 26px; bottom: 26px; width: 3px;
+    background: var(--blank-dot); opacity: 0.55; border-radius: 2px;
+  }
+  .beat-row { position: relative; z-index: 1; }
+}
+.beat-row { border-left-width: 1px; }
+.beat-number { background: var(--paper-raised); }
+.beat-row.is-written .beat-number {
+  background: var(--group-structure); color: var(--paper-raised);
+}
+
+/* ---------- the told story reads like a page ----------
+   No drop cap: every passage opens with its card's own phrase set in small caps, and dropping the
+   first letter of "Once upon a time" leaves a giant O in front of "NCE UPON A TIME". The connector
+   is already the opening flourish; it gets the room instead. */
+
+.told-passage { margin-bottom: 1.15em; }
+.told-connector { display: inline-block; margin-right: 0.15em; }
+
+/* ---------- sparks look like slips of paper (G10) ---------- */
+
+.spark-chip {
+  border-radius: 3px 10px 4px 12px / 12px 4px 10px 3px;
+  box-shadow: 0 1px 0 rgb(35 32 27 / 0.06);
+}
+
+/* ---------- empty states get a drawing, not just a sentence (G14) ---------- */
+
+.empty { display: flex; flex-direction: column; align-items: center; gap: var(--step); }
+.empty svg { color: var(--rule); }
+
+.first-run-art {
+  display: flex; justify-content: center;
+  padding: calc(var(--step) * 3) 0 calc(var(--step) * 2);
+  color: var(--ink-faint);
+}
+.first-run-art svg { width: min(250px, 66%); height: auto; }
+
+/* ---------- more contrast, where the device asks for it (G15) ---------- */
+
+@media (prefers-contrast: more) {
+  :root {
+    --ink: #17140f; --ink-soft: #3d382f; --ink-faint: #5c5548;
+    --rule: #a9977a; --paper-raised: #fffdf6;
+  }
+  :root[data-theme="dark"], :root:not([data-theme="light"]) {
+    --ink: #fffaf0; --ink-soft: #ded5c4; --ink-faint: #b4ab99; --rule: #6b6354;
+  }
+  body { background-image: none; }
+  .card, .beat-row, input[type="text"], input[type="search"], textarea, select { border-width: 2px; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }

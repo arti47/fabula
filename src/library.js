@@ -1,9 +1,11 @@
 // Storytellers and the shelf of stories.
 
 import { el, add, relativeTime } from './core.js';
+import { icon, illustration } from './icons.js';
 import { explain, actionBar, promptModal, confirmModal, showToast, modal } from './ui.js';
-import { storyBlurb, progress } from './derived.js';
+import { storyBlurb, progress, hasAnyAnswer } from './derived.js';
 import { EXAMPLE_STORIES, getExample } from '../data-examples.js';
+import { INGREDIENTS, IDEA_CARD } from '../data.js';
 import { tellScreen } from './tell.js';
 import {
   getStorytellers, addStoryteller, removeStoryteller, getCurrentStoryteller, setCurrentStoryteller,
@@ -28,6 +30,9 @@ function firstRun() {
     'Put your name in, and this shelf becomes yours.',
     'If somebody else uses this tablet too, they can add their own name and keep their own stories apart from yours.',
   ));
+
+  // The first screen anybody sees was 500px of empty paper under a one-line form (G14).
+  add(screen, add(el('div', { class: 'first-run-art', 'aria-hidden': 'true' }), illustration('first-story')));
 
   const input = el('input', { type: 'text', id: 'teller-name', placeholder: 'Your name', autocomplete: 'off' });
   add(screen, el('label', { for: 'teller-name', text: 'Your name' }), input);
@@ -63,6 +68,7 @@ function shelf(teller) {
   if (!stories.length) {
     add(screen, add(
       el('p', { class: 'empty' }),
+      icon('empty-shelf', { size: 48 }),
       document.createTextNode('Start your first story: an idea, then who is in it, then what happens. '),
       el('a', { href: '#/tutorial', text: 'Or read how it goes, first.' }),
     ));
@@ -237,10 +243,27 @@ function promptModalAddPerson(list) {
   });
 }
 
+/**
+ * A cover for a story: the card it is most about (G6).
+ *
+ * The main-character card once a hero has been answered, the Idea card before that. Derived from
+ * the story, never stored — a cover kept on the record could disagree with the story (§10.11).
+ */
+function coverCard(story) {
+  const hero = (story.cast || []).find((c) => c.kind === 'hero' && hasAnyAnswer(c));
+  if (hero) return INGREDIENTS.find((i) => i.kind === 'hero') || IDEA_CARD;
+  return IDEA_CARD;
+}
+
 function storyRow(story) {
   const p = progress(story);
   const blurb = storyBlurb(story);
-  const row = el('div', { class: 'card', style: 'border-top-color: var(--group-structure)' });
+  const row = el('div', { class: 'card story-row', style: 'border-top-color: var(--group-structure)' });
+  const cover = coverCard(story);
+  add(row, add(
+    el('div', { class: 'story-cover' }),
+    el('img', { src: `assets/cards/${cover.art}.webp`, alt: '', loading: 'lazy', decoding: 'async' }),
+  ));
   const body = el('div', { class: 'card-body' });
 
   add(body, el('p', { class: 'card-headline', text: story.title }));

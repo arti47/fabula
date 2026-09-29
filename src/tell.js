@@ -3,6 +3,7 @@
 // Nothing is withheld here and nothing is scored (ruling A10). A story with three beats written
 // reads back as three beats, and the page says how many are still blank without making a fuss.
 
+import { icon } from './icons.js';
 import { el, add, clear } from './core.js';
 import { actionBar, showToast } from './ui.js';
 import { assemble, asPlainText, hasBothVersions } from './derived.js';
@@ -117,7 +118,11 @@ function storyMarkup(assembled) {
   add(box, el('div', { id: 'told-story-text' }));
 
   if (!assembled.passages.length) {
-    add(box, el('p', { class: 'empty', text: 'Nothing written yet. Fill in a beat or two and it will appear here.' }));
+    add(box, add(
+      el('p', { class: 'empty' }),
+      icon('empty-page', { size: 48 }),
+      document.createTextNode('Nothing written yet. Fill in a beat or two and it will appear here.'),
+    ));
   }
 
   for (const passage of assembled.passages) {

@@ -134,7 +134,12 @@ export function ideaSparkSection() {
     add(row, el('button', {
       type: 'button', class: 'button secondary', text: table.label,
       onclick: () => {
-        out.textContent = `${table.prompt} ${table.rows[randomInt(table.rows.length)]}`;
+        // Tapping again has to give you something new. One draw in sixteen repeated the line
+        // already on screen, and a button that appears to do nothing reads as broken.
+        const pick = () => `${table.prompt} ${table.rows[randomInt(table.rows.length)]}`;
+        let next = pick();
+        for (let tries = 0; tries < 8 && next === out.textContent; tries++) next = pick();
+        out.textContent = next;
       },
     }));
   }

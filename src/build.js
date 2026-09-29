@@ -1,6 +1,7 @@
 // The guided five-step path and its section nav — the frame each step hangs on, carrying the
 // escapes the booklet grants (P1, P2, P5, P9) on every screen.
 
+import { icon } from './icons.js';
 import { el, add } from './core.js';
 import { explain, clearActionBar } from './ui.js';
 import { STEPS } from '../data.js';
@@ -87,7 +88,11 @@ function noStory() {
     'This is where you build a story, one step at a time.',
     'Nothing is open at the moment. Pick one off your shelf, or start a new one, and the five steps appear here.',
   ));
-  add(screen, el('p', { class: 'empty', text: 'Pick a story from your shelf, or start a new one.' }));
+  add(screen, add(
+    el('p', { class: 'empty' }),
+    icon('empty-shelf', { size: 48 }),
+    document.createTextNode('Pick a story from your shelf, or start a new one.'),
+  ));
   add(screen, el('p'), el('a', { class: 'button', href: '#/stories', text: 'Go to your stories' }));
   return screen;
 }

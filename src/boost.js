@@ -64,6 +64,7 @@ export function boostGrid(story) {
       href: `#/build/boost/${boost.id}`,
       sub: state.skipped ? 'Skipped' : (done ? 'Answered' : 'Not yet'),
       blank: !done && !state.skipped,
+      done,
     }));
   }
   add(wrap, grid);
