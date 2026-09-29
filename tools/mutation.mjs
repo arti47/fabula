@@ -257,6 +257,13 @@ const MUTANTS = [
     harness: 'smoke',
   },
   {
+    name: 'anchor buttons go back to underlined links',
+    file: 'styles.css',
+    from: '  font: inherit; font-weight: 600; text-align: center; text-decoration: none;',
+    to: '  font: inherit; font-weight: 600; text-align: center;',
+    harness: 'smoke',
+  },
+  {
     name: 'the update toast never offers a new version',
     file: 'src/main.js',
     from: "          showToast('A new version is ready — reload to get it', 6000);",

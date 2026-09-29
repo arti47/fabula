@@ -162,6 +162,14 @@ try {
       });
       check(`${width} ${route} tap targets`, () => assert.deepEqual(small, [], JSON.stringify(small)));
 
+      // Half the buttons are anchors. Unstyled they come out underlined, inline and a different
+      // height from the <button> beside them, which is what "looks broken" looks like.
+      const linkish = await page.evaluate(() => [...document.querySelectorAll('a.button')]
+        .filter((a) => a.offsetParent !== null)
+        .filter((a) => getComputedStyle(a).textDecorationLine !== 'none')
+        .map((a) => a.textContent.trim().slice(0, 24)));
+      check(`${width} ${route} buttons are not underlined links`, () => assert.deepEqual(linkish, [], JSON.stringify(linkish)));
+
       // On a screen whose whole job is writing, the field is the primary action (§6.3.2) — it
       // must be reachable without scrolling, at every width.
       const fieldTop = await page.evaluate(() => {
