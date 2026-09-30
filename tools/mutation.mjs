@@ -404,6 +404,36 @@ const MUTANTS = [
     harness: 'smoke',
   },
   {
+    // D37: the cap only works because the connector was lifted onto a line of its own. Put it
+    // back inline and the cap lands on the card's phrase, which is what sank it in v21.
+    name: 'the connector runs back into the passage (D37)',
+    file: 'styles.css',
+    from: '.told-connector:first-of-type { margin-top: 0.4em; }',
+    to: '.told-connector { display: inline; }',
+    harness: 'smoke',
+  },
+  {
+    name: 'a finished card goes back to a flat tick (D36)',
+    file: 'styles.css',
+    from: '  clip-path: polygon(',
+    to: '  clip-path: none; --unused: polygon(',
+    harness: 'smoke',
+  },
+  {
+    name: 'the ninth beat passes unmarked (D36)',
+    file: 'src/structure.js',
+    from: "    if (!wasWhole && BEATS.every((b) => !isBlank(beatText(current, b.n)))) burst();",
+    to: '    void wasWhole;',
+    harness: 'smoke',
+  },
+  {
+    name: 'the numerals go back to the UI face (D37)',
+    file: 'styles.css',
+    from: '  font-family: var(--font-numeral); font-size: 0.82rem; font-weight: 400;',
+    to: '  font-family: var(--font-ui); font-size: 0.82rem; font-weight: 400;',
+    harness: 'smoke',
+  },
+  {
     name: 'the update toast never offers a new version',
     file: 'src/main.js',
     from: "          showToast('A new version is ready — reload to get it', 6000);",

@@ -175,6 +175,22 @@ function cardLightbox(card) {
 }
 
 /** One card in a grid. `blank` shows the gentle dot for an untouched card. */
+/**
+ * One spark burst, once (D36).
+ *
+ * Fired at the moment the ninth beat stops being blank — not on every render of a finished
+ * story, which would be a reward for arriving rather than for writing. It is decoration and
+ * carries nothing (§6): `aria-hidden`, no text, removed when it ends, and skipped entirely for
+ * anyone who has asked for less motion.
+ */
+export function burst() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const node = el('div', { class: 'burst', 'aria-hidden': 'true' });
+  for (let i = 0; i < 9; i += 1) add(node, el('i', { style: `--a: ${i * 40}deg` }));
+  document.body.append(node);
+  setTimeout(() => node.remove(), 1100);
+}
+
 export function cardTile(card, { href, sub, blank = false, done = false } = {}) {
   const group = GROUPS[card.group];
   const tile = el(href ? 'a' : 'div', {

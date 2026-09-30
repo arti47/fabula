@@ -820,6 +820,85 @@ try {
     assert.ok(fan.lastIn >= 0, `the last card sits ${fan.lastIn}px outside the fan`);
   });
 
+  // D37: the connector has a line of its own so the passage under it can take a drop cap. The
+  // v21 pass built this cap and dropped it because the connector ran inline at the head of the
+  // passage, leaving a giant O in front of "NCE UPON A TIME".
+  await page.goto(base + '#/build/tell');
+  await present(page, '.told-passage');
+  const page1 = await page.evaluate(() => {
+    const connector = document.querySelector('.told-connector');
+    const passage = document.querySelector('.told-passage');
+    return {
+      connectorBlock: getComputedStyle(connector).display === 'block',
+      connectorInsidePassage: Boolean(passage.querySelector('.told-connector')),
+      capSize: parseFloat(getComputedStyle(passage, '::first-letter').fontSize),
+      bodySize: parseFloat(getComputedStyle(passage).fontSize),
+      foreEdge: getComputedStyle(document.querySelector('.told-body'), '::after').content,
+    };
+  });
+  check('the told story drops a cap on each passage (D37)', () => {
+    assert.equal(page1.connectorInsidePassage, false, 'the connector still runs into the passage');
+    assert.equal(page1.connectorBlock, true, 'the connector is not on a line of its own');
+    assert.ok(page1.capSize > page1.bodySize * 1.8, `the cap is ${page1.capSize}px against ${page1.bodySize}px of body`);
+  });
+  check('and stands on a page with a fore-edge (D34)', () => assert.notEqual(page1.foreEdge, 'none'));
+
+  // D37: the numerals are set in the second face. IM Fell's figures are old-style and a badge
+  // read as a letter; this one is lining and heavy.
+  await page.goto(base + '#/build/structure');
+  await present(page, '.beat-number');
+  const numerals = await page.evaluate(() => getComputedStyle(document.querySelector('.beat-number')).fontFamily);
+  check('numerals are set in the numeral face (D37)', () => assert.match(numerals, /Alfa Slab One/));
+
+  // D36: a finished card is sealed, not ticked.
+  await page.goto(base + '#/build/boost');
+  await present(page, '.done-badge');
+  const seal = await page.evaluate(() => {
+    const b = document.querySelector('.done-badge');
+    const cs = getComputedStyle(b);
+    return { clip: cs.clipPath, hidden: b.getAttribute('aria-hidden'), w: Math.round(b.getBoundingClientRect().width) };
+  });
+  check('a finished card carries a wax seal (D36)', () => {
+    assert.notEqual(seal.clip, 'none', 'the seal has no pressed rim');
+    assert.equal(seal.hidden, 'true', 'the seal is not decoration');
+    assert.ok(seal.w >= 20, `${seal.w}px`);
+  });
+
+  // D36: the burst fires on the write that leaves nothing blank, and never on merely arriving at
+  // a story that is already whole — a reward for arriving is not a reward for writing.
+  // Keep the fixture's own record so it can go back afterwards: every check after this one
+  // measures the seeded story, and this block would otherwise leave all nine beats written.
+  const beforeBurst = await page.evaluate(() => {
+    const out = {};
+    for (const k of Object.keys(localStorage)) {
+      if (!k.startsWith('storyMachine.story.')) continue;
+      out[k] = localStorage.getItem(k);
+      const rec = JSON.parse(out[k]);
+      rec.beats = rec.beats || {};
+      for (let n = 1; n <= 9; n += 1) rec.beats[String(n)] = { text: n === 9 ? '' : `beat ${n}`, updatedAt: new Date().toISOString() };
+      localStorage.setItem(k, JSON.stringify(rec));
+    }
+    location.hash = '#/build/structure/9';
+    return out;
+  });
+  await present(page, '#beat-text');
+  await type(page, '#beat-text', 'and that was the end of it');
+  await page.waitForTimeout(700);
+  const fired = await page.evaluate(() => document.querySelectorAll('.burst i').length);
+  check('the ninth beat gets one burst (D36)', () => assert.ok(fired > 0, 'nothing marked the ninth beat'));
+  await page.waitForTimeout(1200);
+  await page.evaluate(() => { location.hash = '#/build/boost'; });
+  await page.waitForTimeout(100);
+  await page.evaluate(() => { location.hash = '#/build/structure/9'; });
+  await present(page, '#beat-text');
+  await page.waitForTimeout(500);
+  const again = await page.evaluate(() => document.querySelectorAll('.burst').length);
+  check('and never for arriving at a story already whole', () => assert.equal(again, 0));
+  await page.evaluate((saved) => {
+    for (const [k, v] of Object.entries(saved)) localStorage.setItem(k, v);
+    for (const node of document.querySelectorAll('.burst')) node.remove();
+  }, beforeBurst);
+
   // The deck's own dividers, as bands rather than cards (G5, A2).
   await page.goto(base + '#/deck/prompts');
   const banner = await page.evaluate(() => {

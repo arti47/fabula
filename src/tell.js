@@ -141,11 +141,12 @@ function storyMarkup(assembled) {
   // `prefers-reduced-motion` is set and nothing is hidden if the animation never runs — the text
   // is in the document either way.
   assembled.passages.forEach((passage, i) => {
-    add(box, add(
-      el('p', { class: 'told-passage', style: `--i: ${i}` }),
-      el('span', { class: 'told-connector', text: `${passage.connector} ` }),
-      document.createTextNode(passage.text),
-    ));
+    // D37 revives the drop cap that v21 dropped. It failed then because the card's phrase ran
+    // inline at the head of the passage, so dropping the first letter left a giant O in front of
+    // "NCE UPON A TIME". The connector has a line of its own now, and the cap lands on the first
+    // letter the kid actually wrote.
+    add(box, el('p', { class: 'told-connector', style: `--i: ${i}`, text: passage.connector }));
+    add(box, el('p', { class: 'told-passage has-cap', style: `--i: ${i}`, text: passage.text }));
   });
 
   // The story was read to the end: close it the way a page closes (G12).

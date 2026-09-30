@@ -7,7 +7,7 @@
 // Ruling A9: the order is presentational. Any beat is answerable at any time, and blank is legal.
 
 import { el, add, debounce, isBlank } from './core.js';
-import { actionBar, dealtFace, exampleLine, answerStage } from './ui.js';
+import { actionBar, dealtFace, exampleLine, answerStage, burst } from './ui.js';
 import { fieldWithSparks } from './sparks.js';
 import { BEATS, getCard } from '../data.js';
 import { saveStory } from './store.js';
@@ -149,8 +149,13 @@ export function beatScreen(story, n, fromBoost) {
   });
   field.value = beatText(current, beat.n);
   const save = debounce(() => {
+    // D36: the ninth beat is the only moment in the app worth marking, and it is marked on the
+    // transition — the write that leaves nothing blank — never on merely opening a finished
+    // story. Read before the write, so "was it already whole?" is answerable.
+    const wasWhole = BEATS.every((b) => !isBlank(beatText(current, b.n)));
     // Editing beat 2 changes the beat, never the ingredient it was pre-filled from (A5).
     current = saveStory(writeBeat(current, beat.n, field.value));
+    if (!wasWhole && BEATS.every((b) => !isBlank(beatText(current, b.n)))) burst();
     renderStoryHeader();
     const pip = pips.querySelectorAll('.pip')[beat.n - 1];
     const dot = pip.querySelector('.blank-dot');

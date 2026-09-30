@@ -10,6 +10,18 @@
   font-display: swap;
 }
 
+/* The second face (D37): Alfa Slab One, José Solé's heavy slab, under the SIL Open Font License
+   (assets/fonts/OFL-alfa-slab-one.txt). Subset to digits, capitals and a slash — 2.3KB — because
+   it sets nothing but numerals and short labels: beat numbers, the journey's counts, the pips.
+   IM Fell's old-style figures made a badge read as a letter; these are lining and unmistakable. */
+@font-face {
+  font-family: "Alfa Slab One";
+  src: url("assets/fonts/alfa-slab-one.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Story Machine — storybook theme.
    Light palette defined on bare :root; dark redefines only the tokens, guarded so an explicit
    light choice always wins (CLAUDE.md §4). Colour is only ever a second channel. */
@@ -44,6 +56,8 @@
   --font: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   --font-display: "IM Fell English", "Iowan Old Style", Palatino, Georgia, serif;
   --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Numerals and the short labels beside them, and nothing else (D37). */
+  --font-numeral: "Alfa Slab One", Rockwell, "Courier New", monospace;
   --text-scale: 1;
 
   /* Texture tokens. The table's own surface arrives in the next batch; until then the ground is
@@ -239,7 +253,7 @@ a { color: var(--accent); }
 }
 .journey-node svg { display: block; opacity: 0.9; }
 .journey-value {
-  font-family: var(--font-ui); font-size: 0.62rem; line-height: 1.1;
+  font-family: var(--font-numeral); font-size: 0.62rem; line-height: 1.1;
   color: var(--ink-soft); font-variant-numeric: tabular-nums; white-space: nowrap;
 }
 /* Where you are standing now. The ring is a second channel for what the bar and the nav say. */
@@ -248,7 +262,7 @@ a { color: var(--accent); }
 .journey-end .journey-node { border-style: dashed; opacity: 0.5; }
 .journey-end.is-open .journey-node { border-style: solid; opacity: 1; }
 
-.screen { padding: 12px var(--gutter) 0; max-width: 900px; margin: 0 auto; }
+.screen { position: relative; padding: 12px var(--gutter) 0; max-width: 900px; margin: 0 auto; }
 .screen:focus { outline: none; }
 /* D37 — the heading is the loudest thing on the screen, and it wears the step's colour. At
    1.35rem it sat a quarter-step above the body and the screen had no top. */
@@ -572,6 +586,7 @@ input[type="file"] {
   border: 1px solid var(--rule); border-radius: 999px;
   background: var(--paper-raised); color: var(--ink-soft);
   text-decoration: none; font-variant-numeric: tabular-nums;
+  font-family: var(--font-numeral); font-size: 0.9rem;
 }
 .pip[aria-current="step"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700; }
 .pip .blank-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--blank-dot); }
@@ -721,8 +736,10 @@ input[type="file"] {
   flex: 0 0 auto; width: 30px; height: 30px;
   display: flex; align-items: center; justify-content: center;
   border: 2px solid var(--group-structure); border-radius: 6px;
-  /* A badge is a number first: IM Fell's figures are old-style, which reads as a letter here. */
-  color: var(--group-structure); font-family: var(--font); font-weight: 700;
+  /* A badge is a number first: IM Fell's figures are old-style, which reads as a letter here.
+     The numeral face (D37) is lining and heavy, which is what a milestone wants. */
+  color: var(--group-structure); font-family: var(--font-numeral); font-weight: 400;
+  font-size: 0.95rem; letter-spacing: 0;
 }
 .beat-body { display: flex; flex-direction: column; min-width: 0; }
 .beat-headline { font-family: var(--font-display); font-size: 0.98rem; line-height: 1.2; }
@@ -776,9 +793,40 @@ input[type="file"] {
 .told-head .told-idea { margin: 6px 0 0; }
 .told-idea { font-style: italic; color: var(--ink-soft); }
 .told-passage { font-family: var(--font); font-size: 1.08rem; line-height: 1.72; margin: 0 0 1.15em; }
+/* D34 — Tell is a book. Under the cover the reading column stands on a page of its own: lighter
+   than the table, with a fore-edge down its right side so the pages underneath are visible. */
+.told-body {
+  position: relative;
+  background: linear-gradient(to right, var(--paper-raised) 0 96%, rgb(255 246 230 / 0.05) 100%);
+}
+.told-body::after {
+  content: ""; position: absolute; top: 8%; bottom: 8%; right: 0; width: 7px;
+  background: repeating-linear-gradient(
+    to right,
+    rgb(255 246 230 / 0.16) 0 1px,
+    transparent 1px 3px
+  );
+  pointer-events: none;
+}
 .told-story, .beat-preview, .card-sub, .card-headline, .spark-chip, .story-header-title,
 .told-idea, .empty, .note { overflow-wrap: anywhere; }
-.told-connector { font-family: var(--font-display); font-variant-caps: small-caps; letter-spacing: 0.04em; color: var(--accent); }
+/* The card's phrase, on a line of its own so the passage under it can take a drop cap (D37). */
+.told-connector {
+  font-family: var(--font-display); font-variant-caps: small-caps;
+  letter-spacing: 0.06em; color: var(--accent);
+  margin: 1.6em 0 0.25em; font-size: 0.98rem;
+}
+.told-connector:first-of-type { margin-top: 0.4em; }
+/* The drop cap the v21 pass built and then dropped: it collided with the connector running
+   inline at the head of the passage. With the connector lifted out, the cap lands on the first
+   letter the kid wrote. */
+.told-passage.has-cap::first-letter {
+  float: left;
+  font-family: var(--font-display);
+  font-size: 3.1rem; line-height: 0.84;
+  padding: 0.06em 0.09em 0 0;
+  color: var(--accent);
+}
 .told-blanks { border-top: 1px solid var(--rule); padding-top: var(--step); }
 
 /* A story read to the end gets a flourish rather than just stopping (G12). House-drawn: a rule
@@ -971,13 +1019,70 @@ input[type="file"] {
 /* ---------- a card that is finished says so (G9) ---------- */
 
 .card-face-holder { position: relative; }
+/* D36 — a finished card is sealed, not ticked. Wax rather than a flat disc: a lit upper edge, a
+   bitten rim, and the mark pressed into it. */
 .done-badge {
   position: absolute; right: 6px; top: 6px;
-  width: 26px; height: 26px; border-radius: 50%;
+  width: 28px; height: 28px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  background: var(--group-boost); color: var(--paper-raised);
-  font-size: 0.85rem; font-weight: 700; line-height: 1;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
+  background:
+    radial-gradient(75% 75% at 32% 26%, rgb(255 255 255 / 0.4), transparent 60%),
+    var(--group-boost);
+  color: rgb(20 17 13 / 0.62);
+  font-size: 0.9rem; font-weight: 700; line-height: 1;
+  box-shadow:
+    inset 0 -2px 3px rgb(20 17 13 / 0.4),
+    inset 0 1px 0 rgb(255 255 255 / 0.5),
+    0 2px 5px rgb(0 0 0 / 0.45);
+  /* The bitten rim of a pressed seal. */
+  clip-path: polygon(
+    50% 0%, 68% 4%, 83% 9%, 93% 22%, 100% 38%, 97% 56%, 92% 72%, 79% 88%,
+    63% 97%, 45% 100%, 29% 94%, 14% 85%, 5% 70%, 0% 52%, 3% 34%, 11% 18%, 26% 7%, 38% 2%
+  );
+}
+.done-badge { animation: seal-press 260ms cubic-bezier(0.3, 1.4, 0.5, 1) both; }
+@keyframes seal-press {
+  from { transform: scale(2.1) rotate(-14deg); opacity: 0; }
+  60% { opacity: 1; }
+  to { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* D36 — one burst, once, when the ninth beat lands. Decoration only: it is `aria-hidden`, it
+   carries no text, and `burst()` refuses to run at all under `prefers-reduced-motion`. */
+/* `inset: 0` with `overflow: hidden`, not a zero-size box at 50%: sparks flying out of a
+   zero-size fixed box still counted toward the document's scroll width, and three routes
+   reported horizontal overflow purely because a burst was still in the air. */
+.burst {
+  position: fixed; inset: 0; z-index: 60;
+  overflow: hidden; pointer-events: none;
+}
+.burst i {
+  position: absolute; left: calc(50% - 4px); top: 42%;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent);
+  animation: burst-out 900ms ease-out both;
+  transform: rotate(var(--a)) translateY(0);
+}
+@keyframes burst-out {
+  from { transform: rotate(var(--a)) translateY(0) scale(0.4); opacity: 0; }
+  25% { opacity: 1; }
+  to { transform: rotate(var(--a)) translateY(-120px) scale(0.2); opacity: 0; }
+}
+
+/* D36 — a page turns between screens. The sweep is a page edge passing over the content, drawn
+   on an overlay that is removed with the class; it never intercepts a tap. */
+.screen.is-entering::after {
+  content: ""; position: absolute; inset: 0; z-index: 40; pointer-events: none;
+  /* The sweep moves the gradient, never the box. Translating the overlay put its own right edge
+     past the screen and five routes reported horizontal overflow while the animation ran. */
+  background-image: linear-gradient(105deg, transparent 0 38%, rgb(255 246 230 / 0.10) 46%, rgb(255 246 230 / 0.02) 54%, transparent 62% 100%);
+  background-size: 260% 100%;
+  background-repeat: no-repeat;
+  animation: page-turn 420ms ease-out both;
+}
+@keyframes page-turn {
+  from { background-position: 120% 0; }
+  to { background-position: -60% 0; }
 }
 
 /* ---------- the nine beats as one arc (G7) ---------- */
@@ -994,7 +1099,7 @@ input[type="file"] {
    is already the opening flourish; it gets the room instead. */
 
 .told-passage { margin-bottom: 1.15em; }
-.told-connector { display: inline-block; margin-right: 0.15em; }
+
 
 /* ---------- sparks look like slips of paper (G10) ---------- */
 
@@ -1250,7 +1355,9 @@ input[type="file"] {
   border: 0; border-radius: 8px;
   background: rgb(13 11 8 / 0.72);
   color: var(--ink-soft);
-  font-family: var(--font-ui); font-size: 0.78rem; font-weight: 700;
+  /* The numeral face (D37). This rule comes after the one beside the beat list and wins, which
+     is exactly how the earlier badge fix was silently undone once before. */
+  font-family: var(--font-numeral); font-size: 0.82rem; font-weight: 400;
 }
 .beat-row.is-written .beat-number {
   background: var(--group-structure);
