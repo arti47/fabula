@@ -3,14 +3,14 @@
 import { el, add, clear, qs } from './core.js';
 import { modal } from './ui.js';
 import { icon } from './icons.js';
-import { getCurrentStory } from './store.js';
+import { getCurrentStory, getCurrentStoryteller } from './store.js';
 import { progress, coverCard } from './derived.js';
 import { BEATS } from '../data.js';
 import { isBlank } from './core.js';
 import { deckScreen, cardScreen, settingsScreen, notFoundScreen } from './screens.js';
 import { learnScreen } from './learn.js';
 import { tutorialScreen } from './tutorial.js';
-import { storiesScreen, exampleScreen } from './library.js';
+import { storiesScreen, exampleScreen, storytellerManager } from './library.js';
 import { buildScreen } from './build.js';
 
 // Where else you can go. A fixed bar of four tabs took 61px off every screen for navigation a kid
@@ -51,6 +51,25 @@ function markHere() {
   here.textContent = settings ? 'Settings' : (place ? place.label : 'Stories');
   here.setAttribute('href', settings ? '#/settings' : (place ? place.href : '#/stories'));
   here.setAttribute('aria-current', 'page');
+}
+
+/**
+ * The storyteller, as a face in the bar (S8). It was a name and a pill crowded together above the
+ * shelf's heading, and only on the shelf; the one control that switches, adds and removes a
+ * storyteller now sits beside Settings on every screen, and is hidden when there is nobody yet.
+ */
+function renderTellerButton() {
+  const button = qs('#teller-button');
+  if (!button) return;
+  const teller = getCurrentStoryteller();
+  button.hidden = !teller;
+  if (!teller) return;
+  button.querySelector('[data-teller]').textContent = teller.emoji;
+  button.title = teller.name;
+  if (!button.dataset.wired) {
+    button.dataset.wired = 'yes';
+    button.addEventListener('click', () => storytellerManager());
+  }
 }
 
 /** The header's own links are navigation too: say when you are standing on one. */
@@ -118,14 +137,20 @@ export function renderStoryHeader() {
     style: `background-image: url("assets/cards/${cover.art}.webp")`,
   }));
   add(header, el('p', { class: 'story-header-title', text: story.title }));
-  // The nine beats as an object rather than a fraction (S1): it thickens as the story is written.
-  // A second channel for what the counts already say in words — never the only one (§6).
-  const spine = el('div', { class: 'spine', 'aria-hidden': 'true' });
+  add(header, journeyStrip(p, story));
+}
+
+/**
+ * The nine beats as beads on the Structure stop's rim (S5). They were a second bar under the
+ * header — the same progress drawn twice, one band apart. Folded into the milestone they belong
+ * to, the rim thickens bead by bead and costs no height: the beads sit on the node's own border.
+ */
+function beadRing(story) {
+  const spine = el('span', { class: 'spine' });
   for (const beat of BEATS) {
-    add(spine, el('span', { class: `spine-bone${isBlank(story.beats?.[beat.n]?.text) ? '' : ' is-written'}` }));
+    add(spine, el('span', { class: `spine-bone${isBlank(story.beats?.[beat.n]?.text) ? '' : ' is-written'}`, style: `--i: ${beat.n - 1}` }));
   }
-  add(header, spine);
-  add(header, journeyStrip(p));
+  return spine;
 }
 
 /**
@@ -137,7 +162,7 @@ export function renderStoryHeader() {
  * forbids naming a thing twice on one screen. Each carries its group's sigil, its group's colour
  * and a hidden name, so the channel is never colour alone.
  */
-function journeyStrip(p) {
+function journeyStrip(p, story) {
   const stops = [
     { id: 'idea', name: 'Idea', route: '#/build/idea', sigil: 'die', color: 'var(--group-prompt)', value: p.idea ? 'yes' : 'not yet', fill: p.idea ? 1 : 0 },
     { id: 'ingredients', name: 'Ingredients', route: '#/build/ingredients', sigil: 'flask', color: 'var(--group-ingredient)', value: `${p.ingredients.done}/${p.ingredients.total}`, fill: p.ingredients.done / p.ingredients.total },
@@ -152,16 +177,22 @@ function journeyStrip(p) {
   const strip = add(nav, el('ol', { class: 'journey' })).lastChild;
   for (const stop of stops) {
     const node = add(
-      el('span', { class: 'journey-node', 'aria-hidden': 'true', style: `--stop: ${stop.color}; --fill: ${Math.round(stop.fill * 100)}%` }),
+      el('span', { class: `journey-node${stop.id === 'structure' ? ' has-ring' : ''}`, 'aria-hidden': 'true', style: `--stop: ${stop.color}; --fill: ${Math.round(stop.fill * 100)}%` }),
       icon(stop.sigil, { size: 14 }),
+      stop.id === 'structure' ? beadRing(story) : null,
     );
+    // The Idea stop answers yes or no, and a word under a milestone read as a label that had lost
+    // its sentence. A drawn tick says yes; nothing says not yet. The words stay for a screen reader.
+    const value = stop.id === 'idea'
+      ? add(el('span', { class: 'journey-value', 'aria-hidden': 'true' }), p.idea ? icon('check', { size: 12 }) : null)
+      : el('span', { class: 'journey-value', 'aria-hidden': 'true', text: stop.value });
     add(strip, add(
       el('li', { class: `journey-stop${here === stop.id ? ' is-here' : ''}` }),
       add(
         el('a', { href: stop.route, 'aria-current': here === stop.id ? 'step' : null }),
         el('span', { class: 'visually-hidden', text: `${stop.name} ${stop.value}` }),
         node,
-        el('span', { class: 'journey-value', 'aria-hidden': 'true', text: stop.value }),
+        value,
       ),
     ));
   }
@@ -225,8 +256,16 @@ function markStep(hash) {
   else delete document.documentElement.dataset.step;
 }
 
+// S15 — where you were on each screen, for this session. Coming back to the board from beat 7 put
+// you at the top of it again, and a re-render on the same screen (a skip, a bring-back) jumped
+// the page to the top under your thumb. Kept in memory only: nothing about it is worth saving.
+const scrollMemory = new Map();
+let lastHash = null;
+
 function render() {
   const hash = location.hash || '#/stories';
+  if (lastHash) scrollMemory.set(lastHash, window.scrollY);
+  lastHash = hash;
   const screen = qs('#screen');
   clear(screen);
 
@@ -243,9 +282,10 @@ function render() {
   wireMenu();
   markHere();
   markHeaderLinks();
+  renderTellerButton();
   renderStoryHeader();
   centreCurrentPill();
-  window.scrollTo(0, 0);
+  window.scrollTo(0, scrollMemory.get(hash) || 0);
 }
 
 export function startRouter() {

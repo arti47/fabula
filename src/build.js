@@ -42,14 +42,20 @@ export function buildScreen({ step, entryId, qIndex = 0, beatNumber, boostId, fr
   // on the survey screens, because nothing else there names the step any more (§6, reversing the
   // consequence D37 recorded): the strip names its stops only to a screen reader. On a question
   // screen the card's own headline is the heading, so the step's stays in the outline only.
-  add(screen, el('h2', { class: surveying ? null : 'visually-hidden', text: `${current.n}. ${current.name}` }));
+  const heading = el('h2', { class: surveying ? null : 'visually-hidden', text: `${current.n}. ${current.name}` });
   if (surveying) {
     // What the step is for, said once. It was said twice — a collapsed `explain()` and a visible
     // note under it — and D41 keeps `explain()` only where a screen is genuinely unclear.
-    add(screen, el('p', { class: 'step-lead', text: STEP_BLURB[current.id] }));
-    // What the story has made, above the work it is making (S3). Never on a question screen,
-    // where it pushed the writing field off a 320 phone.
-    add(screen, castRow(castStrip(story)));
+    // S1: the heading and its lead are one block, side by side where there is width, so the work
+    // starts in the top third of a phone rather than halfway down it.
+    add(screen, add(el('header', { class: 'step-head' }), heading, el('p', { class: 'step-lead', text: STEP_BLURB[current.id] })));
+    // What the story has made, above the work it is making (S3) — only on the two steps that are
+    // about it: Ingredients, where it is being made, and Tell, where it is read. On the others it
+    // was one more band between the kid and the work, and never on a question screen, where it
+    // pushed the writing field off a 320 phone.
+    if (current.id === 'ingredients' || current.id === 'tell') add(screen, castRow(castStrip(story)));
+  } else {
+    add(screen, heading);
   }
 
   if (current.id === 'idea') {

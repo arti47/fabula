@@ -71,7 +71,6 @@ function shelf(teller) {
   const screen = el('div');
   const stories = listStories(teller.id);
 
-  add(screen, tellerRow(teller));
   add(screen, el('h2', { text: stories.length ? 'Your stories' : 'No stories yet' }));
 
   if (!stories.length) {
@@ -181,19 +180,6 @@ export function exampleScreen(id) {
   return wrap;
 }
 
-function tellerRow(teller) {
-  const row = el('div', { class: 'progress-row' });
-  add(row, el('span', { class: 'progress-item', text: `${teller.emoji} ${teller.name}` }));
-  // Named for everything it does. It used to say "Switch", so the only way to remove a
-  // storyteller was hidden behind a word that does not mean remove (§0.2).
-  add(row, el('button', {
-    type: 'button', class: 'button secondary', text: 'Storytellers',
-    'aria-label': 'Switch, add or remove a storyteller',
-    onclick: () => storytellerManager(),
-  }));
-  return row;
-}
-
 /**
  * Switch to another storyteller, add one, or remove one and everything they have written.
  * Exported because Settings is the other place a person looks for it (§6.1).
@@ -272,44 +258,71 @@ function storyRow(story) {
   ));
   const body = el('div', { class: 'card-body' });
 
-  add(body, el('p', { class: 'card-headline', text: story.title }));
-  if (blurb) add(body, el('div', { class: 'card-sub', text: blurb }));
-  add(body, el('div', {
-    class: 'card-sub',
-    text: `Ingredients ${p.ingredients.done}/${p.ingredients.total} · Beats ${p.beats.done}/${p.beats.total} · Boosts ${p.boosts.done}/${p.boosts.total} · ${relativeTime(story.updatedAt)}`,
-  }));
-
-  const actions = el('div', { class: 'row-actions' });
-  add(actions, el('button', {
-    type: 'button', class: 'button', text: 'Open',
+  // S7 — the whole row opens the story. The title is the one real control; its box is stretched
+  // over the row in CSS, so the tap area is the card and a screen reader hears one button.
+  add(body, add(el('p', { class: 'card-headline' }), el('button', {
+    type: 'button', class: 'story-open', text: story.title,
     onclick: () => { setCurrentStoryId(story.id); location.hash = '#/build'; },
-  }));
-  add(actions, el('button', {
-    type: 'button', class: 'button secondary', text: 'Rename',
-    onclick: () => promptModal({
-      title: 'Rename this story',
-      label: 'New name',
-      value: story.title,
-      onConfirm: (title) => {
-        if (!title) return;
-        saveStory({ ...story, title });
-        window.dispatchEvent(new HashChangeEvent('hashchange'));
-      },
+  })));
+  if (blurb) add(body, el('div', { class: 'card-sub', text: blurb }));
+  // The three counts as the journey's own milestones, small: a dot in the group's colour filling
+  // as the step fills, and the count beside it. The words stay, for a screen reader (§6).
+  const meta = el('div', { class: 'shelf-progress' });
+  for (const [name, part, color] of [
+    ['Ingredients', p.ingredients, 'var(--group-ingredient)'],
+    ['Beats', p.beats, 'var(--group-structure)'],
+    ['Boosts', p.boosts, 'var(--group-boost)'],
+  ]) {
+    add(meta, add(
+      el('span', { class: 'shelf-count' }),
+      el('span', { class: 'shelf-dot', 'aria-hidden': 'true', style: `--stop: ${color}; --fill: ${Math.round((part.done / part.total) * 100)}%` }),
+      el('span', { class: 'visually-hidden', text: `${name} ` }),
+      document.createTextNode(`${part.done}/${part.total}`),
+    ));
+  }
+  add(meta, el('span', { class: 'shelf-when', text: relativeTime(story.updatedAt) }));
+  add(body, meta);
+
+  // Rename and Delete behind one labelled button, so the destructive control is never beside
+  // the one a thumb reaches for (§6.1). Delete is last in the sheet, and still confirms.
+  add(row, add(el('button', {
+    type: 'button', class: 'icon-button story-more',
+    'aria-label': `More for ${story.title}: rename or delete`, 'aria-haspopup': 'dialog',
+    onclick: () => modal({
+      title: story.title,
+      body: [],
+      actions: [
+        {
+          label: 'Rename',
+          kind: 'primary',
+          onClick: () => promptModal({
+            title: 'Rename this story',
+            label: 'New name',
+            value: story.title,
+            onConfirm: (title) => {
+              if (!title) return;
+              saveStory({ ...story, title });
+              window.dispatchEvent(new HashChangeEvent('hashchange'));
+            },
+          }),
+        },
+        { label: 'Close', kind: 'secondary' },
+        {
+          label: 'Delete',
+          kind: 'danger',
+          onClick: () => confirmModal({
+            title: `Delete “${story.title}”?`,
+            message: 'Everything in it goes: the idea, the characters, all nine beats and every boost. There is no way to get it back.',
+            confirmLabel: 'Delete it',
+            onConfirm: () => {
+              deleteStory(story.id);
+              showToast('Story deleted');
+              window.dispatchEvent(new HashChangeEvent('hashchange'));
+            },
+          }),
+        },
+      ],
     }),
-  }));
-  add(actions, el('button', {
-    type: 'button', class: 'button danger', text: 'Delete',
-    onclick: () => confirmModal({
-      title: `Delete “${story.title}”?`,
-      message: 'Everything in it goes: the idea, the characters, all nine beats and every boost. There is no way to get it back.',
-      confirmLabel: 'Delete it',
-      onConfirm: () => {
-        deleteStory(story.id);
-        showToast('Story deleted');
-        window.dispatchEvent(new HashChangeEvent('hashchange'));
-      },
-    }),
-  }));
-  add(body, actions);
+  }), icon('more', { size: 22 })));
   return add(row, body);
 }

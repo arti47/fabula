@@ -152,7 +152,7 @@ export function boostScreen(story, boostId) {
     for (const kind of boost.canSpawn) {
       const card = INGREDIENTS.find((i) => i.kind === kind);
       add(row, el('button', {
-        type: 'button', class: 'button',
+        type: 'button', class: 'button secondary',
         text: kind === 'hero' ? 'This gives me a new character' : 'This gives me another antagonist',
         onclick: () => {
           // The card records which boost made it; nothing else needs to.

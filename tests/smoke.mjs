@@ -158,6 +158,33 @@ try {
       // buttons it was meant to explain. Two rows of context plus a 44px button is the ceiling.
       if (bar) check(`${width} ${route} action bar stays one bar`, () => assert.ok(bar.height <= 96, `${bar.height}px tall`));
 
+      // S2 — five text sizes and one reading size, three families. Idea set ten sizes and the
+      // question screens five families; nothing on a screen like that has a top. Decorative glyphs
+      // (the dice, the drop cap, the book's title, the A…A ends) are drawings and are not counted.
+      const type = await page.evaluate(() => {
+        const screen = document.querySelector('#screen');
+        const shown = [...screen.querySelectorAll('*')].filter((n) => {
+          const b = n.getBoundingClientRect();
+          return b.width > 2 && b.height > 2 && [...n.childNodes].some((c) => c.nodeType === 3 && c.textContent.trim());
+        }).filter((n) => !n.closest('.die-letter, .told-title, .scale-end, .card-fan'));
+        return {
+          sizes: [...new Set(shown.map((n) => getComputedStyle(n).fontSize))],
+          families: [...new Set([...screen.querySelectorAll('*')].filter((n) => n.getBoundingClientRect().width > 0).map((n) => getComputedStyle(n).fontFamily.split(',')[0]))],
+        };
+      });
+      check(`${width} ${route} one type scale`, () => {
+        assert.ok(type.sizes.length <= 6, `${type.sizes.length} sizes: ${type.sizes.join(' ')}`);
+        assert.ok(type.families.length <= 3, `${type.families.length} families: ${type.families.join(', ')}`);
+      });
+
+      // S3 — one primary per screen. The boost question carried three filled buttons at once (two
+      // in the screen, one in the bar), and three things shouting "me" is the same as none.
+      const primaries = await page.evaluate(() => [...document.querySelectorAll('#screen .button, .action-bar .button')]
+        .filter((b) => b.getBoundingClientRect().width > 0)
+        .filter((b) => !b.classList.contains('secondary') && !b.classList.contains('danger') && !b.closest('.version-toggle'))
+        .map((b) => b.textContent.trim()));
+      check(`${width} ${route} one primary action`, () => assert.ok(primaries.length <= 1, JSON.stringify(primaries)));
+
       // §6.2: the counts are meant to be visible from every in-story screen. A skin rule once set
       // `position: relative` on the header and quietly ended that, which nothing noticed.
       if (route.startsWith('#/build')) {
@@ -356,10 +383,23 @@ try {
     assert.ok(opensOnTheDeck.startTop > opensOnTheDeck.fieldTop, 'Start sits above its own field');
   });
 
+  // D49: the storyteller's face is in the bar only once there is a storyteller. `hidden` alone
+  // did not hide it — `.icon-button` sets a display, which beats the attribute — so on first run
+  // the bar carried an empty ring, and the mutant that hid it for good changed nothing at all.
+  const faceBefore = await page.evaluate(() => document.querySelector('#teller-button')?.getBoundingClientRect().width || 0);
   await type(page, '#teller-name', 'Ada');
   // Start stands beside the field now (D43), not pinned across the foot of the screen.
   await tap(page, '.first-run-go .button');
   await present(page, 'text=No stories yet');
+  const faceAfter = await page.evaluate(() => {
+    const b = document.querySelector('#teller-button');
+    return { w: b ? b.getBoundingClientRect().width : 0, text: b?.textContent.trim() || '' };
+  });
+  check('the storyteller is a face in the bar, and only once there is one (D49)', () => {
+    assert.equal(faceBefore, 0, 'an empty storyteller button is showing on first run');
+    assert.ok(faceAfter.w >= 40, 'no storyteller in the bar after naming one');
+    assert.ok(faceAfter.text.length > 0, 'the storyteller button is empty');
+  });
   await tap(page, '.action-bar .button');
   await type(page, '#prompt-input', 'The dragon next door');
   await tap(page, '.modal-actions .button');
@@ -1232,7 +1272,7 @@ try {
 
   // Removing a storyteller is destructive, so it must confirm and name the loss (§6.1).
   await page.goto(base + '#/stories');
-  await tap(page, '.progress-row .button');
+  await tap(page, '#teller-button');
   await present(page, '.teller-row');
   await tap(page, '.teller-row .button.danger');
   const warning = await settled(page, '.modal p', /stor/);
@@ -1268,7 +1308,7 @@ try {
   // one hid behind a button that said "Switch", and Settings — where a person looks to delete
   // themselves — offered neither. So the label is asserted, not just the behaviour.
   const tellerControl = await page.evaluate(() => {
-    const b = document.querySelector('.progress-row .button');
+    const b = document.querySelector('#teller-button');
     return `${b.textContent} ${b.getAttribute('aria-label') || ''}`;
   });
   check('the shelf control says it can remove a storyteller', () => assert.match(tellerControl, /remove/i));
@@ -1287,7 +1327,7 @@ try {
   check('and the story actually goes', () => assert.match(emptyShelf, /No stories yet/));
 
   // The last storyteller is removable too: a person who wants off this device gets all the way off.
-  await tap(page, '.progress-row .button');
+  await tap(page, '#teller-button');
   await present(page, '.teller-row');
   await tap(page, '.teller-row .button.danger');
   await settled(page, '.modal', /Remove/);
@@ -1296,6 +1336,147 @@ try {
   check('the last storyteller can be removed', () => assert.match(firstRun, /Who is telling stories/));
 
   await context.close();
+
+  // Phase 15 (D46–D52): the audit's fixes, each checked where it lives.
+  {
+    const ctx15 = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    await seed(ctx15, 'mid-story');
+    const p15 = await ctx15.newPage();
+
+    // D47 — one progress object: the nine beats are beads on the Structure stop, not a bar.
+    await p15.goto(base + '#/build/structure', { waitUntil: 'domcontentloaded' });
+    await present(p15, '.beat-list');
+    const beads = await p15.evaluate(() => ({
+      onStop: document.querySelectorAll('.journey-node .spine-bone').length,
+      loose: document.querySelectorAll('.story-header > .spine').length,
+      tick: Boolean(document.querySelector('.journey-stop:first-child .journey-value svg')),
+    }));
+    check('the beats are beads on the Structure stop (D47)', () => {
+      assert.equal(beads.onStop, 9, `${beads.onStop} beads on the stop`);
+      assert.equal(beads.loose, 0, 'a second progress bar is still under the header');
+    });
+    check('and the Idea stop draws its yes (D47)', () => assert.ok(beads.tick, 'no tick on the Idea stop'));
+
+    // D47 — a pip says written, blank or here without its number being read.
+    await p15.goto(base + '#/build/structure/7', { waitUntil: 'domcontentloaded' });
+    await present(p15, '.pips');
+    const pips = await p15.evaluate(() => [...document.querySelectorAll('.pips .pip')].map((pip) => ({
+      blank: pip.classList.contains('is-blank'), here: pip.getAttribute('aria-current') === 'step',
+      style: getComputedStyle(pip).borderTopStyle,
+    })));
+    check('blank and written pips are drawn differently (D47)', () => {
+      const blank = pips.find((x) => x.blank && !x.here);
+      const written = pips.find((x) => !x.blank && !x.here);
+      assert.ok(blank && written, 'the fixture needs one of each');
+      assert.notEqual(blank.style, written.style, 'a blank pip looks like a written one');
+    });
+
+    // D48 — long guidance folds to three lines, all of it still in the document, and opens.
+    const fold = await p15.evaluate(async () => {
+      const g = document.querySelector('.guidance.is-clamped');
+      if (!g) return null;
+      const words = g.querySelector('.guidance-text');
+      const shut = words.getBoundingClientRect().height;
+      const full = words.scrollHeight;
+      g.querySelector('.more-toggle').click();
+      await new Promise((r) => requestAnimationFrame(r));
+      return { shut, full, open: words.getBoundingClientRect().height, hidden: words.scrollHeight - words.clientHeight, expanded: g.querySelector('.more-toggle').getAttribute('aria-expanded') };
+    });
+    check('long guidance folds to three lines and opens (D48)', () => {
+      assert.ok(fold, 'no folded guidance on a beat screen');
+      assert.ok(fold.shut < fold.full, 'folded, but nothing is hidden');
+      assert.ok(fold.open > fold.shut * 1.4 && fold.hidden <= 1, `Read more did not open it: ${JSON.stringify(fold)}`);
+      assert.equal(fold.expanded, 'true');
+    });
+
+    // D49 — the shelf keeps Delete out of the thumb's arc: behind ⋯, last in the sheet.
+    await p15.goto(base + '#/stories', { waitUntil: 'domcontentloaded' });
+    await present(p15, '.story-row');
+    const onShelf = await p15.evaluate(() => [...document.querySelectorAll('.story-row .button.danger')].length);
+    check('no Delete lies on the shelf row (D49)', () => assert.equal(onShelf, 0));
+    await tap(p15, '.story-more');
+    const sheet = await p15.evaluate(() => [...document.querySelectorAll('.modal-actions .button')].map((b) => b.textContent.trim()));
+    check('⋯ opens Rename and Delete, Delete last (D49)', () => {
+      assert.ok(sheet.includes('Rename'), sheet.join(', '));
+      assert.equal(sheet[sheet.length - 1], 'Delete');
+    });
+    await p15.keyboard.press('Escape');
+    // The row itself opens the story.
+    await tap(p15, '.story-open');
+    await p15.waitForTimeout(200);
+    check('the shelf row opens its story (D49)', () => assert.match(p15.url(), /#\/build/));
+
+    // D50 — Tell's primary action keeps the story: Print, in the bar.
+    await p15.goto(base + '#/build/tell', { waitUntil: 'domcontentloaded' });
+    await present(p15, '.action-bar');
+    const tellPrimary = await read(p15, '.action-bar .button:not(.secondary)');
+    check("Tell's primary action is Print (D50)", () => assert.match(tellPrimary, /Print/));
+
+    // D50 — the browser's raw file input is gone from Settings; the label is the button.
+    await p15.goto(base + '#/settings', { waitUntil: 'domcontentloaded' });
+    await present(p15, '.settings-panel');
+    const fileLook = await p15.evaluate(() => {
+      const input = document.querySelector('#import-file');
+      const label = document.querySelector('label[for="import-file"]');
+      const a = input.getBoundingClientRect();
+      const b = label.getBoundingClientRect();
+      return { opacity: getComputedStyle(input).opacity, labelIsButton: label.classList.contains('button'), covers: a.width >= b.width - 1 && a.height >= b.height - 1 };
+    });
+    check('the file input is a styled button (D50)', () => {
+      assert.equal(fileLook.opacity, '0', 'the raw "Choose File" control is showing');
+      assert.ok(fileLook.labelIsButton);
+      assert.ok(fileLook.covers, 'the real input does not cover its label, so tapping the label misses');
+    });
+
+    // D51 — the lightbox leafs through the card's group.
+    await p15.goto(base + '#/build/structure/7', { waitUntil: 'domcontentloaded' });
+    await tap(p15, '.stage-card .face-button, .answer-face .face-button');
+    await present(p15, '.lightbox-turn');
+    const firstTitle = await read(p15, '.modal h2');
+    await tap(p15, '.lightbox-turn button[aria-label="Next card"]');
+    const nextTitle = await read(p15, '.modal h2');
+    check('the lightbox turns to the next card (D51)', () => assert.notEqual(nextTitle, firstTitle));
+    await p15.keyboard.press('Escape');
+
+    // D51 — coming back to a screen puts you where you were on it.
+    await p15.goto(base + '#/build/structure', { waitUntil: 'domcontentloaded' });
+    await present(p15, '.beat-list');
+    await p15.evaluate(() => window.scrollTo(0, 500));
+    await p15.waitForTimeout(100);
+    const left = await p15.evaluate(() => window.scrollY);
+    await p15.evaluate(() => { location.hash = '#/build/structure/7'; });
+    await present(p15, '#beat-text');
+    await p15.evaluate(() => { location.hash = '#/build/structure'; });
+    await present(p15, '.beat-list');
+    await p15.waitForTimeout(100);
+    const back = await p15.evaluate(() => window.scrollY);
+    check('coming back to a screen keeps your place (D51)', () => {
+      assert.ok(left > 100, `could not scroll the board (${left})`);
+      assert.ok(Math.abs(back - left) <= 2, `left at ${left}, came back at ${back}`);
+    });
+    await ctx15.close();
+
+    // D48 — at 1024 the Deck card stands beside its words and the bench goes two-up.
+    const wide15 = await browser.newContext({ viewport: { width: 1024, height: 768 } });
+    await seed(wide15, 'mid-story');
+    const w15 = await wide15.newPage();
+    await w15.goto(base + '#/deck/card/beat-5', { waitUntil: 'domcontentloaded' });
+    await present(w15, '.card-detail');
+    const side = await w15.evaluate(() => {
+      const face = document.querySelector('.card-detail-face').getBoundingClientRect();
+      const info = document.querySelector('.card-detail-info').getBoundingClientRect();
+      return { beside: face.right <= info.left + 1, faceW: Math.round(face.width) };
+    });
+    check('1024: a Deck card stands beside its words (D48)', () => {
+      assert.ok(side.beside, 'the words are under the card');
+      assert.ok(side.faceW <= 420, `the face is ${side.faceW}px wide`);
+    });
+    await w15.goto(base + '#/build/ingredients', { waitUntil: 'domcontentloaded' });
+    await present(w15, '.bench-station');
+    const tops = await w15.evaluate(() => [...document.querySelectorAll('.bench-station')].map((st) => Math.round(st.getBoundingClientRect().top)));
+    check('1024: the bench stands two-up (D48)', () => assert.ok(Math.abs(tops[0] - tops[1]) < 20, `stations at ${tops.join(', ')}`));
+    await wide15.close();
+  }
 
   // The action bar is the one measurement that is sensitive to width rather than to layout: the
   // context line shares a row with buttons that will not shrink. Sampling five widths missed it —
@@ -1307,13 +1488,29 @@ try {
     const barPage = await barCtx.newPage();
     await barPage.goto(base + '#/build/tell', { waitUntil: 'domcontentloaded' });
     await present(barPage, '.action-bar');
+    // D50 shortened Tell's own bar ("Print it"), after which no bar in the app was long enough to
+    // test the clamp and the mutant that removes it survived. The guard is for the next long
+    // context line, so the sweep supplies one — the messy fixture's approach, applied to the bar.
+    await barPage.evaluate(() => {
+      document.querySelector('.action-bar .context').textContent = 'Tell it out loud — that is the whole point, and then tell it again to somebody who has not heard it yet';
+    });
     const tall = [];
+    const wordy = [];
     for (let width = 320; width <= 1024; width += 8) {
       await barPage.setViewportSize({ width, height: 800 });
-      const height = await barPage.evaluate(() => Math.round(document.querySelector('.action-bar').getBoundingClientRect().height));
-      if (height > 96) tall.push(`${width}px → ${height}px`);
+      const bar = await barPage.evaluate(() => {
+        const b = document.querySelector('.action-bar');
+        const c = b.querySelector('.context');
+        const box = c.getBoundingClientRect();
+        return { height: Math.round(b.getBoundingClientRect().height), lines: box.width > 1 ? box.height / parseFloat(getComputedStyle(c).lineHeight) : 0 };
+      });
+      if (bar.height > 96) tall.push(`${width}px → ${bar.height}px`);
+      // The clamp's own rule, measured rather than inferred from the bar's height: once the
+      // context was set smaller, four unclamped lines still fitted 96px and the check went blind.
+      if (bar.lines > 2.2) wordy.push(`${width}px → ${bar.lines.toFixed(1)} lines`);
     }
     check('the action bar stays one bar at every width', () => assert.deepEqual(tall, [], tall.join(', ')));
+    check('and its context never runs past two lines', () => assert.deepEqual(wordy, [], wordy.join(', ')));
     await barCtx.close();
   }
 

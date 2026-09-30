@@ -164,9 +164,9 @@ const MUTANTS = [
   },
   {
     name: 'the storyteller control stops naming what it removes',
-    file: 'src/library.js',
-    from: "    'aria-label': 'Switch, add or remove a storyteller',",
-    to: "    'aria-label': 'Storytellers',",
+    file: 'index.html',
+    from: 'aria-label="Switch, add or remove a storyteller"',
+    to: 'aria-label="Storytellers"',
     harness: 'smoke',
   },
   {
@@ -232,8 +232,8 @@ const MUTANTS = [
   {
     name: 'the step gets named twice again',
     file: 'src/build.js',
-    from: "  add(screen, el('h2', { class: surveying ? null : 'visually-hidden', text: `${current.n}. ${current.name}` }));",
-    to: "  add(screen, el('h2', { text: `${current.n}. ${current.name}` }));",
+    from: "  const heading = el('h2', { class: surveying ? null : 'visually-hidden', text: `${current.n}. ${current.name}` });",
+    to: "  const heading = el('h2', { text: `${current.n}. ${current.name}` });",
     harness: 'smoke',
   },
   {
@@ -282,7 +282,7 @@ const MUTANTS = [
   {
     name: 'the persistent resource header stops being persistent (§6.2)',
     file: 'styles.css',
-    from: '.story-header {\n  position: sticky; top: var(--header-h); z-index: 25;',
+    from: '.story-header {\n  position: sticky; top: calc(var(--header-h) + env(safe-area-inset-top)); z-index: 25;',
     to: '.story-header {\n  position: static; z-index: 25;',
     harness: 'smoke',
   },
@@ -324,15 +324,15 @@ const MUTANTS = [
   {
     name: 'the story stops showing what it has made (S3)',
     file: 'src/build.js',
-    from: '    add(screen, castRow(castStrip(story)));',
+    from: "    if (current.id === 'ingredients' || current.id === 'tell') add(screen, castRow(castStrip(story)));",
     to: '    void castRow;',
     harness: 'smoke',
   },
   {
     name: 'the spine stops thickening (S1)',
     file: 'src/router.js',
-    from: "    add(spine, el('span', { class: `spine-bone${isBlank(story.beats?.[beat.n]?.text) ? '' : ' is-written'}` }));",
-    to: "    add(spine, el('span', { class: 'spine-bone' }));",
+    from: "    add(spine, el('span', { class: `spine-bone${isBlank(story.beats?.[beat.n]?.text) ? '' : ' is-written'}`, style: `--i: ${beat.n - 1}` }));",
+    to: "    add(spine, el('span', { class: 'spine-bone', style: `--i: ${beat.n - 1}` }));",
     harness: 'smoke',
   },
   {
@@ -431,10 +431,10 @@ const MUTANTS = [
     harness: 'smoke',
   },
   {
-    name: 'the numerals go back to the UI face (D37)',
+    name: 'the numerals go back to the reading face (D37)',
     file: 'styles.css',
-    from: '  font-family: var(--font-numeral); font-size: 0.82rem; font-weight: 400;',
-    to: '  font-family: var(--font-ui); font-size: 0.82rem; font-weight: 400;',
+    from: '  font-family: var(--font-numeral); font-size: var(--fs-xs); font-weight: 400;',
+    to: '  font-family: var(--font); font-size: var(--fs-xs); font-weight: 400;',
     harness: 'smoke',
   },
   {
@@ -451,8 +451,8 @@ const MUTANTS = [
     // this batch existed to remove.
     name: "the step's description follows you into a question (D44)",
     file: 'src/build.js',
-    from: "    add(screen, el('p', { class: 'step-lead', text: STEP_BLURB[current.id] }));",
-    to: "  }\n  if (true) {\n    add(screen, el('p', { class: 'step-lead', text: STEP_BLURB[current.id] }));",
+    from: "  } else {\n    add(screen, heading);\n  }",
+    to: "  } else {\n    add(screen, heading, el('p', { class: 'step-lead', text: STEP_BLURB[current.id] }));\n  }",
     harness: 'smoke',
   },
   {
@@ -495,6 +495,105 @@ const MUTANTS = [
     from: "          showToast('A new version is ready — reload to get it', 6000);",
     to: '          void 0;',
     harness: 'update',
+  },
+  // --- Phase 15: the audit's fixes (D46–D52) --------------------------------
+  {
+    name: 'a second primary comes back to the boost screen (D46)',
+    file: 'src/boost.js',
+    from: "        type: 'button', class: 'button secondary',\n        text: kind === 'hero'",
+    to: "        type: 'button', class: 'button',\n        text: kind === 'hero'",
+    harness: 'smoke',
+  },
+  {
+    name: 'the beads come off the Structure stop (D47)',
+    file: 'src/router.js',
+    from: "      stop.id === 'structure' ? beadRing(story) : null,",
+    to: "      null && beadRing,",
+    harness: 'smoke',
+  },
+  {
+    name: 'the Idea stop stops drawing its yes (D47)',
+    file: 'src/router.js',
+    from: "p.idea ? icon('check', { size: 12 }) : null)",
+    to: "null)",
+    harness: 'smoke',
+  },
+  {
+    name: 'a blank pip looks written again (D47)',
+    file: 'styles.css',
+    from: '.pip.is-blank { border-style: dashed; background: transparent; }',
+    to: '.pip.is-blank { background: transparent; }',
+    harness: 'smoke',
+  },
+  {
+    name: 'long guidance stops folding (D48)',
+    file: 'src/main.js',
+    from: "watchClamps(document.querySelector('#screen'));\n",
+    to: "void watchClamps;\n",
+    harness: 'smoke',
+  },
+  {
+    name: 'a Deck card is drawn across the whole tablet again (D48)',
+    file: 'styles.css',
+    from: '  .card-detail { display: grid;',
+    to: '  .card-detail { display: block;',
+    harness: 'smoke',
+  },
+  {
+    name: 'the bench goes back to one station per row on a tablet (D48)',
+    file: 'styles.css',
+    from: '  .bench { display: grid;',
+    to: '  .bench { display: block;',
+    harness: 'smoke',
+  },
+  {
+    name: 'the shelf row stops opening its story (D49)',
+    file: 'src/library.js',
+    from: "    onclick: () => { setCurrentStoryId(story.id); location.hash = '#/build'; },\n  })));",
+    to: "    onclick: () => {},\n  })));",
+    harness: 'smoke',
+  },
+  {
+    name: 'the storyteller leaves the bar (D49)',
+    file: 'src/router.js',
+    from: '  button.hidden = !teller;',
+    to: '  button.hidden = true;',
+    harness: 'smoke',
+  },
+  {
+    name: "Tell's primary goes back to leaving (D50)",
+    file: 'src/tell.js',
+    from: "      label: 'Print it',\n      onClick: () => window.print(),",
+    to: "      label: 'Back to my stories',\n      href: '#/stories',",
+    harness: 'smoke',
+  },
+  {
+    name: 'the raw file input shows through (D50)',
+    file: 'styles.css',
+    from: '  opacity: 0; cursor: pointer; font-size: 16px;',
+    to: '  opacity: 1; cursor: pointer; font-size: 16px;',
+    harness: 'smoke',
+  },
+  {
+    name: 'the lightbox stops turning (D51)',
+    file: 'src/ui.js',
+    from: '  const turn = (by) => { index = (index + by + hand.length) % hand.length; show(); };',
+    to: '  const turn = (by) => { void by; };',
+    harness: 'smoke',
+  },
+  {
+    name: 'a screen forgets where you were on it (D51)',
+    file: 'src/router.js',
+    from: '  window.scrollTo(0, scrollMemory.get(hash) || 0);',
+    to: '  window.scrollTo(0, 0);',
+    harness: 'smoke',
+  },
+  {
+    name: "a control takes the browser's font again (D46)",
+    file: 'styles.css',
+    from: 'button, select { font: inherit; }\n',
+    to: '',
+    harness: 'smoke',
   },
 ];
 

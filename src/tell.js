@@ -35,18 +35,25 @@ export function tellScreen(story, { readOnly = false } = {}) {
     }
     add(wrap, toggle);
     add(wrap, el('p', { class: 'note', text: 'The book tells Hänsel and Gretel twice, before and after the boosts, so you can see what changed. Here is yours.' }));
-  } else {
-    add(wrap, el('p', { class: 'note', text: 'Once you start the Boost step, this page will hold two versions — the story as it is now, and the one you had before boosting.' }));
   }
 
   add(wrap, page);
   render();
+  // S10 — said after the story rather than before it. Above the book it was three lines between
+  // the kid and the thing they made, about a toggle that is not there yet.
+  if (!both) {
+    add(wrap, el('p', { class: 'note tell-later', text: 'Once you start the Boost step, this page will hold two versions — the story as it is now, and the one you had before boosting.' }));
+  }
 
+  // S10 — the payoff screen's primary action is keeping what you made, not leaving it: Print
+  // goes to the bar, and the way back to the shelf joins the quieter row.
   const actions = el('div', { class: 'row-actions' });
-  add(actions, el('button', {
-    type: 'button', class: 'button secondary', text: 'Print it',
-    onclick: () => window.print(),
-  }));
+  if (readOnly) {
+    add(actions, el('button', {
+      type: 'button', class: 'button secondary', text: 'Print it',
+      onclick: () => window.print(),
+    }));
+  }
   add(actions, el('button', {
     type: 'button', class: 'button secondary', text: 'Save it as text',
     onclick: () => {
@@ -72,13 +79,14 @@ export function tellScreen(story, { readOnly = false } = {}) {
       }
     },
   }));
+  if (!readOnly) add(actions, el('a', { class: 'button secondary', href: '#/stories', text: 'Back to my stories' }));
   add(wrap, actions);
 
   if (!readOnly) {
     add(wrap, actionBar({
       context: 'Tell it out loud — that is the whole point',
-      label: 'Back to my stories',
-      href: '#/stories',
+      label: 'Print it',
+      onClick: () => window.print(),
       secondary: el('a', { class: 'button secondary', href: '#/build/boost', text: 'Keep boosting' }),
     }));
   }

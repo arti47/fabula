@@ -2,7 +2,7 @@
 // No native alert/confirm/prompt anywhere in this app (CLAUDE.md §4).
 
 import { el, add, clear, qs } from './core.js';
-import { GROUPS, DIVIDERS } from '../data.js';
+import { GROUPS, DIVIDERS, ALL_CARDS } from '../data.js';
 import { icon } from './icons.js';
 
 // ---------------------------------------------------------------------------
@@ -19,6 +19,64 @@ export function explain(...paragraphs) {
     el('summary', { text: 'What is this screen for?' }),
     add(el('div'), ...paragraphs.map((p) => el('p', { text: p }))),
   );
+}
+
+// ---------------------------------------------------------------------------
+// S12 — long guidance folds to three lines, with a "Read more" under it.
+//
+// The booklet's teaching stays on the screen (§0.1): the whole text is in the document and the
+// first three lines are drawn, so the kid meets it at the moment it was written for; only the
+// seven-line bubbles that pushed the work down stop taking the screen. One observer on the screen
+// mount rather than a call in every module: a Prompt card dealt after a roll brings its own
+// guidance with it, long after the route rendered.
+// ---------------------------------------------------------------------------
+
+let clampSeq = 0;
+
+function clampOne(node) {
+  if (node.dataset.clamp) return;
+  node.dataset.clamp = 'measured';
+  // The clamp needs `overflow: hidden`, which would cut off the bubble's speech tail above it
+  // (D37), so the words go in a box of their own and the bubble keeps its shape.
+  const words = add(el('span', { class: 'guidance-text' }), ...node.childNodes);
+  node.append(words);
+  node.classList.add('is-clamped');
+  // Measured with the clamp on: if three lines already hold it, there is nothing to fold.
+  if (words.scrollHeight <= words.clientHeight + 2) {
+    node.classList.remove('is-clamped');
+    return;
+  }
+  words.id = `guidance-${++clampSeq}`;
+  const toggle = el('button', {
+    type: 'button', class: 'more-toggle',
+    'aria-expanded': 'false', 'aria-controls': words.id,
+    text: 'Read more',
+    onclick: () => {
+      const open = node.classList.toggle('is-clamped') === false;
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.textContent = open ? 'Show less' : 'Read more';
+    },
+  });
+  // Inside the bubble, under the words it opens: part of what is being said, not a control
+  // floating between it and the next thing.
+  node.append(toggle);
+}
+
+export function watchClamps(root) {
+  let queued = false;
+  const run = () => {
+    queued = false;
+    for (const node of root.querySelectorAll('.guidance:not([data-clamp])')) {
+      // Not laid out yet (a hidden panel): leave it for the next pass.
+      if (node.getClientRects().length) clampOne(node);
+    }
+  };
+  new MutationObserver(() => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(run);
+  }).observe(root, { childList: true, subtree: true });
+  run();
 }
 
 // ---------------------------------------------------------------------------
@@ -168,13 +226,52 @@ export function zoomableFace(card) {
   return add(button, cardFace(card));
 }
 
-/** The card, as big as the screen allows, over whatever you were doing. */
+/**
+ * The card, as big as the screen allows, over whatever you were doing.
+ *
+ * S14 — and the rest of its group beside it: a swipe, an arrow key or the two buttons turn to the
+ * next card of the same kind, the way you would leaf through that part of the deck in your hand.
+ */
 function cardLightbox(card) {
-  modal({
-    title: card.headline,
-    body: [add(el('div', { class: 'lightbox' }), cardFace(card))],
-    actions: [{ label: 'Close', kind: 'secondary' }],
-  });
+  const hand = ALL_CARDS.filter((c) => c.group === card.group);
+  let index = Math.max(0, hand.findIndex((c) => c.id === card.id));
+  const stage = el('div', { class: 'lightbox' });
+  const body = [stage];
+  let count = null;
+  const show = () => {
+    const current = hand[index];
+    stage.replaceChildren(cardFace(current));
+    const dialog = stage.closest('.modal');
+    if (dialog) {
+      dialog.querySelector('h2').textContent = current.headline;
+      dialog.setAttribute('aria-label', current.headline);
+    }
+    if (count) count.textContent = `${index + 1} of ${hand.length}`;
+  };
+  const turn = (by) => { index = (index + by + hand.length) % hand.length; show(); };
+  if (hand.length > 1) {
+    count = el('span', { class: 'lightbox-count', 'aria-live': 'polite' });
+    body.push(add(el('div', { class: 'lightbox-turn' }),
+      add(el('button', { type: 'button', class: 'icon-button', 'aria-label': 'Previous card', onclick: () => turn(-1) }), icon('prev')),
+      count,
+      add(el('button', { type: 'button', class: 'icon-button', 'aria-label': 'Next card', onclick: () => turn(1) }), icon('next'))));
+    let startX = null;
+    stage.addEventListener('pointerdown', (e) => { startX = e.clientX; });
+    stage.addEventListener('pointerup', (e) => {
+      if (startX === null) return;
+      const dx = e.clientX - startX;
+      startX = null;
+      if (Math.abs(dx) > 40) turn(dx < 0 ? 1 : -1);
+    });
+  }
+  modal({ title: card.headline, body, actions: [{ label: 'Close', kind: 'secondary' }] });
+  if (hand.length > 1) {
+    stage.closest('.modal')?.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') turn(1);
+      if (e.key === 'ArrowLeft') turn(-1);
+    });
+  }
+  show();
 }
 
 /** One card in a grid. `blank` shows the gentle dot for an untouched card. */

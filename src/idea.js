@@ -76,6 +76,9 @@ export function ideaStep(story) {
       idea: { ...current.idea, fromPrompt: letter, rolls: [...current.idea.rolls, { letter, ts: nowIso() }] },
     });
     showPrompt(letter, { tumble: true });
+    // S16 — one short tick in the hand as the die lands (Android; iOS has no vibration API). Never
+    // for anyone who has asked for less motion, and it carries nothing the screen does not say.
+    if (navigator.vibrate && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) navigator.vibrate(20);
     const history = wrap.querySelector('.roll-history');
     if (history) history.replaceWith(rollHistory(current));
     renderStoryHeader();
@@ -107,10 +110,14 @@ export function ideaStep(story) {
 
 function promptPanel(prompt, onRoll, { deal = false } = {}) {
   const panel = el('div', { class: 'prompt-panel', style: 'border-top-color: var(--group-prompt)' });
-  add(panel, el('div', {
-    class: 'die-letter', tabindex: '-1',
+  // S11 — the die stays on the table after it is thrown, in the corner of the card it dealt, and
+  // it is still the thing you throw: tapping it rolls again, as it did before the first roll.
+  add(panel, el('button', {
+    type: 'button', class: 'die-letter',
     'aria-live': 'polite',
+    'aria-label': `You rolled ${prompt.letter}. Roll again`,
     text: prompt.letter,
+    onclick: onRoll,
   }));
   add(panel, dealtFace(prompt, { deal }));
   add(panel, el('h3', { class: 'prompt-headline', text: prompt.headline }));

@@ -72,37 +72,41 @@ export function cardScreen(params) {
   add(screen, el('a', { href: '#/deck', text: '← Back to the deck', class: 'back-link' }));
   add(screen, el('h2', { text: card.headline }));
   add(screen, el('p', { class: 'note', text: `${GROUPS[card.group]?.name}${card.beatName ? ` · ${card.beatName}` : ''}${card.letter ? ` · die face ${card.letter}` : ''}` }));
-  add(screen, cardTile(card));
-  add(screen, el('p', { class: 'guidance', text: card.guidance }));
+  // S4 — the card and what it says, side by side from 768. Drawn the full width of a tablet the
+  // face was a metre tall: two and a half screens for two controls.
+  const detail = add(screen, el('div', { class: 'card-detail' })).lastChild;
+  add(detail, add(el('div', { class: 'card-detail-face' }), cardTile(card)));
+  const info = add(detail, el('div', { class: 'card-detail-info' })).lastChild;
+  add(info, el('p', { class: 'guidance', text: card.guidance }));
 
   if (card.questions) {
-    add(screen, el('h3', { text: 'What the card asks' }));
+    add(info, el('h3', { text: 'What the card asks' }));
     const list = el('ul');
     for (const q of card.questions) add(list, el('li', { text: q.label }));
-    add(screen, list);
+    add(info, list);
   }
 
   const examples = card.examples || card.examplesOther || [];
   if (examples.length) {
-    add(screen, el('h3', { text: 'Examples' }));
+    add(info, el('h3', { text: 'Examples' }));
     const list = el('ul');
     for (const ex of examples) add(list, exampleLine(ex));
-    add(screen, list);
+    add(info, list);
   }
 
-  add(screen, el('p', {}, el('a', { class: 'back-link', href: `#/learn/${card.id}`, text: 'Read more about this card →' })));
+  add(info, el('p', {}, el('a', { class: 'back-link', href: `#/learn/${card.id}`, text: 'Read more about this card →' })));
 
   if (card.example) {
-    add(screen, el('h3', { text: `How ${card.example.ref} answers it` }));
+    add(info, el('h3', { text: `How ${card.example.ref} answers it` }));
     if (card.example.text) {
-      add(screen, el('p', { text: card.example.text }));
+      add(info, el('p', { text: card.example.text }));
     } else {
       const list = el('ul');
       for (const q of card.questions || []) {
         const answer = card.example.answers[q.key];
         if (answer) add(list, add(el('li'), el('b', { text: `${q.label} ` }), document.createTextNode(answer)));
       }
-      add(screen, list);
+      add(info, list);
     }
   }
   return screen;
@@ -122,7 +126,17 @@ export function settingsScreen() {
     'Your stories are saved on this device only. Nothing is sent anywhere, and nobody else can see them.',
   ));
 
-  add(screen, el('h3', { text: 'Text size' }));
+  // S9 — each setting is a panel of its own rather than a heading on a long page: the screen reads
+  // as six things you can do, not one scroll. `panel()` opens the next and returns it.
+  const panels = el('div', { class: 'settings-panels' });
+  let into = panels;
+  const panel = (title) => {
+    into = add(panels, el('section', { class: 'settings-panel' })).lastChild;
+    add(into, el('h3', { text: title }));
+    return into;
+  };
+
+  panel('Text size');
   const scale = el('input', {
     type: 'range', min: '0.85', max: '1.5', step: '0.05', value: String(prefs.textScale),
     'aria-label': 'Text size',
@@ -131,11 +145,15 @@ export function settingsScreen() {
     document.documentElement.style.setProperty('--text-scale', scale.value);
     setPref('textScale', Number(scale.value));
   });
-  add(screen, scale);
+  // Small A to big A: which end is which, without a word (S9).
+  add(into, add(el('div', { class: 'scale-row' }),
+    el('span', { class: 'scale-end is-small', 'aria-hidden': 'true', text: 'A' }),
+    scale,
+    el('span', { class: 'scale-end is-big', 'aria-hidden': 'true', text: 'A' })));
 
-  add(screen, el('h3', { text: 'Your stories, as a file' }));
-  add(screen, el('p', { class: 'note', text: 'A backup you can keep, or move to another device. It is plain text you can open and read.' }));
-  add(screen, el('button', {
+  panel('Your stories, as a file');
+  add(into, el('p', { class: 'note', text: 'A backup you can keep, or move to another device. It is plain text you can open and read.' }));
+  add(into, el('button', {
     type: 'button', class: 'button secondary', text: 'Save a backup file',
     onclick: () => {
       const blob = new Blob([JSON.stringify(exportAll(), null, 2)], { type: 'application/json' });
@@ -149,7 +167,7 @@ export function settingsScreen() {
     },
   }));
 
-  const file = el('input', { type: 'file', id: 'import-file', accept: 'application/json', class: 'note' });
+  const file = el('input', { type: 'file', id: 'import-file', accept: 'application/json' });
   file.addEventListener('change', async () => {
     const chosen = file.files?.[0];
     if (!chosen) return;
@@ -187,27 +205,31 @@ export function settingsScreen() {
     }
     file.value = '';
   });
-  add(screen, el('h3', { text: 'Load a backup' }), el('label', { for: 'import-file', text: 'Choose a backup file' }), file);
+  // S9 — the browser's own "Choose File / No file chosen" was the one unstyled control in the
+  // app. The input stays the real control, laid invisibly over a label that looks like a button,
+  // so it keeps its keyboard, its screen-reader name and its full tap area.
+  panel('Load a backup');
+  add(into, add(el('div', { class: 'file-button' }), file, el('label', { for: 'import-file', class: 'button secondary', text: 'Choose a backup file' })));
 
-  add(screen, el('h3', { text: 'Your first story' }));
-  add(screen, el('p', { class: 'note', text: 'A walk through making one story from beginning to end.' }));
-  add(screen, el('p', {}, el('a', { class: 'button secondary', href: '#/tutorial', text: 'Read the walkthrough' })));
+  panel('Your first story');
+  add(into, el('p', { class: 'note', text: 'A walk through making one story from beginning to end.' }));
+  add(into, el('p', {}, el('a', { class: 'button secondary', href: '#/tutorial', text: 'Read the walkthrough' })));
 
   // The two ways to get rid of something, at the end of the scroll and never in the thumb's
   // resting arc (§6.1). Both controls exist on the shelf as well; a person looking to delete
   // themselves or a story looks in Settings first, and used to find neither here.
-  add(screen, el('h3', { text: 'Storytellers' }));
-  add(screen, el('p', { class: 'note', text: 'Add someone else who uses this device, swap between you, or remove a storyteller — which takes every story they have written with them.' }));
-  add(screen, el('p', {}, el('button', {
+  panel('Storytellers');
+  add(into, el('p', { class: 'note', text: 'Add someone else who uses this device, swap between you, or remove a storyteller — which takes every story they have written with them.' }));
+  add(into, el('p', {}, el('button', {
     type: 'button', class: 'button secondary', text: 'Switch, add or remove',
     onclick: () => storytellerManager(),
   })));
 
   const open = getCurrentStory();
   if (open) {
-    add(screen, el('h3', { text: 'The story you have open' }));
-    add(screen, el('p', { class: 'note', text: `“${open.title}” is the one you are working on.` }));
-    add(screen, el('p', {}, el('button', {
+    panel('The story you have open');
+    add(into, el('p', { class: 'note', text: `“${open.title}” is the one you are working on.` }));
+    add(into, el('p', {}, el('button', {
       type: 'button', class: 'button danger', text: 'Delete this story',
       'aria-label': `Delete ${open.title}`,
       onclick: () => confirmModal({
@@ -224,11 +246,12 @@ export function settingsScreen() {
     })));
   }
 
-  add(screen, el('h3', { text: 'About' }));
-  add(screen, el('p', { class: 'note', text: 'Story Machine runs the Fabula Deck for Kids by Sefirot (Torino, 2021), written by Andrea Binasco and Matteo di Pascale, illustrated by Matteo Ufocinque. This app is a personal play aid built from a copy of the deck.' }));
+  panel('About');
+  add(into, el('p', { class: 'note', text: 'Story Machine runs the Fabula Deck for Kids by Sefirot (Torino, 2021), written by Andrea Binasco and Matteo di Pascale, illustrated by Matteo Ufocinque. This app is a personal play aid built from a copy of the deck.' }));
   for (const e of CARD_ERRATA) {
-    add(screen, el('p', { class: 'note', text: `Note: the ${e.app} divider is printed "${e.printed}" in the English deck. ${e.note}` }));
+    add(into, el('p', { class: 'note', text: `Note: the ${e.app} divider is printed "${e.printed}" in the English deck. ${e.note}` }));
   }
+  add(screen, panels);
   return screen;
 }
 

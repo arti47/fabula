@@ -2,7 +2,7 @@
 
 import { getPrefs } from './store.js';
 import { startRouter } from './router.js';
-import { showToast } from './ui.js';
+import { showToast, watchClamps } from './ui.js';
 import { icon } from './icons.js';
 import { lockZoom } from './zoom.js';
 
@@ -35,8 +35,26 @@ function registerServiceWorker() {
   }).catch(() => { /* offline install is a bonus, never a blocker */ });
 }
 
+/**
+ * S15 — keep the field you are typing in clear of the keyboard. When the on-screen keyboard opens
+ * it shrinks the visual viewport and can land over the field; the field scrolls back into the
+ * part you can see, clear of the pinned bar (its `scroll-margin` in the stylesheet).
+ */
+function keepFieldInView() {
+  const vv = window.visualViewport;
+  if (!vv) return;
+  vv.addEventListener('resize', () => {
+    const field = document.activeElement;
+    if (!field || !field.matches('textarea, input[type="text"]')) return;
+    const box = field.getBoundingClientRect();
+    if (box.bottom > vv.height || box.top < 0) field.scrollIntoView({ block: 'nearest' });
+  });
+}
+
 applyPrefs();
 paintHeaderIcons();
 lockZoom();
+keepFieldInView();
+watchClamps(document.querySelector('#screen'));
 startRouter();
 registerServiceWorker();

@@ -72,7 +72,9 @@ function entryLabel(card, entry, index, total) {
 // ---------------------------------------------------------------------------
 
 export function ingredientsGrid(story) {
-  const wrap = el('div');
+  // S4 — `bench` so a tablet can stand the four stations two-up; one per row made this step
+  // longer on a 1024 screen than on a phone.
+  const wrap = el('div', { class: 'bench' });
   let current = story;
 
   // D34 — this step's room is a workbench: four stations, each with its own cards lying on it,
@@ -189,7 +191,7 @@ export function ingredientQuestion(story, entryId, qIndex) {
   card.questions.forEach((q, i) => {
     add(pips, add(
       el('a', {
-        class: 'pip', href: `#/build/ingredients/${entryId}/${i}`,
+        class: `pip${isBlank(entry.answers?.[q.key]) ? ' is-blank' : ''}`, href: `#/build/ingredients/${entryId}/${i}`,
         'aria-current': i === index ? 'step' : null,
         'aria-label': `Question ${i + 1}: ${q.label}`,
       }),
@@ -215,6 +217,7 @@ export function ingredientQuestion(story, entryId, qIndex) {
     const dot = pip.querySelector('.blank-dot');
     if (!isBlank(field.value) && dot) dot.remove();
     else if (isBlank(field.value) && !dot) add(pip, el('span', { class: 'blank-dot' }));
+    pip.classList.toggle('is-blank', isBlank(field.value));
   }, 400);
   field.addEventListener('input', save);
   body.push(...fieldWithSparks(field, { key: `${card.kind}.${question.key}`, story: current }));

@@ -24,6 +24,10 @@ const PATHS = {
   'empty-page': ['M6.5 3.5h7.6L18 7.4v13.1H6.5z', 'M14 3.5v4h4', 'M9.3 12.2h5.4M9.3 15.4h5.4'],
   // Three rules — the way to everywhere else.
   menu: ['M4 7h16', 'M4 12h16', 'M4 17h16'],
+  check: ['M5 12.5 9.6 17 19 7.5'],
+  prev: ['M14.5 5.5 8 12l6.5 6.5'],
+  next: ['M9.5 5.5 16 12l-6.5 6.5'],
+  more: ['M5 12a1.2 1.2 0 1 0 2.4 0 1.2 1.2 0 1 0-2.4 0', 'M10.8 12a1.2 1.2 0 1 0 2.4 0 1.2 1.2 0 1 0-2.4 0', 'M16.6 12a1.2 1.2 0 1 0 2.4 0 1.2 1.2 0 1 0-2.4 0'],
   // The deck's five group sigils. `GROUPS[].badge` has named these since Phase 0 — die, hat,
   // flask, number, magnifier — and nothing has ever drawn one: dead data the scan could not see,
   // because it reads exports, not fields inside an exported object (§0.1).

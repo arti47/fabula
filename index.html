@@ -25,7 +25,11 @@
       </button>
       <a href="#/stories" class="here" id="here">Stories</a>
     </nav>
-    <a href="#/settings" class="icon-button" aria-label="Settings"><span aria-hidden="true" data-settings-icon></span></a>
+    <div class="app-header-actions">
+      <!-- S8 — who is telling stories, on every screen, as the one control that changes it. -->
+      <button type="button" id="teller-button" class="icon-button teller-button" aria-label="Switch, add or remove a storyteller" hidden><span aria-hidden="true" data-teller></span></button>
+      <a href="#/settings" class="icon-button" aria-label="Settings"><span aria-hidden="true" data-settings-icon></span></a>
+    </div>
   </header>
 
   <!-- The persistent resource header: the counts that say what is still blank. -->

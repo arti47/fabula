@@ -128,7 +128,7 @@ export function beatScreen(story, n, fromBoost) {
   for (const b of BEATS) {
     add(pips, add(
       el('a', {
-        class: 'pip', href: `#/build/structure/${b.n}`,
+        class: `pip${isBlank(beatText(current, b.n)) ? ' is-blank' : ''}`, href: `#/build/structure/${b.n}`,
         'aria-current': b.n === n ? 'step' : null,
         'aria-label': `Beat ${b.n}: ${b.beatName}`,
       }),
@@ -160,6 +160,7 @@ export function beatScreen(story, n, fromBoost) {
     const dot = pip.querySelector('.blank-dot');
     if (!isBlank(field.value) && dot) dot.remove();
     else if (isBlank(field.value) && !dot) add(pip, el('span', { class: 'blank-dot' }));
+    pip.classList.toggle('is-blank', isBlank(field.value));
   }, 400);
   field.addEventListener('input', save);
   body.push(...fieldWithSparks(field, { key: `beat.${beat.n}`, story: current }));
