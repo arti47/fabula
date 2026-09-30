@@ -127,7 +127,7 @@ export function boostScreen(story, boostId) {
   }, 400);
   field.addEventListener('input', save);
   push(body, ...fieldWithSparks(field, { key: boost.id, story: current }));
-  push(body, el('p', { text: boost.guidance }));
+  push(body, el('p', { class: 'guidance', text: boost.guidance }));
 
   // P8 — skipping is a control, and it is reversible.
   push(body, el('button', {

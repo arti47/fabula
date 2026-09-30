@@ -347,6 +347,28 @@ const MUTANTS = [
     harness: 'smoke',
   },
   {
+    // D33: if the root stops naming the step, every room goes back to the same brown.
+    name: 'every step goes back to one colour (D33)',
+    file: 'src/router.js',
+    from: '  markStep(hash);',
+    to: '  void hash;',
+    harness: 'smoke',
+  },
+  {
+    name: 'the journey stops filling as the story fills (D35)',
+    file: 'src/router.js',
+    from: "style: `--stop: ${stop.color}; --fill: ${Math.round(stop.fill * 100)}%`",
+    to: "style: `--stop: ${stop.color}; --fill: 0%`",
+    harness: 'smoke',
+  },
+  {
+    name: "the booklet's teaching goes back to looking like app copy (D37)",
+    file: 'src/structure.js',
+    from: "body.push(el('p', { class: 'guidance', text: beat.guidance }));",
+    to: "body.push(el('p', { text: beat.guidance }));",
+    harness: 'smoke',
+  },
+  {
     name: 'the update toast never offers a new version',
     file: 'src/main.js',
     from: "          showToast('A new version is ready — reload to get it', 6000);",

@@ -38,7 +38,7 @@ export function ideaStep(story) {
     el('h2', { class: 'question-label', text: IDEA_CARD.headline }),
     el('p', { class: 'question-card-name', text: IDEA_CARD.starter }),
     field,
-    el('p', { text: IDEA_CARD.guidance }),
+    el('p', { class: 'guidance', text: IDEA_CARD.guidance }),
     el('details', { class: 'explain' },
       el('summary', { text: 'What other stories started as' }),
       el('div', {}, ideaExamples)),
@@ -103,7 +103,7 @@ function promptPanel(prompt, onRoll, { deal = false } = {}) {
   }));
   add(panel, dealtFace(prompt, { deal }));
   add(panel, el('h3', { class: 'prompt-headline', text: prompt.headline }));
-  add(panel, el('p', { text: prompt.guidance }));
+  add(panel, el('p', { class: 'guidance', text: prompt.guidance }));
 
   const list = el('ul');
   for (const ex of prompt.examples) add(list, exampleLine(ex));

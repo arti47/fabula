@@ -159,7 +159,7 @@ export function beatScreen(story, n, fromBoost) {
   }, 400);
   field.addEventListener('input', save);
   body.push(...fieldWithSparks(field, { key: `beat.${beat.n}`, story: current }));
-  body.push(el('p', { text: beat.guidance }));
+  body.push(el('p', { class: 'guidance', text: beat.guidance }));
 
   if (PREFILLED_BEAT && beat.n === PREFILLED_BEAT.n && current.beats?.[beat.n]?.prefilledFrom) {
     body.push(el('p', {

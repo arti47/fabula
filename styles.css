@@ -24,20 +24,18 @@
   --rule: #2b241b;
   --accent: #d9a066;
   --accent-ink: #14110d;
-  --focus: #7ab6e0;
   --group-prompt: #e0655c;
   --group-idea: #e0b44a;
   --group-ingredient: #e0b44a;
   --group-structure: #7aa8d4;
   --group-boost: #6fbf83;
   --blank-dot: #5b5140;
-  --grain: none;
-  --gutter: 22px;
   --card-radius: 14px;
   --shadow: 0 2px 4px rgb(0 0 0 / 0.5), 0 10px 26px rgb(0 0 0 / 0.42);
 
-  --focus: #7ab6e0;
-  --blank-dot: #5b5140;
+  /* One focus ring for every step. It sits 2px outside the control, on the step's dark ground,
+     so a warm white reads on all five without competing with any group colour. */
+  --focus: #fdf3e3;
   --step: 0.5rem;
   --gutter: 22px;
   --rhythm: 22px;
@@ -57,6 +55,36 @@
 }
 
 
+
+/* ---------------------------------------------------------------------------
+   D33 — each step owns its colour, whole screen.
+
+   The deck codes its groups red / yellow / blue / green and the app had that code on a 0.7rem
+   label. Here the step you are standing in sets `--accent` — which already drives links, the
+   primary button, the current nav pill and every card frame — and tints the ground under it, so
+   the four rooms are told apart before a word is read. The ground stays dark (D27): these are
+   barely-saturated darks, not colours. `data-step` is set by the router; off a step it is absent
+   and the base palette above applies.
+   --------------------------------------------------------------------------- */
+
+:root[data-step="idea"] {
+  --accent: var(--group-prompt);
+  --paper: #18100e; --paper-raised: #241713; --paper-sunken: #100907; --rule: #33201b;
+}
+:root[data-step="ingredients"] {
+  --accent: var(--group-ingredient);
+  --paper: #17130b; --paper-raised: #231d11; --paper-sunken: #0f0c06; --rule: #322717;
+}
+:root[data-step="structure"] {
+  --accent: var(--group-structure);
+  --paper: #0f1319; --paper-raised: #181e27; --paper-sunken: #080b0f; --rule: #1f2937;
+}
+:root[data-step="boost"] {
+  --accent: var(--group-boost);
+  --paper: #0f1611; --paper-raised: #182219; --paper-sunken: #080d09; --rule: #1d2c21;
+}
+/* Tell belongs to no group in the deck — it is the book, not a card. It keeps the table's own
+   warm accent, which is what makes arriving there feel like leaving the workshop. */
 
 * { box-sizing: border-box; }
 
@@ -86,12 +114,15 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 600; letter-spacing:
 /* A screen heading sits on a drawn rule rather than plain space. Top-level headings only:
    inside a card panel a rule under every h3 would be clutter, not structure. */
 .screen h2:not(.visually-hidden), .screen > h3 {
-  padding-bottom: 10px;
+  padding-bottom: 12px;
   background-image: var(--hand-rule);
   background-repeat: no-repeat;
   background-position: left bottom;
-  background-size: 150px 8px;
+  background-size: 190px 8px;
 }
+/* The section headings inside a step ("Main character", "Antagonist") are the only headings on
+   the survey screens, since the step's own <h2> is undrawn there. They carry the weight. */
+.screen > h3 { background-size: 150px 8px; font-size: 1.4rem; margin-bottom: calc(var(--step) * 1.5); }
 
 a { color: var(--accent); }
 
@@ -116,7 +147,8 @@ a { color: var(--accent); }
   min-height: var(--header-h);
   padding: 0 var(--gutter) 0 var(--gutter);
   background: var(--paper-raised);
-  border-bottom: 1px solid var(--rule);
+  /* The step's own colour, full strength, across the top of every screen it owns (D33). */
+  border-bottom: 2px solid var(--accent);
 }
 
 .brand { margin: 0; font-size: 1.05rem; display: flex; align-items: center; gap: 0.4em; }
@@ -146,13 +178,82 @@ a { color: var(--accent); }
 }
 /* Four counts in one line at 360: at 0.8rem they were 328px wide in 316px of room, and the
    second line put the chrome 19px over budget. */
-.progress-row { display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.75rem; color: var(--ink-soft); font-family: var(--font-ui); }
-.progress-item { display: inline-flex; align-items: baseline; gap: 0.35em; }
-.progress-item b { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+/* D37 — the booklet's teaching is something being said to you, not app copy. It was a bare <p>
+   on six screens and indistinguishable from the app's own notes; it is a bubble now, with the
+   step's colour down its speaking edge and a tail so the shape reads as speech before the words
+   do. The words are the booklet's, unchanged. */
+.guidance {
+  position: relative;
+  margin: 0 0 var(--rhythm);
+  padding: 13px 15px;
+  max-width: 60ch;
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent);
+  border-radius: 3px 14px 14px 14px;
+  font-size: 1.02rem; line-height: 1.55;
+  color: var(--ink);
+}
+.guidance::before {
+  content: ""; position: absolute; top: -9px; left: 10px;
+  border: 5px solid transparent;
+  border-bottom-color: var(--rule);
+  border-top-width: 4px;
+}
+
+/* The current pill is the survey screens' heading. Every build screen's own <h2> is undrawn
+   there because the nav already names the step and §6 forbids naming it twice — which left those
+   five screens with no top at all once headings grew. The pill carries the weight instead. */
+.section-nav a[aria-current] { font-size: 1.02rem; padding: 6px 16px; }
+
+/* The journey strip (D35): five stops on one road, replacing four counts in a row. The road is
+   drawn behind the stops rather than between them, so nothing has to be measured in JS. */
+.journey {
+  position: relative;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin: 4px 0 0; padding: 0 2px; list-style: none;
+}
+.journey::before {
+  content: ""; position: absolute; z-index: 0;
+  left: 12px; right: 12px; top: 12px; height: 2px;
+  background: var(--rule);
+}
+.journey-stop {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  min-width: 0;
+}
+.journey-node {
+  display: grid; place-items: center;
+  width: 25px; height: 25px; border-radius: 50%;
+  border: 2px solid var(--stop);
+  color: var(--ink);
+  /* The fill rises from the bottom of the stop, so a half-answered step looks half-full. */
+  background:
+    linear-gradient(to top, var(--stop) var(--fill), transparent var(--fill)),
+    var(--paper-sunken);
+}
+.journey-node svg { display: block; opacity: 0.9; }
+.journey-value {
+  font-family: var(--font-ui); font-size: 0.62rem; line-height: 1.1;
+  color: var(--ink-soft); font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+/* Where you are standing now. The ring is a second channel for what the bar and the nav say. */
+.journey-stop.is-here .journey-node { box-shadow: 0 0 0 3px var(--paper-sunken), 0 0 0 5px var(--stop); }
+.journey-stop.is-here .journey-value { color: var(--ink); }
+.journey-end .journey-node { border-style: dashed; opacity: 0.5; }
+.journey-end.is-open .journey-node { border-style: solid; opacity: 1; }
 
 .screen { padding: 12px var(--gutter) 0; max-width: 900px; margin: 0 auto; }
 .screen:focus { outline: none; }
-.screen h2 { margin: 2px 0 var(--step); font-size: 1.35rem; }
+/* D37 — the heading is the loudest thing on the screen, and it wears the step's colour. At
+   1.35rem it sat a quarter-step above the body and the screen had no top. */
+.screen h2 {
+  margin: 2px 0 calc(var(--step) * 1.5);
+  font-size: clamp(1.7rem, 6.6vw, 2.1rem);
+  line-height: 1.08;
+  color: var(--accent);
+}
 
 /* Section nav: first thing inside the scroll area, one pill per sibling route. */
 .section-nav {
@@ -946,8 +1047,8 @@ input[type="file"] {
   overflow: hidden;
   background: var(--paper-sunken);
   border-bottom: 0;
-  padding-top: 26px;
-  padding-bottom: 10px;
+  padding-top: 16px;
+  padding-bottom: 8px;
 }
 .story-header-art {
   display: block;

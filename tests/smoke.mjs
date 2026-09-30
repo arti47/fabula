@@ -330,7 +330,7 @@ try {
   check('walk: story header names the story', async () => {});
   const title = await read(page, '.story-header-title');
   check('walk: title', () => assert.equal(title, 'The dragon next door'));
-  const counts = await read(page, '.progress-row');
+  const counts = await read(page, '.journey');
   check('walk: progress counts', () => {
     assert.match(counts, /Ingredients 0\/4/);
     assert.match(counts, /Beats 0\/9/);
@@ -368,7 +368,7 @@ try {
   await page.goto(base + '#/build/idea');
   const savedIdea = await page.inputValue('#idea-text');
   check('idea: the sentence persists', () => assert.equal(savedIdea, 'a lighthouse that walks'));
-  const headerAfter = await read(page, '.progress-row');
+  const headerAfter = await read(page, '.journey');
   check('idea: the header knows there is an idea', () => assert.match(headerAfter, /Idea yes/));
 
   // Step 2: ingredients, one question at a time, in any order.
@@ -406,7 +406,7 @@ try {
   const gridText = await read(page, '#screen');
   check('ingredients: the tile takes the character\'s name', () => assert.match(gridText, /Bo/));
   check('ingredients: the tile counts answers', () => assert.match(gridText, /2 of 6 answered/));
-  const headerCounts = await read(page, '.progress-row');
+  const headerCounts = await read(page, '.journey');
   check('ingredients: the header counts the card', () => assert.match(headerCounts, /Ingredients 1\/4/));
 
   // P3: the same card twice.
@@ -506,7 +506,7 @@ try {
   await page.goto(base + '#/build/structure/9');
   await type(page, '#beat-text', 'In the end everyone goes home.');
   await page.waitForTimeout(600);
-  const beatCounts = await read(page, '.progress-row');
+  const beatCounts = await read(page, '.journey');
   check('structure: the header counts written beats', () => assert.match(beatCounts, /Beats 2\/9/));
 
   // Step 4: the boosts, the snapshot, and the two permissions the booklet demonstrates.
@@ -636,6 +636,79 @@ try {
   const afterText = await settled(page, '.told-story', /abandoned twice/);
   check('D10: after the boosts holds the rewritten beat', () => assert.match(afterText, /abandoned twice/));
   check('D10: and the before-version did not', () => assert.ok(!/abandoned twice/.test(beforeText)));
+
+  // D33: the step you are standing in owns the screen's colour. Read the computed accent on each
+  // of the four rooms — the token is what every control, frame and heading hangs off, so if it
+  // stops changing the rooms stop being told apart.
+  const rooms = {};
+  for (const [step, route] of [['idea', '#/build/idea'], ['ingredients', '#/build/ingredients'], ['structure', '#/build/structure'], ['boost', '#/build/boost']]) {
+    await page.goto(base + route);
+    await present(page, '.journey');
+    rooms[step] = await page.evaluate(() => {
+      const css = getComputedStyle(document.documentElement);
+      return {
+        step: document.documentElement.dataset.step || null,
+        accent: css.getPropertyValue('--accent').trim(),
+        paper: css.getPropertyValue('--paper').trim(),
+      };
+    });
+  }
+  check('each step names itself on the root', () => {
+    for (const [step, seen] of Object.entries(rooms)) assert.equal(seen.step, step);
+  });
+  check('each step owns a colour of its own (D33)', () => {
+    const accents = Object.values(rooms).map((r) => r.accent);
+    const papers = Object.values(rooms).map((r) => r.paper);
+    assert.equal(new Set(accents).size, 4, `only ${new Set(accents).size} distinct accents: ${accents.join(' ')}`);
+    assert.equal(new Set(papers).size, 4, `only ${new Set(papers).size} distinct grounds: ${papers.join(' ')}`);
+  });
+
+  // D35: the strip is the counts. It may draw them, but it must still say them, and it must mark
+  // where you are standing — colour is never the only channel (§6).
+  await page.goto(base + '#/build/structure');
+  await present(page, '.journey');
+  const strip = await page.evaluate(() => {
+    const stops = [...document.querySelectorAll('.journey-stop')];
+    return {
+      stops: stops.length,
+      here: stops.filter((s) => s.classList.contains('is-here')).map((s) => s.textContent.trim()),
+      text: document.querySelector('.journey').textContent,
+      filled: stops.filter((s) => {
+        const node = s.querySelector('.journey-node');
+        return node && node.style.getPropertyValue('--fill') !== '0%';
+      }).length,
+      sigils: stops.filter((s) => s.querySelector('.journey-node svg path')).length,
+    };
+  });
+  check('the journey has five stops', () => assert.equal(strip.stops, 5));
+  check('and still says the counts in words', () => {
+    assert.match(strip.text, /Idea/);
+    assert.match(strip.text, /Ingredients \d+\/4/);
+    assert.match(strip.text, /Beats \d+\/9/);
+    assert.match(strip.text, /Boosts \d+\/10/);
+  });
+  check('the stop you are standing on is marked', () => {
+    assert.equal(strip.here.length, 1, `${strip.here.length} stops marked`);
+    assert.match(strip.here[0], /Beats/);
+  });
+  check('a stop fills as its step fills', () => assert.ok(strip.filled >= 2, `${strip.filled} stops carry any fill`));
+  check('every stop is drawn, not coloured alone', () => assert.equal(strip.sigils, 5));
+
+  // D37: the booklet's teaching is marked as something said, not as the app's own copy. It was a
+  // bare <p> on six screens, indistinguishable from a note.
+  await page.goto(base + '#/build/structure/7');
+  await present(page, '.guidance');
+  const spoken = await page.evaluate(() => {
+    const g = document.querySelector('.guidance');
+    if (!g) return null;
+    const box = g.getBoundingClientRect();
+    return { text: g.textContent.trim().length, left: getComputedStyle(g).borderLeftWidth, w: Math.round(box.width) };
+  });
+  check('the guidance is spoken, not printed', () => {
+    assert.ok(spoken, 'no guidance bubble on a beat screen');
+    assert.ok(spoken.text > 40, 'the bubble is empty');
+    assert.equal(spoken.left, '3px');
+  });
 
   // The deck's own dividers, as bands rather than cards (G5, A2).
   await page.goto(base + '#/deck/prompts');

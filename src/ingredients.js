@@ -80,7 +80,7 @@ export function ingredientsGrid(story) {
     const skipped = current.skipped.includes(card.id);
 
     add(wrap, el('h3', { text: card.headline }));
-    add(wrap, el('p', { class: 'note', text: card.guidance }));
+    add(wrap, el('p', { class: 'guidance', text: card.guidance }));
 
     if (skipped) {
       add(wrap, add(

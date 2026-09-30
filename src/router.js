@@ -125,17 +125,48 @@ export function renderStoryHeader() {
     add(spine, el('span', { class: `spine-bone${isBlank(story.beats?.[beat.n]?.text) ? '' : ' is-written'}` }));
   }
   add(header, spine);
-  add(header, add(
-    el('div', { class: 'progress-row' }),
-    item('Idea', p.idea ? 'yes' : 'not yet'),
-    item('Ingredients', `${p.ingredients.done}/${p.ingredients.total}`),
-    item('Beats', `${p.beats.done}/${p.beats.total}`),
-    item('Boosts', `${p.boosts.done}/${p.boosts.total}`),
-  ));
+  add(header, journeyStrip(p));
 }
 
-function item(label, value) {
-  return add(el('span', { class: 'progress-item' }), document.createTextNode(`${label} `), el('b', { text: value }));
+/**
+ * The five steps as a road with four milestones on it, rather than four numbers (D35).
+ *
+ * Same information the counts carried, same words, and still never a score (§1): a stop shows how
+ * much of its step is answered and nothing about how good it is. The stops are not labelled in
+ * text on purpose — the section nav names all five directly underneath, in this order, and §6
+ * forbids naming a thing twice on one screen. Each carries its group's sigil, its group's colour
+ * and a hidden name, so the channel is never colour alone.
+ */
+function journeyStrip(p) {
+  const stops = [
+    { id: 'idea', name: 'Idea', sigil: 'die', color: 'var(--group-prompt)', value: p.idea ? 'yes' : 'not yet', fill: p.idea ? 1 : 0 },
+    { id: 'ingredients', name: 'Ingredients', sigil: 'flask', color: 'var(--group-ingredient)', value: `${p.ingredients.done}/${p.ingredients.total}`, fill: p.ingredients.done / p.ingredients.total },
+    { id: 'structure', name: 'Beats', sigil: 'number', color: 'var(--group-structure)', value: `${p.beats.done}/${p.beats.total}`, fill: p.beats.done / p.beats.total },
+    { id: 'boost', name: 'Boosts', sigil: 'magnifier', color: 'var(--group-boost)', value: `${p.boosts.done}/${p.boosts.total}`, fill: p.boosts.done / p.boosts.total },
+  ];
+  const here = stepFor(location.hash || '');
+  const strip = el('ol', { class: 'journey' });
+  for (const stop of stops) {
+    const node = add(
+      el('span', { class: 'journey-node', 'aria-hidden': 'true', style: `--stop: ${stop.color}; --fill: ${Math.round(stop.fill * 100)}%` }),
+      icon(stop.sigil, { size: 14 }),
+    );
+    add(strip, add(
+      el('li', { class: `journey-stop${here === stop.id ? ' is-here' : ''}` }),
+      el('span', { class: 'visually-hidden', text: `${stop.name} ${stop.value}` }),
+      node,
+      el('span', { class: 'journey-value', 'aria-hidden': 'true', text: stop.value }),
+    ));
+  }
+  // The end of the road. It has no count — nothing about the told story is measured (A10) — so it
+  // is a destination rather than a milestone, and it opens once there is anything to read.
+  const readable = p.beats.done > 0;
+  add(strip, add(
+    el('li', { class: `journey-stop journey-end${readable ? ' is-open' : ''}` }),
+    el('span', { class: 'visually-hidden', text: readable ? 'Tell: there is something to read' : 'Tell: nothing to read yet' }),
+    add(el('span', { class: 'journey-node', 'aria-hidden': 'true', style: '--stop: var(--accent); --fill: 0%' }), icon('stories', { size: 14 })),
+  ));
+  return strip;
 }
 
 /**
@@ -155,6 +186,35 @@ function centreCurrentPill() {
   }
 }
 
+/**
+ * Which of the deck's rooms the current route stands in (D33).
+ *
+ * The step sets `--accent` and tints the ground, so the answer has to come from the hash rather
+ * than from whichever module happened to render last. A route that belongs to no group — the
+ * shelf, Learn, Settings, Tell — returns null and the base palette applies.
+ */
+const STEP_BY_ROUTE = [
+  [/^#\/build\/idea/, 'idea'],
+  [/^#\/build\/ingredients/, 'ingredients'],
+  [/^#\/build\/structure/, 'structure'],
+  [/^#\/build\/boost/, 'boost'],
+  [/^#\/deck\/prompts/, 'idea'],
+  [/^#\/deck\/ingredients/, 'ingredients'],
+  [/^#\/deck\/structure/, 'structure'],
+  [/^#\/deck\/boosts/, 'boost'],
+];
+
+export function stepFor(hash) {
+  const row = STEP_BY_ROUTE.find(([pattern]) => pattern.test(hash));
+  return row ? row[1] : null;
+}
+
+function markStep(hash) {
+  const step = stepFor(hash);
+  if (step) document.documentElement.dataset.step = step;
+  else delete document.documentElement.dataset.step;
+}
+
 function render() {
   const hash = location.hash || '#/stories';
   const screen = qs('#screen');
@@ -169,6 +229,7 @@ function render() {
   const match = route ? hash.match(route.pattern) : null;
   add(screen, route ? route.render(match) : notFoundScreen());
 
+  markStep(hash);
   wireMenu();
   markHere();
   markHeaderLinks();

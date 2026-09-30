@@ -81,7 +81,7 @@ export function cardScreen(params) {
   ));
   add(screen, el('p', { class: 'note', text: `${GROUPS[card.group]?.name}${card.beatName ? ` · ${card.beatName}` : ''}${card.letter ? ` · die face ${card.letter}` : ''}` }));
   add(screen, cardTile(card));
-  add(screen, el('p', { text: card.guidance }));
+  add(screen, el('p', { class: 'guidance', text: card.guidance }));
 
   if (card.questions) {
     add(screen, el('h3', { text: 'What the card asks' }));

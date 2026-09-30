@@ -101,6 +101,22 @@ non-English content.
 | D31 | The frame | **Chrome recedes onto the table** | One 44px bar carrying where you are, the story header beneath it, the action pinned. **The tab bar is gone**; Stories, Build, Deck and Learn live behind one menu button |
 | D32 | Delivery | **Five batches, screenshots between** | Frame · physics · the five forms · the story object · moments and graphics |
 
+### 1.3 Play decisions (Phase 13 — "still boring", recorded)
+
+Five batches made the app more *refined*. Refinement is not fun. The measured causes: one dark
+brown at four lightnesses, one screen skeleton nine times, a type scale of 1.35 / 1.0 / 0.9rem,
+progress as a status bar, and nothing that happens when you finish something.
+
+| # | Decision | Answer | What it binds |
+|---|---|---|---|
+| D33 | Colour | **Each step owns its colour, whole screen** | `data-step` on the root remaps `--accent` and tints `--paper`/`--paper-raised`/`--paper-sunken`/`--rule`. Idea = the Prompts' red, Ingredients = yellow, Structure = blue, Boost = green; Tell belongs to no group and keeps the table's warm accent. **Amends D27's monochrome** — the dark ground stays, the brown does not |
+| D34 | Screen shape | **Each step gets its own layout** | The shared skeleton (heading → explain → note → grid → bar) is broken: a die on a table, a workbench, a map, a fan, a book. Five silhouettes, same content, same controls |
+| D35 | Progress | **A journey strip, five stops** | The four counts become four milestones on a road plus a destination, each filling as its step fills, each carrying its group's sigil and its count as text. Still progress, never a score (§1, A10) |
+| D36 | Moments | **Turn · seal · one burst · page turn** | An answered card turns and settles; a wax seal stamps onto a finished card; the ninth beat gets one spark burst, once; step changes turn a page. All behind `prefers-reduced-motion`; none carries information |
+| D37 | Type | **Display headings, spoken guidance, drop cap, a second face** | Headings to `clamp(1.7rem, 6.6vw, 2.1rem)` in the step's colour; the booklet's teaching set as speech rather than app copy; the told story's drop cap revived by moving the connector to its own line; a second bundled face for numerals and labels |
+| D38 | Sound | **None** | A kid alone in a room, and D4 says this may reach a classroom. Every moment in D36 lands visually. No audio assets, no mute control |
+| D39 | Delivery | **Four batches, screenshots between** | 1 palette + type + the strip · 2 the Idea and Ingredients rooms · 3 the Structure map and the Boost fan · 4 the Tell book, the moments, the graphics |
+
 ---
 
 ## 2. Sources and precedence
@@ -246,9 +262,11 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
   `feGaussianBlur`, `feDisplacementMap`) inside a CSS background: the browser re-runs it over the
   whole page on every paint, and a three-screen route becomes unpaintable. Texture ships as a small
   tile; a test enforces it.
-- **One look: the card table** (D27). Dark ground, one 44px bar, the story's cover behind its
-  title. There is no light theme and no theme toggle — the ground is the table. `prefers-contrast:
-  more` still applies.
+- **One look: the card table** (D27), **in five rooms** (D33). Dark ground, one 44px bar, the
+  story's cover behind its title. There is no light theme and no theme toggle — the ground is the
+  table. The step you are standing in sets `--accent` and tints the ground through
+  `:root[data-step]`, written as literal hex rather than `color-mix()` so nothing depends on a
+  browser feature. `prefers-contrast: more` still applies.
 - **One bar, one menu** (D31). The tab bar is gone. Stories, Build, Deck and Learn live behind the
   menu button; the bar names the place you are standing in and marks it `aria-current`. Fixed
   chrome stays under 140px (160 at 320, where the counts wrap) — it was 210px with a tab bar.
@@ -333,14 +351,16 @@ list, then bump `CACHE_VERSION` — in the same change.
 ```
 
 - The **story header is this app's persistent resource header** (§6.2): the title and the counts
-  that tell a kid what is still blank, visible from every in-story screen. It is progress, never a
-  score. Two lines, not three — who is telling the story does not change while it is being written,
+  that tell a kid what is still blank, visible from every in-story screen, drawn since D35 as a
+  road with four milestones and a destination on it. It is progress, never a score. Two lines, not three — who is telling the story does not change while it is being written,
   and is named on the shelf and in Settings (D22).
 - **Fixed chrome has a budget**: the bar and the story header together stay under 140px (160 at
   320, where the four counts need a second line). Asserted on every route at every width.
 - **Nothing is named twice on one screen.** Where the section nav already carries the step or
   section in the accent colour, the matching `<h2>` stays in the document for the heading outline
-  and is not drawn. Asserted.
+  and is not drawn. Asserted. **Consequence (D37):** the five survey screens therefore have no
+  drawn `<h2>` at all, so the current nav pill carries the heading weight and the `<h3>`s inside
+  the step are the largest type on them.
 - **Group colour is semantic**: red Prompts, yellow Ingredients, blue Structure, green Boosts —
   the deck's own code, and never the only channel (every card names its group in text too).
 - **The primary action is above the fold on every screen**, pinned in the action bar where content
@@ -493,7 +513,7 @@ horizontal overflow at 320/360/390 and no stretched layout at 768/1024; no stray
 `null`/`undefined`/`NaN` text; nothing under the fixed tab bar; every screen's primary action above
 the fold; section nav reaches every sibling; no tap target under 40px measured on the wrapping
 label; the action bar never grows past one bar; the current section-nav pill stays in view; fixed
-chrome inside its budget; the counts still on screen after scrolling (§6.2); an unanswered card lying face-down and the Deck showing every face; the question sitting on the card, not under it; every beat frame wearing its own card and showing the text written on it; the told story opening on a full-width cover; the cast strip showing who the story has and keeping off the question screens; the spine carrying one bone per beat and filling the written ones; every card wearing its group's sigil beside the group's name; the told story closing on its ornament; nothing named twice; the two-up layouts really give two columns at 1024
+chrome inside its budget; the counts still on screen after scrolling (§6.2); an unanswered card lying face-down and the Deck showing every face; the question sitting on the card, not under it; every beat frame wearing its own card and showing the text written on it; the told story opening on a full-width cover; the cast strip showing who the story has and keeping off the question screens; the spine carrying one bone per beat and filling the written ones; every card wearing its group's sigil beside the group's name; the told story closing on its ornament; each step naming itself on the root and owning a distinct accent and ground; the journey carrying five stops, saying its counts in words, marking where you stand and filling as the story fills; the booklet's teaching set as speech rather than app copy; nothing named twice; the two-up layouts really give two columns at 1024
 and one at 390; the action bar measured continuously from 320 to 1024 in 8px steps, because it is
 the one thing sensitive to width rather than to layout and a five-width sample walked straight past
 a defect band nine pixels wide; the full walk: storyteller → story → roll → idea → ingredients → beats → boost → tell.
@@ -524,7 +544,7 @@ stories, a story with 4 heroes, 2 villains, 3 worlds, every beat long, all 10 bo
 text, whitespace-only answers — what a kid types when nobody is watching). `tests/probe-layout.mjs` prints per route: height in viewports, control count,
 primary-action offset, smallest tap target, overflow per width. A probe prints; it does not assert.
 
-**Mutation pass (`npm run mutants`, `-- all` for the browser ones).** Forty-seven mutants, each breaking
+**Mutation pass (`npm run mutants`, `-- all` for the browser ones).** Fifty mutants, each breaking
 one rule the app is supposed to keep — the pre-fill, the snapshot, the die, a permission's control,
 the placeholder path, the update toast, the zoom lock. A mutant that survives is a rule that can break silently,
 and is a finding against the harness rather than the app.
@@ -608,6 +628,7 @@ rather than a broken image, and the harness must pass with `assets/cards/` empty
 
 | Date | Change | Verification | Cache |
 |---|---|---|---|
+| 2026-09-30 | **Play revamp, batch 1 of 4: colour, scale and the road.** Told the interface was still boring, I measured rather than re-decorated, and the causes were four: the whole app was **one dark brown at four lightnesses** — the deck codes its groups red/yellow/blue/green and that code lived on a 0.7rem label; the type scale was 1.35 / 1.0 / 0.9rem, so no screen had a top; progress was a **status bar** (`Idea yes · Ingredients 4/4 · Beats 4/9 · Boosts 2/10`); and the booklet's teaching was a bare `<p>`, indistinguishable from the app's own notes, on six screens. This batch fixes the three that touch every screen at once. **D33**: `data-step` on the root remaps `--accent` and tints the ground, so the four rooms are told apart before a word is read — literal hex, not `color-mix()`, so nothing depends on a browser feature. **D35**: the counts became a road with four milestones and a destination, each stop filling as its step fills and carrying the group sigil wired in v30; the stops are deliberately **not** labelled, because the section nav names all five directly beneath in the same order and §6 forbids naming a thing twice. **D37**: headings to `clamp(1.7rem, 6.6vw, 2.1rem)` in the step's colour, and the guidance set as speech. **Found in the doing, and now a line in §6**: the big heading is invisible on exactly the five screens that most needed a top, because §6 undraws an `<h2>` the nav already names — so the current nav pill and the `<h3>`s inside the step carry the weight there instead. Also tidied four duplicated declarations in `:root` that the stylesheet guard does not catch, and gave the focus ring one warm white that reads on all five grounds. | `npm test` 90/90; smoke clean over 30 routes × 5 widths with seven new checks — each step names itself and owns a distinct accent and ground, the journey has five stops, still says its counts in words, marks where you stand, fills as the story fills and draws every stop, and the guidance is spoken; the chrome budget holds at 138px of 140 with the strip in it; interaction (460 controls) and a11y clean; `npm run mutants -- all` 50/50 caught, three new — every room one colour again, the road never filling, and the teaching back to app copy | v31 |
 | 2026-09-29 | **Revamp batch 5 of 5: the moments, and the last of the dead art.** `GROUPS[].badge` has named a sigil for each of the deck's five groups — `die`, `hat`, `flask`, `number`, `magnifier` — since Phase 0, and **nothing had ever drawn one**: §0.1 in the coat the dead-data scan structurally cannot see, because it reads exports and these are fields inside an exported object. All five are drawn now and sit beside the group's name on every card tile, never instead of it (§6). Two moments added where the app had none: a **told story closes on a flourish** rather than stopping mid-page — a tapered rule, a seal, three sparks, house-drawn and nothing about it card-shaped (D25) — and the story **assembles in the order it is told**, each passage arriving after the one before it. The stagger is an index the stylesheet turns into a delay, so the text is in the document whether or not the animation ever runs, and `prefers-reduced-motion` now zeroes the **delay** as well as the duration: a reveal held back 600ms is motion even with no duration, which the old blanket rule let through. Found while wiring it: `illustration` was used in `tell.js` without being imported — a `ReferenceError` on the one screen that is the whole payoff, and nothing but the browser catches a missing import. | `npm test` 90/90; smoke clean over 30 routes × 5 widths with two new checks — every card wears its group's sigil and still names the group in text, and the told story closes on a drawn, silent, `aria-hidden` ornament after its last passage; interaction (460 controls) and a11y clean; `npm run mutants -- all` 47/47 caught, two new — the sigil undrawn and the ornament dropped | v30 |
 | 2026-09-29 | **Revamp batch 4 of 5: the story became a thing you can see.** Steps one to four are forms — a kid writes for twenty minutes and nothing visibly accumulates until the Tell page. Two additions, both derived from the record and neither stored (§10.11): a **cast strip** above the work on the screens that survey a step, one chip per character and world with something written on it, wearing the card its answers live on and linking back to it; and a **spine**, the nine beats as an object that thickens rather than a fraction — a second channel for what the counts already say in words, never the only one (§6). Both were measured before they were kept: the spine first took a row of its own and put the chrome 4px over its 160px budget at 320, so it became the story header's own bottom edge and costs no height at all; and the cast strip on a one-question screen pushed the writing field off a 320 phone, so it appears only where a step is being surveyed, never where one is being answered. | `npm test` 90/90; smoke clean over 30 routes × 5 widths with four new checks — the strip shows who the story has, keeps off the question screens, and the spine carries one bone per beat and fills the written ones; interaction (460 controls) and a11y clean; `npm run mutants -- all` 46/46 caught, two new — the strip unwired and the spine stopped thickening | v29 |
 | 2026-09-29 | The interaction audit reported a card face on one boost screen as "in the DOM but cannot be clicked". It measured 346×431 the moment it settled: the audit was catching it **mid-turn**, where a card rotated near 90° projects to almost no width. Not a broken control — the audit catching the wrong moment, and timing-dependent, so it named a different screen each run. It waits for the screen's animations to finish before it measures anything now, bounded so an endless animation is a slow audit rather than a hung one. | Three consecutive clean runs; proved not to mask anything by shrinking the face button to 0×0, which is still reported on every route it appears | v28 |
