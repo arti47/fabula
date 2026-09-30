@@ -75,15 +75,20 @@ export function ingredientsGrid(story) {
   const wrap = el('div');
   let current = story;
 
-  for (const card of INGREDIENTS) {
+  // D34 — this step's room is a workbench: four stations, each with its own cards lying on it,
+  // rather than four identical blocks stacked down a page. The stations are nudged off true by a
+  // fraction of a degree each, so the bench reads as things put down rather than as table cells.
+  INGREDIENTS.forEach((card, stationIndex) => {
     const entries = entriesFor(current, card.kind);
     const skipped = current.skipped.includes(card.id);
 
-    add(wrap, el('h3', { text: card.headline }));
-    add(wrap, el('p', { class: 'guidance', text: card.guidance }));
+    const station = el('section', { class: 'bench-station', style: `--tilt: ${[-0.5, 0.55, -0.45, 0.6][stationIndex % 4]}deg` });
+    add(wrap, station);
+    add(station, el('h3', { class: 'bench-label', text: card.headline }));
+    add(station, el('p', { class: 'guidance', text: card.guidance }));
 
     if (skipped) {
-      add(wrap, add(
+      add(station, add(
         el('p', { class: 'empty' }),
         document.createTextNode('Skipped for now. '),
         el('button', {
@@ -94,7 +99,7 @@ export function ingredientsGrid(story) {
           },
         }),
       ));
-      continue;
+      return;
     }
 
     const grid = el('div', { class: 'card-grid' });
@@ -113,7 +118,7 @@ export function ingredientsGrid(story) {
     if (!entries.length) {
       add(grid, cardTile(card, { href: `#/build/ingredients/new-${card.kind}`, sub: 'Nothing written yet', blank: true }));
     }
-    add(wrap, grid);
+    add(station, grid);
 
     const row = el('div', { class: 'row-actions' });
     if (card.repeatable && entries.length) {
@@ -135,8 +140,8 @@ export function ingredientsGrid(story) {
         window.dispatchEvent(new HashChangeEvent('hashchange'));
       },
     }));
-    add(wrap, row);
-  }
+    add(station, row);
+  });
 
   add(wrap, actionBar({
     context: 'Answer them in any order — or none of them yet',

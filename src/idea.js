@@ -44,8 +44,11 @@ export function ideaStep(story) {
       el('div', {}, ideaExamples)),
   ]));
 
-  // ---- the die ------------------------------------------------------------
-  const dieArea = el('div', { class: 'die-area' });
+  // ---- the die, on a table (D34) -------------------------------------------
+  // This step's room is a die lying on a table. Before a roll the die is the biggest thing on the
+  // screen and is itself the control; after one it moves to the corner of the Prompt card it
+  // threw, which is where it already lived.
+  const dieArea = el('div', { class: 'die-area die-table' });
   add(wrap, el('h3', { text: 'No idea yet?' }));
   add(wrap, el('p', { class: 'note', text: 'Roll the die. Each face sends you to one of the six Prompt cards. If it gives you nothing, roll again — you can do that as many times as you like.' }));
   add(wrap, dieArea);
@@ -79,7 +82,15 @@ export function ideaStep(story) {
   };
 
   if (current.idea.fromPrompt) showPrompt(current.idea.fromPrompt);
-  else add(dieArea, el('p', { class: 'note', text: 'Tap Roll the die below.' }));
+  else {
+    // An untouched table with one die on it. The die is a button rather than a picture beside a
+    // button: the thing you want to touch is the thing you touch.
+    add(dieArea, el('button', {
+      type: 'button', class: 'die-letter die-big', 'aria-label': 'Roll the die',
+      text: '?', onclick: () => roll(),
+    }));
+    add(dieArea, el('p', { class: 'note', text: 'Tap the die, or Roll the die below.' }));
+  }
 
   // ---- sparks (house aid) -------------------------------------------------
   add(wrap, ideaSparkSection());

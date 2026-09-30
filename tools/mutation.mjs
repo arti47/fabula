@@ -369,6 +369,24 @@ const MUTANTS = [
     harness: 'smoke',
   },
   {
+    // D34: without its station the bench is four identical blocks stacked down a page again.
+    name: 'the ingredients bench flattens back to a list (D34)',
+    file: 'src/ingredients.js',
+    from: "    add(wrap, station);",
+    to: '    add(wrap, station.children);',
+    harness: 'smoke',
+  },
+  {
+    // The first version of this mutant stripped `type: 'button'` from `el('button', …)`, which
+    // leaves it a button: it broke no rule, so nothing could catch it, and it survived. The rule
+    // is that the die is the control — so the mutant takes the handler off it.
+    name: 'the die goes back to being a picture beside a button (D34)',
+    file: 'src/idea.js',
+    from: "      text: '?', onclick: () => roll(),",
+    to: "      text: '?',",
+    harness: 'smoke',
+  },
+  {
     name: 'the update toast never offers a new version',
     file: 'src/main.js',
     from: "          showToast('A new version is ready — reload to get it', 6000);",

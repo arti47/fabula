@@ -477,6 +477,81 @@ input[type="file"] {
 }
 .die-letter::before { top: 7px; left: 7px; box-shadow: 32px 0 0 rgb(36 31 24 / 0.32); }
 .die-letter::after { bottom: 7px; left: 7px; box-shadow: 32px 0 0 rgb(36 31 24 / 0.32); }
+/* ---------------------------------------------------------------------------
+   D34 — the Idea room: a die on a table.
+
+   Before a roll the die is the biggest thing on the screen and is the control itself; the table
+   is a vignette rather than a box, so the die reads as lying on something rather than sitting in
+   a panel. After a roll the Prompt card is dealt onto the same table.
+   --------------------------------------------------------------------------- */
+.die-table {
+  position: relative;
+  margin: 0 0 var(--rhythm);
+  padding: calc(var(--step) * 2) var(--step);
+  border-radius: 18px;
+  background:
+    radial-gradient(120% 95% at 50% 18%, rgb(255 246 230 / 0.07), transparent 68%),
+    var(--paper-sunken);
+  box-shadow: inset 0 1px 0 rgb(255 246 230 / 0.06), inset 0 -14px 24px rgb(0 0 0 / 0.35);
+  text-align: center;
+}
+.die-table .note { margin: var(--step) auto 0; max-width: 34ch; }
+.die-table .prompt-panel { text-align: left; }
+
+/* The die itself, thrown large. It is a <button>: the thing you want to touch is the thing you
+   touch. The shared `.die-letter` gives it its material; this gives it its size and its place. */
+.die-big {
+  position: static;
+  width: 86px; height: 86px;
+  margin: 0 auto;
+  border: 0; border-radius: 17px;
+  font-size: 2.4rem;
+  cursor: pointer;
+  transform: rotate(-3deg);
+}
+.die-big::before { top: 12px; left: 12px; box-shadow: 56px 0 0 rgb(36 31 24 / 0.32); }
+.die-big::after { bottom: 12px; left: 12px; box-shadow: 56px 0 0 rgb(36 31 24 / 0.32); }
+.die-big:hover { transform: rotate(-3deg) translateY(-2px); }
+.die-big:active { transform: rotate(-3deg) translateY(1px); }
+
+/* ---------------------------------------------------------------------------
+   D34 — the Ingredients room: a workbench, four stations.
+
+   The same four blocks, each now a surface of its own with its cards lying on it and its name on
+   a tag rather than on a rule. A fraction of a degree of tilt each, so the bench reads as things
+   put down. The tilt is small enough that no station can overflow a 320 phone: at 0.45° a 276px
+   row grows by about 2px, inside the gutter.
+   --------------------------------------------------------------------------- */
+.bench-station {
+  position: relative;
+  margin: 0 0 calc(var(--rhythm) * 1.1);
+  padding: calc(var(--step) * 2) calc(var(--step) * 1.5) var(--step);
+  border-radius: 6px 16px 6px 16px;
+  /* A bench is lighter than the room it stands in: sunken, the station was invisible against the
+     page. The gradient is the light falling on its near edge. */
+  background:
+    linear-gradient(to bottom, rgb(255 246 230 / 0.055), transparent 42%),
+    var(--paper-raised);
+  box-shadow: inset 0 1px 0 rgb(255 246 230 / 0.09), 0 8px 20px rgb(0 0 0 / 0.34);
+  transform: rotate(var(--tilt, 0deg));
+}
+/* On the bench the guidance is a note lying on it, so it takes the darker ground — the bubble's
+   own `--paper-raised` is the bench's colour here and it disappeared into the surface. */
+.bench-station .guidance { background: var(--paper-sunken); }
+/* The station's name on a tag nailed to the bench, not a heading on a line. */
+.bench-station .bench-label {
+  display: inline-block;
+  margin: 0 0 var(--step);
+  padding: 4px 14px 5px;
+  background: var(--accent); color: var(--accent-ink);
+  border-radius: 3px;
+  font-size: 1.05rem; font-weight: 600; letter-spacing: 0.01em;
+  /* The drawn rule every other h3 wears would fight the tag. */
+  background-image: none;
+}
+.bench-station .guidance { margin-bottom: var(--step); }
+.bench-station .card-grid { margin-bottom: var(--step); }
+
 .roll-history { margin: var(--step) 0; }
 .spark-row { display: flex; flex-wrap: wrap; gap: var(--step); }
 .spark-row:not(:empty) { margin-top: var(--step); }

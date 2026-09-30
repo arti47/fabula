@@ -710,6 +710,57 @@ try {
     assert.equal(spoken.left, '3px');
   });
 
+  // D34: the Ingredients step is a workbench, not four identical blocks. Four stations, each a
+  // surface of its own, each nudged off true.
+  await page.goto(base + '#/build/ingredients');
+  await present(page, '.bench-station');
+  const bench = await page.evaluate(() => {
+    const stations = [...document.querySelectorAll('.bench-station')];
+    return {
+      count: stations.length,
+      tilted: stations.filter((st) => {
+        const t = getComputedStyle(st).transform;
+        return t && t !== 'none';
+      }).length,
+      labelled: stations.filter((st) => st.querySelector('.bench-label')?.textContent.trim()).length,
+      carry: stations.filter((st) => st.querySelector('.card-grid, .empty')).length,
+    };
+  });
+  check('the ingredients step is a bench of four stations (D34)', () => {
+    assert.equal(bench.count, 4);
+    assert.equal(bench.labelled, 4, 'a station has no name on it');
+    assert.equal(bench.carry, 4, 'a station carries neither cards nor a skipped note');
+  });
+  check('every station lies off true', () => assert.equal(bench.tilted, 4, `${bench.tilted} of 4 stations are tilted`));
+
+  // D34: the Idea step is a die on a table. Before a roll the die is the biggest thing on the
+  // screen and is itself the control — a picture beside a button is not the same room.
+  await page.evaluate(() => {
+    for (const k of Object.keys(localStorage)) {
+      if (!k.startsWith('storyMachine.story.')) continue;
+      const rec = JSON.parse(localStorage.getItem(k));
+      rec.idea = { ...rec.idea, fromPrompt: null, rolls: [] };
+      localStorage.setItem(k, JSON.stringify(rec));
+    }
+    location.hash = '#/build/idea';
+  });
+  await present(page, '.die-big');
+  const table = await page.evaluate(() => {
+    const die = document.querySelector('.die-big');
+    const box = die.getBoundingClientRect();
+    return { tag: die.tagName, w: Math.round(box.width), h: Math.round(box.height), onTable: Boolean(die.closest('.die-table')) };
+  });
+  check('an unrolled die lies on the table (D34)', () => {
+    assert.equal(table.tag, 'BUTTON', 'the die is not the control');
+    assert.ok(table.w >= 64 && table.h >= 64, `${table.w}×${table.h}`);
+    assert.equal(table.onTable, true);
+  });
+  await tap(page, '.die-big');
+  const thrown = await settled(page, '.die-area', /[A-Z]/);
+  check('and throwing it deals a Prompt card', () => {
+    assert.ok(thrown.length > 40, 'nothing was dealt');
+  });
+
   // The deck's own dividers, as bands rather than cards (G5, A2).
   await page.goto(base + '#/deck/prompts');
   const banner = await page.evaluate(() => {
