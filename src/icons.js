@@ -65,23 +65,6 @@ export function icon(name, { size = 24 } = {}) {
  * (D25). Stars are filled in the accent; everything else strokes in the current colour.
  */
 const DRAWINGS = {
-  'first-story': {
-    box: '0 0 160 120',
-    stroke: [
-      'M20 86 C 42 72, 62 74, 78 84 L 78 46 C 62 36, 42 34, 20 48 Z',
-      'M140 86 C 118 72, 98 74, 82 84 L 82 46 C 98 36, 118 34, 140 48 Z',
-      'M12 94 h136',
-      'M30 56 c 12 -4, 24 -3, 34 2',
-      'M30 66 c 12 -4, 24 -3, 34 2',
-      'M96 58 c 12 -5, 24 -6, 34 -2',
-      'M96 68 c 12 -5, 24 -6, 34 -2',
-    ],
-    spark: [
-      'M80 2 l4 11 11 4 -11 4 -4 11 -4 -11 -11 -4 11 -4 z',
-      'M116 18 l2.6 7 7 2.6 -7 2.6 -2.6 7 -2.6 -7 -7 -2.6 7 -2.6 z',
-      'M45 22 l2.2 6 6 2.2 -6 2.2 -2.2 6 -2.2 -6 -6 -2.2 6 -2.2 z',
-    ],
-  },
   // A closing flourish for a story that has been read to the end (G12). A rule that tapers, a
   // seal, and two sparks — house-drawn, and nothing about it is a card.
   'story-end': {

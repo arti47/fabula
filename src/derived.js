@@ -169,14 +169,35 @@ export function asPlainText(assembled) {
 }
 
 /**
- * The card a story is most about (G6): the main-character card once a hero has been answered, the
- * Idea card before that. Derived, never stored — a cover kept on the record could disagree with
- * the story it belongs to (§10.11). Read by the shelf and by the story header.
+ * The card a story wears (G6). Derived, never stored — a cover kept on the record could disagree
+ * with the story it belongs to (§10.11). Read by the shelf and by the story header.
+ *
+ * It used to return the *type* of card: the Main Character card for any story with a hero. Every
+ * story with a hero therefore wore the identical picture, and a shelf of three showed one image
+ * three times — worse than no art, because it says the app has one picture. It now picks from the
+ * cards this story has actually used, by a hash of its own id: different stories differ, the same
+ * story never changes, and the cover is always a card that story is genuinely built from.
  */
 export function coverCard(story) {
-  const hero = (story.cast || []).find((c) => c.kind === 'hero' && hasAnyAnswer(c));
-  if (hero) return INGREDIENTS.find((i) => i.kind === 'hero') || IDEA_CARD;
-  return IDEA_CARD;
+  const used = [];
+  if ((story.cast || []).some((c) => c.kind === 'hero' && hasAnyAnswer(c))) {
+    used.push(INGREDIENTS.find((i) => i.kind === 'hero'));
+  }
+  if ((story.cast || []).some((c) => c.kind === 'villain' && hasAnyAnswer(c))) {
+    used.push(INGREDIENTS.find((i) => i.kind === 'villain'));
+  }
+  if ((story.worlds || []).some((w) => hasAnyAnswer(w))) {
+    used.push(INGREDIENTS.find((i) => i.kind === 'world'));
+  }
+  for (const beat of BEATS) {
+    if (!isBlank(story.beats?.[beat.n]?.text)) used.push(beat);
+  }
+  const cards = used.filter(Boolean);
+  if (!cards.length) return IDEA_CARD;
+  // Deterministic, and stable for the life of the story: the same id always picks the same card.
+  let h = 0;
+  for (const ch of String(story.id || '')) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return cards[h % cards.length];
 }
 
 /**

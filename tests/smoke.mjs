@@ -329,8 +329,36 @@ try {
     assert.equal(pinches.plainWheel, false, 'the wheel was cancelled');
   });
 
+  // D43: the first screen anybody sees opens on the deck. It had 37 words, one field and 420px
+  // of black, and not one of the 34 illustrations the product is built on.
+  const opensOnTheDeck = await page.evaluate(() => {
+    const fan = document.querySelector('.card-fan');
+    const faces = [...document.querySelectorAll('.fan-card')];
+    const start = [...document.querySelectorAll('#screen .button')].find((b) => b.textContent.trim() === 'Start');
+    const field = document.querySelector('#teller-name');
+    return {
+      faces: faces.length,
+      decorative: fan ? fan.getAttribute('aria-hidden') === 'true' && faces.every((f) => f.alt === '') : false,
+      startTop: start ? Math.round(start.getBoundingClientRect().top) : null,
+      fieldTop: field ? Math.round(field.getBoundingClientRect().top) : null,
+      pinned: Boolean(start && start.closest('.action-bar')),
+      viewport: window.innerHeight,
+    };
+  });
+  check('the first screen opens on the deck (D43)', () => {
+    assert.ok(opensOnTheDeck.faces >= 3, `${opensOnTheDeck.faces} card faces on the first screen`);
+    assert.equal(opensOnTheDeck.decorative, true, 'the spread is not marked as decoration');
+  });
+  check('and Start stands beside the field it submits', () => {
+    assert.ok(opensOnTheDeck.startTop !== null, 'no Start button');
+    assert.equal(opensOnTheDeck.pinned, false, 'Start is pinned across the screen again');
+    assert.ok(opensOnTheDeck.startTop < opensOnTheDeck.viewport, 'Start is below the fold');
+    assert.ok(opensOnTheDeck.startTop > opensOnTheDeck.fieldTop, 'Start sits above its own field');
+  });
+
   await type(page, '#teller-name', 'Ada');
-  await tap(page, '.action-bar .button');
+  // Start stands beside the field now (D43), not pinned across the foot of the screen.
+  await tap(page, '.first-run-go .button');
   await present(page, 'text=No stories yet');
   await tap(page, '.action-bar .button');
   await type(page, '#prompt-input', 'The dragon next door');
@@ -962,6 +990,30 @@ try {
   check('Settings says where the stories are kept (§4)', () => {
     assert.match(promise, /this device only/i);
     assert.match(promise, /nothing is sent/i);
+  });
+
+  // D40: a cover derived from the *type* of card gave every story with a hero the identical
+  // picture — a shelf of three showed one image three times, which is worse than no art.
+  await page.goto(base + '#/stories');
+  await present(page, '.example-row');
+  const covers = await page.evaluate(() => {
+    const srcs = [...document.querySelectorAll('.story-cover img, .shelf-cover-img')]
+      .map((i) => i.getAttribute('src'));
+    const row = document.querySelector('.example-row');
+    const cover = row.querySelector('.shelf-cover');
+    return {
+      srcs,
+      distinct: new Set(srcs).size,
+      beside: cover ? Math.round(cover.getBoundingClientRect().width) : null,
+      rowW: Math.round(row.getBoundingClientRect().width),
+    };
+  });
+  check('stories do not all wear the same cover (D40)', () => {
+    assert.ok(covers.srcs.length >= 2, 'nothing on the shelf wears a cover');
+    assert.ok(covers.distinct > 1, `${covers.srcs.length} covers, all the same picture`);
+  });
+  check('and a cover stands beside its words, not over them', () => {
+    assert.ok(covers.beside !== null && covers.beside < covers.rowW * 0.5, `the cover takes ${covers.beside} of ${covers.rowW}px`);
   });
 
   // The deck's own dividers, as bands rather than cards (G5, A2).

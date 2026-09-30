@@ -1,8 +1,8 @@
 // Storytellers and the shelf of stories.
 
 import { el, add, relativeTime } from './core.js';
-import { icon, illustration } from './icons.js';
-import { explain, actionBar, promptModal, confirmModal, showToast, modal } from './ui.js';
+import { icon } from './icons.js';
+import { explain, actionBar, promptModal, confirmModal, showToast, modal, cardFan, clearActionBar } from './ui.js';
 import { storyBlurb, progress, coverCard } from './derived.js';
 import { EXAMPLE_STORIES, getExample } from '../data-examples.js';
 import { tellScreen } from './tell.js';
@@ -24,13 +24,19 @@ export function storiesScreen() {
 
 function firstRun() {
   const screen = el('div');
-  add(screen, el('h2', { text: 'Who is telling stories?' }));
 
-  // The first screen anybody sees was 500px of empty paper under a one-line form (G14).
-  add(screen, add(el('div', { class: 'first-run-art', 'aria-hidden': 'true' }), illustration('first-story')));
+  // D43 — the first screen anybody sees showed 37 words, one field and 420px of black, and not
+  // one of the deck's 34 illustrations. It opens on the deck now: five real faces, fanned and
+  // bled off the edges, with the question and the field standing on them.
+  const stage = el('div', { class: 'first-run' });
+  add(screen, stage);
+  add(stage, cardFan(['ing-hero', 'prompt-m', 'idea', 'beat-1', 'ing-world']));
+
+  const panel = add(stage, el('div', { class: 'first-run-panel' })).lastChild;
+  add(panel, el('h2', { text: 'Who is telling stories?' }));
 
   const input = el('input', { type: 'text', id: 'teller-name', placeholder: 'Your name', autocomplete: 'off' });
-  add(screen, el('label', { for: 'teller-name', text: 'Your name' }), input);
+  add(panel, el('label', { for: 'teller-name', text: 'Your name' }), input);
 
   const create = () => {
     const name = input.value.trim();
@@ -41,7 +47,19 @@ function firstRun() {
   };
   input.addEventListener('keydown', (e) => { if (e.key === 'Enter') create(); });
 
-  add(screen, actionBar({ label: 'Start', onClick: create, context: 'One tap and you are in' }));
+  // Start belongs beside the field it submits. Pinned across the foot of the screen it was as far
+  // from the one thing on the screen as the layout allowed.
+  add(panel, add(
+    el('div', { class: 'first-run-go' }),
+    el('button', { type: 'button', class: 'button', text: 'Start', onclick: create }),
+    el('span', { class: 'note', text: 'One tap and you are in' }),
+  ));
+  clearActionBar();
+
+  // The lower half was the same emptiness, moved down. The two worked stories already exist as a
+  // component and they are the one thing that answers "what is this for?" before you have typed
+  // anything: they are readable without a name, and they are what the app makes.
+  add(screen, exampleShelf());
   return screen;
 }
 
@@ -103,6 +121,15 @@ function exampleShelf() {
   const rows = el('div', { class: 'two-up' });
   for (const example of EXAMPLE_STORIES) {
     const row = el('a', { class: 'card example-row', href: `#/example/${example.id}` });
+    // A worked story wears the card its hero lives on, the same way a kid's own does on the
+    // shelf (D40): these were two text rows on a screen whose whole point is the deck.
+    const cover = coverCard(example);
+    const art = el('img', {
+      class: 'shelf-cover-img', src: `assets/cards/${cover.art}.webp`,
+      alt: '', loading: 'lazy', decoding: 'async',
+    });
+    art.addEventListener('error', () => art.parentElement?.remove());
+    add(row, add(el('div', { class: 'shelf-cover' }), art));
     add(row, add(
       el('div', { class: 'card-body' }),
       el('p', { class: 'card-headline', text: example.title }),

@@ -456,6 +456,23 @@ const MUTANTS = [
     harness: 'smoke',
   },
   {
+    // D43: without the spread the first screen is 37 words and 420px of black again.
+    name: 'the first screen stops opening on the deck (D43)',
+    file: 'src/library.js',
+    from: "  add(stage, cardFan(['ing-hero', 'prompt-m', 'idea', 'beat-1', 'ing-world']));",
+    to: '  void cardFan;',
+    harness: 'smoke',
+  },
+  {
+    // D40: the cover used to come from the *type* of card, so every story with a hero wore the
+    // same picture and a shelf of three showed one image three times.
+    name: 'every story wears the same cover again (D40)',
+    file: 'src/derived.js',
+    from: '  return cards[h % cards.length];',
+    to: '  return cards[0];',
+    harness: 'smoke',
+  },
+  {
     name: 'the update toast never offers a new version',
     file: 'src/main.js',
     from: "          showToast('A new version is ready — reload to get it', 6000);",

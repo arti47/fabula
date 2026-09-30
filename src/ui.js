@@ -194,6 +194,29 @@ export function burst() {
   setTimeout(() => node.remove(), 1100);
 }
 
+/**
+ * A spread of real card faces, fanned, as the ground of a screen that would otherwise be empty
+ * (D40, D43).
+ *
+ * The deck's art is this product's whole distinction and the first screen showed none of it. This
+ * is decoration: `aria-hidden`, every face `alt=""`, nothing here is a control. A face whose file
+ * is missing removes itself, so the screen degrades to its own ground rather than to a row of
+ * broken images (§11) — the harness runs with `assets/cards/` empty.
+ */
+export function cardFan(artIds) {
+  const fan = el('div', { class: 'card-fan', 'aria-hidden': 'true' });
+  artIds.forEach((art, i) => {
+    const img = el('img', {
+      class: 'fan-card', alt: '', loading: 'eager', decoding: 'async',
+      src: `assets/cards/${art}.webp`,
+      style: `--seat: ${i - (artIds.length - 1) / 2}`,
+    });
+    img.addEventListener('error', () => img.remove());
+    add(fan, img);
+  });
+  return fan;
+}
+
 export function cardTile(card, { href, sub, blank = false, done = false } = {}) {
   const group = GROUPS[card.group];
   const tile = el(href ? 'a' : 'div', {
