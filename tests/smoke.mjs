@@ -1016,6 +1016,55 @@ try {
     assert.ok(covers.beside !== null && covers.beside < covers.rowW * 0.5, `the cover takes ${covers.beside} of ${covers.rowW}px`);
   });
 
+  // D42: Learn was 3,299 words, 77 controls and 42 near-identical collapsed rows in one flat
+  // scroll, four screens deep. The index is covers now, and a chapter is a screen of its own.
+  await page.goto(base + '#/learn');
+  await present(page, '.learn-shelf');
+  const index = await page.evaluate(() => ({
+    chapters: document.querySelectorAll('.learn-chapter').length,
+    entriesOnIndex: document.querySelectorAll('#screen details.learn-entry').length,
+    screens: +(document.documentElement.scrollHeight / window.innerHeight).toFixed(1),
+    search: Boolean(document.querySelector('#learn-search')),
+  }));
+  check('Learn opens on an index of covers (D42)', () => {
+    assert.ok(index.chapters >= 5, `${index.chapters} chapters on the index`);
+    assert.equal(index.entriesOnIndex, 0, `${index.entriesOnIndex} entries still on the index`);
+    assert.ok(index.screens <= 2, `the index is ${index.screens} screens`);
+    assert.equal(index.search, true, 'search left the index');
+  });
+
+  // A chapter carries its own entries and nothing else, and says how to get back.
+  await page.goto(base + '#/learn/beats');
+  await present(page, 'details.learn-entry');
+  const chapter = await page.evaluate(() => ({
+    entries: document.querySelectorAll('details.learn-entry').length,
+    back: Boolean([...document.querySelectorAll('#screen a')].find((a) => a.getAttribute('href') === '#/learn')),
+    heading: document.querySelector('#screen h2')?.textContent || '',
+  }));
+  check('a Learn chapter is a screen of its own (D42)', () => {
+    assert.equal(chapter.entries, 9, `${chapter.entries} entries in the nine beats`);
+    assert.equal(chapter.back, true, 'no way back to the index');
+    assert.match(chapter.heading, /nine beats/i);
+  });
+
+  // The regression the split risks: every card in the app links to `#/learn/<cardId>`, and those
+  // ids live in a different space from the chapter ids. The link must still land on the entry.
+  await page.goto(base + '#/learn/beat-5');
+  await present(page, 'details.learn-entry[open]');
+  const deepLink = await page.evaluate(() => {
+    const open = document.querySelector('details.learn-entry[open]');
+    return {
+      heading: document.querySelector('#screen h2')?.textContent || '',
+      opened: open?.querySelector('summary')?.textContent || '',
+      openCount: document.querySelectorAll('details.learn-entry[open]').length,
+    };
+  });
+  check("a card's link still lands on its entry (D42)", () => {
+    assert.match(deepLink.heading, /nine beats/i, 'the link did not land in the right chapter');
+    assert.match(deepLink.opened, /Second Trial/, `opened "${deepLink.opened}"`);
+    assert.equal(deepLink.openCount, 1);
+  });
+
   // The deck's own dividers, as bands rather than cards (G5, A2).
   await page.goto(base + '#/deck/prompts');
   const banner = await page.evaluate(() => {

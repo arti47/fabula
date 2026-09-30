@@ -473,6 +473,23 @@ const MUTANTS = [
     harness: 'smoke',
   },
   {
+    // D42: the index going back to a flat scroll of every entry is the thing this batch removed.
+    name: 'Learn goes back to one flat scroll (D42)',
+    file: 'src/learn.js',
+    from: '  const chapter = LEARN_CHAPTERS.find((c) => c.id === openId);',
+    to: '  const chapter = null; void openId;',
+    harness: 'smoke',
+  },
+  {
+    // The regression the split risks: every card links to `#/learn/<cardId>`, and those ids live
+    // in a different space from the chapter ids. Drop the id and the link lands on a closed page.
+    name: "a card's link stops opening its entry (D42)",
+    file: 'src/learn.js',
+    from: '  if (holding) return chapterScreen(LEARN_CHAPTERS.find((c) => c.id === holding.chapter), openId);',
+    to: '  if (holding) return chapterScreen(LEARN_CHAPTERS.find((c) => c.id === holding.chapter));',
+    harness: 'smoke',
+  },
+  {
     name: 'the update toast never offers a new version',
     file: 'src/main.js',
     from: "          showToast('A new version is ready — reload to get it', 6000);",

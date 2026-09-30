@@ -1021,6 +1021,14 @@ input[type="file"] {
 .spark-row .spark-chip:nth-child(2) { animation-delay: 50ms; }
 .spark-row .spark-chip:nth-child(3) { animation-delay: 100ms; }
 
+/* D42 — Learn's index: seven covers instead of 42 collapsed rows in one flat scroll. */
+.learn-shelf { margin-top: var(--rhythm); }
+.learn-chapter { text-decoration: none; color: inherit; }
+.learn-chapter .group-banner { margin: 0; height: 64px; }
+.learn-chapter .card-headline { margin-bottom: 2px; }
+/* A chapter with no group of cards behind it still reads as a cover, not as a bare box. */
+.learn-chapter:not(:has(.group-banner)) .card-body { border-top: 3px solid var(--accent); }
+
 /* ---------- the deck's group dividers, as bands (G5) ---------- */
 
 /* A strip, never an upright face: A2 says the app does not render a divider as a card, and this

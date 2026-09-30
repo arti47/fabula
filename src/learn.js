@@ -51,6 +51,23 @@ export function matchEntries(query) {
 
 export function learnScreen({ openId } = {}) {
   clearActionBar();
+  // D42 — one route, resolved by what the id names. A chapter id opens that chapter; an entry id
+  // opens the chapter holding it, with the entry open. The two id spaces provably never collide
+  // (a data test asserts it), so every "Read more about this card" link in the app still lands.
+  const chapter = LEARN_CHAPTERS.find((c) => c.id === openId);
+  if (chapter) return chapterScreen(chapter);
+  const entries = learnEntries();
+  const holding = openId && entries.find((e) => e.id === openId);
+  if (holding) return chapterScreen(LEARN_CHAPTERS.find((c) => c.id === holding.chapter), openId);
+  return indexScreen();
+}
+
+/**
+ * The index (D42). It was 3,299 words, 77 controls and 42 near-identical collapsed rows in one
+ * flat scroll — four screens of it. It is seven covers and a search field now, and a chapter is
+ * a screen of its own.
+ */
+function indexScreen() {
   const wrap = el('div');
   add(wrap, el('h2', { text: 'Learn' }));
 
@@ -69,22 +86,59 @@ export function learnScreen({ openId } = {}) {
   });
   add(wrap, el('label', { for: 'learn-search', text: 'Search' }), search, results);
 
-  const entries = learnEntries();
+  const shelf = el('div', { class: 'two-up learn-shelf' });
   for (const chapter of LEARN_CHAPTERS) {
-    add(wrap, el('h3', { text: chapter.title }));
-    // A chapter about a group of cards gets that group's own divider as a band (G5). Derived from
-    // the first card it lists, so no chapter has to carry a second copy of which group it is.
-    const firstCard = chapter.cards?.length ? getCard(chapter.cards[0]) : null;
-    if (firstCard) add(wrap, groupBanner(firstCard.group));
-    if (chapter.intro) add(wrap, el('p', { class: 'note', text: chapter.intro }));
-    // Two columns on a tablet: forty identical boxes down one side was four and a half screens
-    // of scrolling with the other half of the screen empty (D23).
-    const column = el('div', { class: 'two-up' });
-    for (const entry of entries.filter((e) => e.chapter === chapter.id)) {
-      add(column, entryDetails(entry, { open: entry.id === openId }));
-    }
-    add(wrap, column);
+    const tile = el('a', { class: 'card learn-chapter', href: `#/learn/${chapter.id}` });
+    // A chapter about a group of cards wears that group's own divider (G5, A2: a band, never a
+    // playable face). The others carry the group colour alone.
+    const banner = chapterBanner(chapter);
+    if (banner) add(tile, banner);
+    add(tile, add(
+      el('div', { class: 'card-body' }),
+      el('p', { class: 'card-headline', text: chapter.title }),
+      el('div', { class: 'card-sub', text: countOf(chapter) }),
+    ));
+    add(shelf, tile);
   }
+  add(wrap, shelf);
+  return wrap;
+}
+
+/**
+ * The divider a chapter wears. The *first* card is not always the right one to ask: the prompts
+ * chapter opens with the Idea card, whose group the deck prints no divider for, so asking that
+ * card left the chapter with no band at all. Ask the first card whose group actually has one.
+ */
+function chapterBanner(chapter) {
+  for (const cardId of chapter.cards || []) {
+    const card = getCard(cardId);
+    const banner = card && groupBanner(card.group);
+    if (banner) return banner;
+  }
+  return null;
+}
+
+/** How much is behind a cover, so the index says what opening it costs. */
+function countOf(chapter) {
+  const n = (chapter.entries?.length || 0) + (chapter.cards?.length || 0) + (chapter.tips ? DRAWING_TIPS.length : 0);
+  return `${n} ${n === 1 ? 'thing' : 'things'} to read`;
+}
+
+/** One chapter, on its own screen, in its group's colour. */
+function chapterScreen(chapter, openId) {
+  const wrap = el('div');
+  add(wrap, el('a', { class: 'back-link', href: '#/learn', text: '← All of Learn' }));
+  add(wrap, el('h2', { text: chapter.title }));
+
+  const banner = chapterBanner(chapter);
+  if (banner) add(wrap, banner);
+  if (chapter.intro) add(wrap, el('p', { class: 'step-lead', text: chapter.intro }));
+
+  const column = el('div', { class: 'two-up' });
+  for (const entry of learnEntries().filter((e) => e.chapter === chapter.id)) {
+    add(column, entryDetails(entry, { open: entry.id === openId }));
+  }
+  add(wrap, column);
   return wrap;
 }
 
