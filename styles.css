@@ -51,6 +51,10 @@
   --grain-tile: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAQAAAAAYLlVAAAKPElEQVR42lVZu7bcRgwD7tmOPf//+9izRgqAIydFbO+upNGQxGuI1qIILZZQASwAC2DRGEAAWFo0hp1vSgVwBYCL1mJRWJaKqyUEluDfcgE1R40ltGguVs1V/bAEgOWqNQSgYakIgYvCogEsS2BpWb4UwKqwBEog0FgB5QeqCC1bQHHVBAdNoACAAwAEAPyhVBhB+UDFFrgCofXNmYfBe1MYgUtw/Q1Hi0GhMFisGqUiMAC9BABaQcAAajVK0GJ/GECVIhQKwBACvIEANP6T693SsjUCG6si6BJVitBaDAuAN3xYLhOhQQlYFgbNUXN/at9UhWFh0gd+M2DY8mMHrfU3AJHeGYGlousMFAZACxyBvmoAFtblQ6HkV/QOCWxMmupaESgCpUGx0ohFX7xuNQxbg7qlerkC6ppYhSHQgJabpm3ev/wa9Udg0FgM4CbMTbN5+a+xgBYA2PLny2blvYteZgN6n7AFrIB1A6q53iEuClCr/nwJwKLfvQE0m5tZWMHjAw9Weeuy6BXQ7uqMpHt8tOiM67A0WE7uvy4lweH8ASrfAK7lCICgVnFgXJhUeDlcDcAlVHK/5AoaJfye7aVjOWxk/ARsRh0AWqX6E+69U4AmsBiM38TDCaMA1ALA9sCx6RZsgK08AvdoEG45g5tcNKBY9D4U9nftg2Irk/taCViBYGONhcGKAM9tporrBRIojJqTKUmDBiXW/eZGRhHCD+Cgg2HrgQn03rsvgJRDywVgFDA6eDs9npV5SEMLWR7U/ptH0G3OVbPeGGLzo0G5ZoYmjjrTvnlYY7kocwgOng3cBWjYGpbA1S3Ty3cbGw9WjSGYj42A1+XgegMR6MBkWjL5qCDlclW3X1wZ+V0aL9EQlKv/IbPQ1B+QjR20QHDpia9gut/BwzcslOq17Lg5MQDdNaWG4Qv5HbBsDdbsqtKqtVw38F9+vCiGF1UmEDZeT6sEtfskYNwYNgclKMQsYN4UNJZzoE148tFYFpcu1gJ/qbd7OnONVI+TbTMRDW6s1o8Q1FwjHje0A9YHx+FPb3lhMurGymYBv1DNR7UmnkAsIReoeOLCc9HXruqMrmUJVFiM0UK4AQ8v9rGrQRrg/h6RuhmD6BwsgDY7Wp7AWsf/GvNBJmUD09eKzZE3fs2M2eVBm01C+iX80uvf23urjPzuWvN3vvN707hhjlw1y/v0YAfuDs+Jmxagp8t42RoA9TPMYmA9YCnmwas36xu+a9f58b5HdFOOVfRPhA1C6dCyvOSIHN+1BcxPG9D1G62a5rLioAMhBtw23ZjZUdhj/MjaDw/wMNM7sgI72JBuCkbgd5sjo3Pp3qO0FmfBePeyZ8KfHlZ4wg+UJ6LMgs0Lqvy/ojInPFNWRGVG5CH/k82GXLi+/eCzEYRUsPNEK331TcrJWHeCSW/9WAsYtJY6sMVJT1lqF8Py6Oh7s+HcL49q8MS5+4bAWLirTvDfEOo0p5liWURIGGBrWRjXMqbDinky+6YcnF62yIz+j9bPtnu7s/nKIiJYN2YGBPAXfrvHr4rxPGxATXDRKCLYEAQ7hkjdF8VmoVlCxu815ev+Uh4rYCzo/lyf4LW1y8hEEgZUaQS0LDGP4wqtiaNoFYN/5nutshDBXJh2dLvjmztG3ZjFz4ztm3hrvmuzOqxDPRVk3XMOEbiNX4P014bGVcvU6KOMIU5QHVRmmIx5Y9ynm7Ju3DIzxvclLC8i4cfixn7RbYfzT/PP8hf1F8WHE2IaFVpRdFi1xnMRbjfqlbyVp/xtxVymCUAZ0GxC1jDHZeNjygWg+ALTK54mgqtcKjUabQep7ALKYuUkl1ot+NcCWmWylpcFwVSvVkeBdp4Bi41PqXfm3lRbx/tqW5ZP6ahUqlx/j3Sz3iRU7uA9tdvwQt4rMDbKArwwwbBoxNMtb3JtORM5wMy+OFNb0RZnYCu2x8K1HvxaH1rQBslKY8cmcHFOd6/xwveZiDNhxgkL8OAIlEGL6Axr8GreAe3XiD9/5cobGnVCylC0JzzM61FKRoDh2Bfld6PGpJvmZSdfcOPJMlGtBdwPUJ1QoMOIg41SPCC9O/1ZFL+X4gNQ0UMd0D71/HaWm9Qg7pkdQCoqD/xCp5OSxkTfnKP0bGApasAmhovTwYhaSKRzpXhd5pKuUSdEfxtrARnMSjjDqBgzGZpjbZ8OSFVT64dvoazTAvU0R4x8nLixwdbjcBue+8o4/W+O872bstWJGNqFcB+pbyz9kHPWxoxgBfy9SoX+nW9j3CCfbKYx7eSYDdYy03/rp7OvuOnThDrS7lCUffK3bxMImz9TJFaIBFv2E1jOzpwYOhuziI8DcgzBhBjZ9BOtz6zFyh9BxWPQr1C/6L2Wk6J0RFqsn5k+/QOc7o38TkrqB5hBrCybEfe4+XqLTxBUHOHPURr2k1n5yRFMAkX72gyUicVub1g8/ZMkMbEc6AiwDVRMAoGCw6pVsQ92/qGPtJkxv/UPAR0PxHL0OeWPyp61cTP7U6jRlzqgUTH3bdI+TQfOxW84SZnUKJ9udO2x2CYJu8I5mDDaBfGZYNcDnLSoTqTFk10054HKCPVL/Lw7j/NMuB+BH1lbiri3VUfy3vDsSb+9xrtX8QwYEp2amgwm+jiw//kX4hCAD/HrqcFYXO9q0NX3vEE87bVc4SerFGf8Blmj3/i0AHtZ96voPm14CeGV53GoTv+lbNqHfTG6MW71g3NQm6x5q7WaD2QeINtwu6uRxNcZ2IFPMPHZ+VMFXwYf1nlhliuZyqtffz4J9WrYKqW784vU0tNx4izXX7+f6OvTRu6nmxfV3zc+H6sZWlkPkP4VkaDFiTGtOPKJyOrdXCDORaC4aI6VN8BCf6HgjaEzgUWfDVXa5n2L/8f5yU0/6L0zpn1p+772vMONs6ltz2ms/FOhn6oZbtLgRWnM+HoR/kGJs4BQ67jdsCze3Afx9BBR49blsjSaS9UIm9OcZUXJzNNv8+bjsZy9gJVgohdft/hkKTC2sl86oCdWLlXyAomErTrLXE9MJAu60BnnnRNCXbDNb8+SCFmQYC8lsA7iG+BIkxa4PyGRZDIfjoobPeCs/Liuomsq72hYXSceOoO2iW8BvIQ5WtHLvVJzWcKfcSCHUz6eXGeDwiXmeodwL/kCG6XVEjmWNMsNSptMtWNU29EnXICJ/1qVgP2zYcalBDHrsaUWKngcXqz4fv95hzLNO319WWH8VRhBZW19rJFYeNj0pOrTN/8buPfG/Z0JJSdFDvPqUN7nqMetKdElKJ/bxoWdPs7iqbUXUrlp9jsVsS6KOvQhnAVYX7h9sByEqBi4QHaWfYS9/GLKJniO6A3anDF5dLrMOQfOEXZ0lGWaowz7nnvwXQPdpMw7S71ZKCzqD3th8um+nBAur5oWpDHsyOzSfDcPbO4wzydDbme/9w1q016oookWrfr5ZPNFbcM7YKmLJZwHuqkuA7XGe+H75c3XiHcc3JyzfrgDoKRuWNuV/wBn4gNZ2ZPsoQAAAABJRU5ErkJggg==");
   --grain-tile-dark: url("data:image/png;base64,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");
   --grain: none;
+  /* The route the nine stops stand on (D34). House-drawn, hand-wobbled, tiled down the gutter
+     between the two columns — drawn behind the frames it was covered by them and never once
+     visible. */
+  --map-path: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%22120%22%20viewBox%3D%220%200%2016%20120%22%3E%3Cpath%20d%3D%22M8%20-4%20C%2014%2018%2C%202%2042%2C%208%2060%20S%2014%20100%2C%208%20124%22%20fill%3D%22none%22%20stroke%3D%22%237aa8d4%22%20stroke-width%3D%222.6%22%20stroke-linecap%3D%22round%22%20stroke-dasharray%3D%227%2011%22%20opacity%3D%220.55%22%2F%3E%3C%2Fsvg%3E");
   --hand-rule: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22180%22%20height%3D%228%22%20viewBox%3D%220%200%20180%208%22%3E%3Cpath%20d%3D%22M2%205%20C%2028%202.4%2C%2052%206.2%2C%2078%204.2%20S%20128%202.2%2C%20152%205%20S%20172%204.2%2C%20178%203.4%22%20fill%3D%22none%22%20stroke%3D%22%236a5a40%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%2F%3E%3Cpath%20d%3D%22M6%207%20C%2040%206.2%2C%2096%207.4%2C%20140%206.4%22%20fill%3D%22none%22%20stroke%3D%22%236a5a40%22%20stroke-width%3D%220.8%22%20stroke-linecap%3D%22round%22%20opacity%3D%220.55%22%2F%3E%3C%2Fsvg%3E");
 }
 
@@ -640,11 +644,37 @@ input[type="file"] {
 
 /* The nine beats as a board (D30, amended): two frames across on a phone, the whole arc in view.
    Each frame wears its own card, dimmed to whatever the text needs to stay readable. */
+/* D34 — the Structure room is a map: the nine beats are stops on a route, not cells in a table.
+   The route is a drawn line running under them (house-made, baked as an SVG image — the §4 ban is
+   on SVG *filters* in a background, not on drawings), and the frames rise and fall along it
+   instead of sitting on one rule. The two-across board stays: its job is showing the whole arc,
+   and one frame at a time is a list with extra taps (D30, as amended). */
 .beat-list {
-  list-style: none; margin: 0 0 var(--step); padding: 0;
-  display: grid; grid-template-columns: 1fr 1fr; gap: var(--step);
+  position: relative;
+  list-style: none; margin: 0 0 calc(var(--step) * 2); padding: 0;
+  /* `minmax(0, …)`, not `1fr`: a bare `1fr` carries an automatic min-content floor, and the
+     square frames' aspect-ratio turns their content height into a width the column refuses to go
+     below — at 1024 that pushed the third column 6px past the viewport. */
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  row-gap: var(--step); column-gap: 18px;
 }
+.beat-list::before, .beat-list::after {
+  content: ""; position: absolute; z-index: 0;
+  top: 10px; bottom: 10px; width: 16px; margin-left: -8px;
+  background-image: var(--map-path);
+  background-repeat: repeat-y;
+  background-position: center top;
+  background-size: 16px 120px;
+}
+.beat-list::before { left: 50%; }
+/* Two columns have one gutter; the second route only exists where there are three (see 768). */
+.beat-list::after { display: none; }
+.beat-list > li { position: relative; z-index: 1; }
+/* Every second stop sits a little further along the route. 14px of stagger, so the nine read as
+   a path rather than a grid, and the list grows by 14px in total rather than by nine rows. */
 .beat-list > li { display: flex; }
+.beat-list > li:nth-child(even) { transform: translateY(14px); }
+.beat-list > li:last-child { margin-bottom: 14px; }
 .frame-art {
   position: absolute; inset: 0;
   width: 100%; height: 100%;
@@ -666,7 +696,13 @@ input[type="file"] {
   background: var(--paper-sunken);
   text-decoration: none; color: inherit;
 }
-.beat-row .beat-number { position: absolute; top: 8px; left: 8px; }
+/* A milestone on the route rather than a number in a corner: round, ringed by the ground so the
+   drawn path appears to pass behind it. */
+.beat-row .beat-number {
+  position: absolute; top: 8px; left: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px var(--paper);
+}
 /* The caption gets its own plate. A frame-wide wash left the writing fighting a bright
    illustration; text on art needs something solid under it, not less art. */
 .beat-row .beat-body {
@@ -872,7 +908,11 @@ input[type="file"] {
 
   /* More of the story visible at once: the nine beats, the shelf and the library go two-up.
      Density, never stretch (D12/D23) — a full-width row of one story was half a dead screen. */
-  .beat-list { grid-template-columns: repeat(3, 1fr); }
+  /* Three columns, two gutters — and the tighter gap back, because at 18px the third column
+     could not reach its min-content width and the board ran 6px past a 1024 viewport. */
+  .beat-list { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: var(--step); }
+  .beat-list::before { left: 33.333%; }
+  .beat-list::after { display: block; left: 66.666%; }
   .two-up { display: grid; grid-template-columns: 1fr 1fr; gap: var(--step); align-items: start; }
   .two-up > * { margin-bottom: 0; }
   .told-story { column-gap: calc(var(--step) * 3); }
@@ -1016,6 +1056,51 @@ input[type="file"] {
 .card-grid > .card:nth-child(3n+2) { transform: rotate(0.35deg); }
 .card-grid > .card:nth-child(3n+3) { transform: rotate(-0.15deg); }
 .card-grid > .card:hover { transform: translateY(-3px) rotate(0deg); }
+/* The hand seats its own cards (D34); the grid's scatter would otherwise straighten them. */
+.card-grid.boost-fan > .card:nth-child(3n+1),
+.card-grid.boost-fan > .card:nth-child(3n+2),
+.card-grid.boost-fan > .card:nth-child(3n+3) {
+  transform: rotate(calc(var(--seat, 0) * 1.6deg));
+}
+
+/* D34 — the Boost room is a hand of cards, fanned. The ten have no order and no arc, so they can
+   overlap the way you would hold them; the beats cannot. The hand scrolls sideways inside its own
+   row — the page itself never scrolls sideways (§4) — and a card lifts out of the fan when it is
+   touched or focused, which is also what makes the one under your finger readable. */
+.boost-fan {
+  display: flex;
+  grid-template-columns: none;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  /* Room for the rotation at both ends. A rotated box is wider than its layout box, and at the
+     ends of the hand the overhang is not scrollable: measured at the first card, 39px of it sat
+     left of the viewport with `scrollLeft` already 0. The padding is the overhang, not the
+     gutter. */
+  padding: 14px 52px 22px;
+  margin: 0 calc(var(--gutter) * -1) var(--step);
+  scroll-padding: 0 52px;
+}
+.boost-fan::-webkit-scrollbar { display: none; }
+.boost-fan > .card {
+  flex: 0 0 148px;
+  transform-origin: 50% 118%;
+  /* The seat in the hand: negative to the left of centre, positive to the right. Rotation alone
+     — `abs()` would give the fan its arc, but it only reached Chrome in 2025 and this app has no
+     build step to polyfill it (§4). */
+  transform: rotate(calc(var(--seat, 0) * 1.6deg));
+  transition: transform 140ms ease-out;
+}
+.boost-fan > .card + .card { margin-left: -30px; }
+/* The next card covers this one's right edge, so the words have to end before it does. Without
+   this the headline laid out across the full 148px and its last third was under the neighbour. */
+.boost-fan > .card .card-body { padding-right: 36px; }
+.boost-fan > .card:last-child .card-body { padding-right: var(--step); }
+.boost-fan > .card:hover,
+.boost-fan > .card:focus-within {
+  transform: rotate(calc(var(--seat, 0) * 1.6deg)) translateY(-10px);
+  z-index: 3;
+}
 
 /* A card with two sides. Only ever one at a time — never a grid of them (the paint budget, §4). */
 .flipper { perspective: 1100px; }

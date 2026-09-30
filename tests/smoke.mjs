@@ -761,6 +761,65 @@ try {
     assert.ok(thrown.length > 40, 'nothing was dealt');
   });
 
+  // D34: the Structure step is a map — a drawn route with the nine stops rising and falling
+  // along it, not nine cells. The route is in the gutter between the columns: drawn behind the
+  // frames it was covered by them and was never once visible.
+  await page.goto(base + '#/build/structure');
+  await present(page, '.beat-list');
+  const map = await page.evaluate(() => {
+    const list = document.querySelector('.beat-list');
+    const route = getComputedStyle(list, '::before');
+    const tops = [...list.querySelectorAll('li')].map((li) => Math.round(li.getBoundingClientRect().top));
+    return {
+      route: route.backgroundImage,
+      // Not the width: a `display: none` pseudo-element still computes one, so a mutant that
+      // hid the route passed a width check and survived. Ask whether it is drawn at all.
+      routeShown: route.display !== 'none' && route.content !== 'none',
+      staggered: tops[0] !== tops[1],
+      stops: tops.length,
+    };
+  });
+  check('the board is a route with nine stops on it (D34)', () => {
+    assert.equal(map.stops, 9);
+    assert.match(map.route, /svg/, 'nothing is drawn between the columns');
+    assert.equal(map.routeShown, true, 'the route is in the stylesheet but not drawn');
+    assert.equal(map.staggered, true, 'the stops sit on one line');
+  });
+
+  // D34: the Boost step is a hand, fanned. The measured defect this pins: a rotated box is wider
+  // than its layout box, and at the ends of the hand that overhang is not scrollable — the first
+  // card sat 39px left of the viewport with scrollLeft already 0, clipped and unreachable.
+  await page.goto(base + '#/build/boost');
+  await present(page, '.boost-fan');
+  const fan = await page.evaluate(() => {
+    const row = document.querySelector('.boost-fan');
+    const cards = [...row.querySelectorAll('.card')];
+    const box = row.getBoundingClientRect();
+    row.scrollLeft = 0;
+    const first = cards[0].getBoundingClientRect();
+    row.scrollLeft = row.scrollWidth;
+    const last = cards[cards.length - 1].getBoundingClientRect();
+    return {
+      count: cards.length,
+      turned: cards.filter((c) => {
+        const t = getComputedStyle(c).transform;
+        return t && t !== 'none';
+      }).length,
+      overlap: Math.round(parseFloat(getComputedStyle(cards[1]).marginLeft)),
+      firstIn: Math.round(first.left - box.left),
+      lastIn: Math.round(box.right - last.right),
+    };
+  });
+  check('the ten boosts are held as a fan (D34)', () => {
+    assert.equal(fan.count, 10);
+    assert.equal(fan.turned, 10, 'a card in the hand is not turned');
+    assert.ok(fan.overlap < 0, `cards do not overlap (margin ${fan.overlap})`);
+  });
+  check('and neither end of the hand is clipped', () => {
+    assert.ok(fan.firstIn >= 0, `the first card sits ${fan.firstIn}px outside the fan`);
+    assert.ok(fan.lastIn >= 0, `the last card sits ${fan.lastIn}px outside the fan`);
+  });
+
   // The deck's own dividers, as bands rather than cards (G5, A2).
   await page.goto(base + '#/deck/prompts');
   const banner = await page.evaluate(() => {

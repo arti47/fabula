@@ -56,8 +56,12 @@ export function boostGrid(story) {
     }));
   }
 
-  const grid = el('div', { class: 'card-grid' });
-  for (const boost of BOOSTS) {
+  // D34 — this step's room is a hand of cards, fanned. The ten Boosts have no order and no arc
+  // (unlike the nine beats), so overlapping them the way you would hold them costs nothing and
+  // is the one shape that could not be mistaken for the Ingredients bench. It keeps the
+  // `card-grid` class because it is still the same ten tiles: the fan is a layout over them.
+  const grid = el('div', { class: 'card-grid boost-fan' });
+  BOOSTS.forEach((boost, i) => {
     const state = boostState(current, boost.id);
     const done = !isBlank(state.answer);
     add(grid, cardTile(boost, {
@@ -66,7 +70,9 @@ export function boostGrid(story) {
       blank: !done && !state.skipped,
       done,
     }));
-  }
+    // The card's place in the hand: negative on the left of the fan, positive on the right.
+    grid.lastChild.style.setProperty('--seat', String(i - (BOOSTS.length - 1) / 2));
+  });
   add(wrap, grid);
 
   const answered = BOOSTS.filter((b) => !isBlank(boostState(current, b.id).answer)).length;

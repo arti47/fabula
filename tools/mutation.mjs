@@ -387,6 +387,23 @@ const MUTANTS = [
     harness: 'smoke',
   },
   {
+    // D34: without its drawn route the board is nine cells again.
+    name: 'the map loses its route (D34)',
+    file: 'styles.css',
+    from: '.beat-list::before { left: 50%; }',
+    to: '.beat-list::before { left: 50%; display: none; }',
+    harness: 'smoke',
+  },
+  {
+    // The measured defect: a rotated box overhangs its layout box, and at the ends of the hand
+    // that overhang cannot be scrolled to. With the gutter back, the first card is clipped.
+    name: 'the ends of the boost fan are clipped again (D34)',
+    file: 'styles.css',
+    from: '  padding: 14px 52px 22px;',
+    to: '  padding: 14px var(--gutter) 22px;',
+    harness: 'smoke',
+  },
+  {
     name: 'the update toast never offers a new version',
     file: 'src/main.js',
     from: "          showToast('A new version is ready — reload to get it', 6000);",
