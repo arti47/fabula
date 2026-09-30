@@ -124,10 +124,14 @@ const MUTANTS = [
     harness: 'smoke',
   },
   {
-    name: 'a screen loses its explain() note',
-    file: 'src/build.js',
-    from: '  add(screen, explain(',
-    to: '  if (false) add(screen, explain(',
+    // Was "a screen loses its explain() note", against §6.2's every-screen rule, which D41
+    // replaced. It went STALE the moment build.js stopped calling explain() — so the pass had
+    // quietly stopped testing anything here. Re-pointed at what D41 deliberately kept: Settings
+    // states the privacy promise §4 requires, and that is the one explain() worth guarding.
+    name: 'Settings stops stating where the stories are kept (§4)',
+    file: 'src/screens.js',
+    from: "    'Your stories are saved on this device only. Nothing is sent anywhere, and nobody else can see them.',",
+    to: "    'Settings.',",
     harness: 'smoke',
   },
   {
@@ -228,7 +232,7 @@ const MUTANTS = [
   {
     name: 'the step gets named twice again',
     file: 'src/build.js',
-    from: "  add(screen, el('h2', { class: 'visually-hidden', text: `${current.n}. ${current.name}` }));",
+    from: "  add(screen, el('h2', { class: surveying ? null : 'visually-hidden', text: `${current.n}. ${current.name}` }));",
     to: "  add(screen, el('h2', { text: `${current.n}. ${current.name}` }));",
     harness: 'smoke',
   },
@@ -320,8 +324,8 @@ const MUTANTS = [
   {
     name: 'the story stops showing what it has made (S3)',
     file: 'src/build.js',
-    from: '  if (surveying) add(screen, castRow(castStrip(story)));',
-    to: '  void surveying;',
+    from: '    add(screen, castRow(castStrip(story)));',
+    to: '    void castRow;',
     harness: 'smoke',
   },
   {
@@ -434,6 +438,24 @@ const MUTANTS = [
     harness: 'smoke',
   },
   {
+    // D44: if the stops stop being links the strip is decoration again and the steps are
+    // unreachable — the section nav it replaced is gone.
+    name: 'the journey stops being the step nav (D44)',
+    file: 'src/router.js',
+    from: "        el('a', { href: stop.route, 'aria-current': here === stop.id ? 'step' : null }),",
+    to: "        el('span', {}),",
+    harness: 'smoke',
+  },
+  {
+    // D41/D44: the step's description following you into a single question is the duplication
+    // this batch existed to remove.
+    name: "the step's description follows you into a question (D44)",
+    file: 'src/build.js',
+    from: "    add(screen, el('p', { class: 'step-lead', text: STEP_BLURB[current.id] }));",
+    to: "  }\n  if (true) {\n    add(screen, el('p', { class: 'step-lead', text: STEP_BLURB[current.id] }));",
+    harness: 'smoke',
+  },
+  {
     name: 'the update toast never offers a new version',
     file: 'src/main.js',
     from: "          showToast('A new version is ready — reload to get it', 6000);",
@@ -487,7 +509,15 @@ for (const r of results) {
 }
 
 const gaps = results.filter((r) => r.status === 'SURVIVED' || r.status === 'STALE');
-console.log(gaps.length
-  ? `\n${gaps.length} mutant(s) nothing caught — each one is a rule that can break silently\n`
-  : '\nevery mutant was caught\n');
+if (gaps.length) {
+  // Name them. The count alone survived three stale mutants in this project's history: a long
+  // run's per-mutant list scrolls out of a captured tail, and "3 mutant(s) nothing caught" does
+  // not say which three, or whether they SURVIVED (an app or harness gap) or went STALE (the
+  // code moved and the mutant has been testing nothing since).
+  console.log(`\n${gaps.length} mutant(s) nothing caught — each one is a rule that can break silently:`);
+  for (const g of gaps) console.log(`  ${g.status.padEnd(9)} ${g.harness.padEnd(7)} ${g.name}`);
+  console.log('');
+} else {
+  console.log('\nevery mutant was caught\n');
+}
 process.exit(gaps.length ? 1 : 0);

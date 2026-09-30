@@ -44,18 +44,6 @@ export function progress(story) {
   };
 }
 
-/** Which steps still have something untouched — drives the gentle dot (decision: marked, gently). */
-export function blankSteps(story) {
-  const p = progress(story);
-  return {
-    idea: !p.idea,
-    ingredients: p.ingredients.done < p.ingredients.total,
-    structure: p.beats.done < p.beats.total,
-    boost: p.boosts.done === 0,
-    tell: false,
-  };
-}
-
 /** A short line for the story shelf: the idea if there is one, else the first beat written. */
 export function storyBlurb(story) {
   if (!isBlank(story.idea?.text)) return story.idea.text;

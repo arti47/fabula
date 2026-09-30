@@ -3,7 +3,7 @@
 // importantly, why the book asks for it.
 
 import { el, add } from './core.js';
-import { explain, clearActionBar } from './ui.js';
+import { clearActionBar } from './ui.js';
 
 const STEPS = [
   {
@@ -52,10 +52,6 @@ export function tutorialScreen() {
   clearActionBar();
   const wrap = el('div');
   add(wrap, el('h2', { text: 'Your first story' }));
-  add(wrap, explain(
-    'A walk through making one story from beginning to end, in the order it happens.',
-    'You do not have to read it first — open it whenever you get stuck, and close it again.',
-  ));
   add(wrap, el('p', { class: 'note', text: 'Ten steps. None of them take long.' }));
 
   STEPS.forEach((step, i) => {

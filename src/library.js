@@ -25,10 +25,6 @@ export function storiesScreen() {
 function firstRun() {
   const screen = el('div');
   add(screen, el('h2', { text: 'Who is telling stories?' }));
-  add(screen, explain(
-    'Put your name in, and this shelf becomes yours.',
-    'If somebody else uses this tablet too, they can add their own name and keep their own stories apart from yours.',
-  ));
 
   // The first screen anybody sees was 500px of empty paper under a one-line form (G14).
   add(screen, add(el('div', { class: 'first-run-art', 'aria-hidden': 'true' }), illustration('first-story')));
@@ -59,10 +55,6 @@ function shelf(teller) {
 
   add(screen, tellerRow(teller));
   add(screen, el('h2', { text: stories.length ? 'Your stories' : 'No stories yet' }));
-  add(screen, explain(
-    'Every story you have started lives here.',
-    'Open one to keep going, or start a new one. Nothing is ever finished until you say it is.',
-  ));
 
   if (!stories.length) {
     add(screen, add(

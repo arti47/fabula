@@ -47,8 +47,6 @@ export function boostGrid(story) {
   const current = snapshotOnEntry(story);
   const wrap = el('div');
 
-  add(wrap, el('p', { class: 'note', text: 'Ten questions to make the story deeper. Use them in any order, and skip any you do not like — you do not have to answer them all.' }));
-
   if (current.snapshot) {
     add(wrap, el('p', {
       class: 'provenance',

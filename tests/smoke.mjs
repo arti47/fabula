@@ -125,16 +125,25 @@ try {
       });
       check(`${width} ${route} stray text`, () => assert.deepEqual(stray, []));
 
-      const hasExplain = await page.evaluate(() => {
-        const d = document.querySelector('#screen details.explain');
-        return d ? { present: true, open: d.open } : { present: false };
+      // D41 amends §6.2. The old rule was "every screen carries an `explain()`", which put a
+      // 44px collapsed row saying nothing on fourteen screens, two of which had a single field.
+      // The rule now is the one actually worth enforcing: **no screen explains itself twice**,
+      // and every step screen says in one visible line what the step is for.
+      const explains = await page.evaluate(() => {
+        const screen = document.querySelector('#screen');
+        const d = screen.querySelector('details.screen-note');
+        return {
+          explain: d ? { open: d.open } : null,
+          leads: screen.querySelectorAll('.step-lead').length,
+        };
       });
-      // The only screens without a note are the two error screens, which exist to say one thing.
-      if (route !== '#/nonsense' && route !== '#/example/nope') {
-        check(`${width} ${route} explain`, () => {
-          assert.ok(hasExplain.present, 'no explain() note');
-          assert.equal(hasExplain.open, false, 'explain() should start collapsed');
-        });
+      check(`${width} ${route} says what it is for, once`, () => {
+        if (explains.explain) assert.equal(explains.explain.open, false, 'explain() should start collapsed');
+        assert.ok(explains.leads <= 1, `${explains.leads} step leads on one screen`);
+        assert.ok(!(explains.explain && explains.leads), 'the screen explains itself twice');
+      });
+      if (/^#\/build\/(idea|ingredients|structure|boost|tell)$/.test(route)) {
+        check(`${width} ${route} leads with what the step is for`, () => assert.equal(explains.leads, 1));
       }
 
       const bar = await page.evaluate(() => {
@@ -898,6 +907,62 @@ try {
     for (const [k, v] of Object.entries(saved)) localStorage.setItem(k, v);
     for (const node of document.querySelectorAll('.burst')) node.remove();
   }, beforeBurst);
+
+  // D44: the step nav is the journey strip. One band fewer on every build screen, and the
+  // navigation became sticky in the bargain — the nav it replaced scrolled away.
+  await page.goto(base + '#/build/structure');
+  await present(page, '.journey');
+  const folded = await page.evaluate(() => {
+    const links = [...document.querySelectorAll('.journey-stop a')];
+    const h2 = document.querySelector('#screen h2');
+    return {
+      navInScreen: document.querySelectorAll('#screen .section-nav').length,
+      links: links.length,
+      current: links.filter((a) => a.getAttribute('aria-current')).length,
+      labelled: Boolean(document.querySelector('.journey-nav[aria-label]')),
+      shortest: Math.min(...links.map((a) => Math.round(a.getBoundingClientRect().height))),
+      headingDrawn: h2 ? !h2.classList.contains('visually-hidden') : false,
+      headingText: h2 ? h2.textContent : '',
+    };
+  });
+  check('the step nav folded into the journey (D44)', () => {
+    assert.equal(folded.navInScreen, 0, 'the build screen still carries a section nav');
+    assert.equal(folded.links, 5, `${folded.links} steps reachable from the strip`);
+    assert.equal(folded.current, 1, `${folded.current} stops marked current`);
+    assert.equal(folded.labelled, true, 'the strip is not a named landmark');
+    assert.ok(folded.shortest >= 40, `smallest stop is ${folded.shortest}px`);
+  });
+  // With nothing else naming the step, the step's own heading is drawn again — the consequence
+  // D37 recorded, reversed by removing the thing that was naming it twice.
+  check('and the step heading is drawn again (D44)', () => {
+    assert.equal(folded.headingDrawn, true, 'the step heading is still undrawn');
+    assert.match(folded.headingText, /Structure/);
+  });
+  // On a question screen the card's own headline is the heading, so the step's goes back to the
+  // outline and the step's description does not follow you into a single question.
+  await page.goto(base + '#/build/structure/7');
+  await present(page, '#beat-text');
+  const inner = await page.evaluate(() => ({
+    hidden: document.querySelector('#screen h2')?.classList.contains('visually-hidden'),
+    leads: document.querySelectorAll('.step-lead').length,
+    strip: document.querySelectorAll('.cast-chip').length,
+  }));
+  check('a question screen carries the question, not the step (D44)', () => {
+    assert.equal(inner.hidden, true, 'the step heading is drawn over the question');
+    assert.equal(inner.leads, 0, "the step's description followed you into a question");
+    assert.equal(inner.strip, 0);
+  });
+
+  // §4 makes the privacy promise a product requirement, not an implementation detail, and D41
+  // kept Settings' `explain()` precisely because it is where that promise is made. Nothing had
+  // ever checked that the app actually says it.
+  await page.goto(base + '#/settings');
+  await present(page, '#screen');
+  const promise = await read(page, '#screen');
+  check('Settings says where the stories are kept (§4)', () => {
+    assert.match(promise, /this device only/i);
+    assert.match(promise, /nothing is sent/i);
+  });
 
   // The deck's own dividers, as bands rather than cards (G5, A2).
   await page.goto(base + '#/deck/prompts');

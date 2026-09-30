@@ -139,13 +139,17 @@ export function renderStoryHeader() {
  */
 function journeyStrip(p) {
   const stops = [
-    { id: 'idea', name: 'Idea', sigil: 'die', color: 'var(--group-prompt)', value: p.idea ? 'yes' : 'not yet', fill: p.idea ? 1 : 0 },
-    { id: 'ingredients', name: 'Ingredients', sigil: 'flask', color: 'var(--group-ingredient)', value: `${p.ingredients.done}/${p.ingredients.total}`, fill: p.ingredients.done / p.ingredients.total },
-    { id: 'structure', name: 'Beats', sigil: 'number', color: 'var(--group-structure)', value: `${p.beats.done}/${p.beats.total}`, fill: p.beats.done / p.beats.total },
-    { id: 'boost', name: 'Boosts', sigil: 'magnifier', color: 'var(--group-boost)', value: `${p.boosts.done}/${p.boosts.total}`, fill: p.boosts.done / p.boosts.total },
+    { id: 'idea', name: 'Idea', route: '#/build/idea', sigil: 'die', color: 'var(--group-prompt)', value: p.idea ? 'yes' : 'not yet', fill: p.idea ? 1 : 0 },
+    { id: 'ingredients', name: 'Ingredients', route: '#/build/ingredients', sigil: 'flask', color: 'var(--group-ingredient)', value: `${p.ingredients.done}/${p.ingredients.total}`, fill: p.ingredients.done / p.ingredients.total },
+    { id: 'structure', name: 'Beats', route: '#/build/structure', sigil: 'number', color: 'var(--group-structure)', value: `${p.beats.done}/${p.beats.total}`, fill: p.beats.done / p.beats.total },
+    { id: 'boost', name: 'Boosts', route: '#/build/boost', sigil: 'magnifier', color: 'var(--group-boost)', value: `${p.boosts.done}/${p.boosts.total}`, fill: p.boosts.done / p.boosts.total },
   ];
   const here = stepFor(location.hash || '');
-  const strip = el('ol', { class: 'journey' });
+  // D44 — the stops are the step nav. The strip already drew five milestones in the order the
+  // section nav listed them, so the nav was a second copy of the same five names taking a band of
+  // its own; folding it in here also makes the navigation sticky, which the nav never was.
+  const nav = el('nav', { class: 'journey-nav', 'aria-label': 'Story steps' });
+  const strip = add(nav, el('ol', { class: 'journey' })).lastChild;
   for (const stop of stops) {
     const node = add(
       el('span', { class: 'journey-node', 'aria-hidden': 'true', style: `--stop: ${stop.color}; --fill: ${Math.round(stop.fill * 100)}%` }),
@@ -153,20 +157,26 @@ function journeyStrip(p) {
     );
     add(strip, add(
       el('li', { class: `journey-stop${here === stop.id ? ' is-here' : ''}` }),
-      el('span', { class: 'visually-hidden', text: `${stop.name} ${stop.value}` }),
-      node,
-      el('span', { class: 'journey-value', 'aria-hidden': 'true', text: stop.value }),
+      add(
+        el('a', { href: stop.route, 'aria-current': here === stop.id ? 'step' : null }),
+        el('span', { class: 'visually-hidden', text: `${stop.name} ${stop.value}` }),
+        node,
+        el('span', { class: 'journey-value', 'aria-hidden': 'true', text: stop.value }),
+      ),
     ));
   }
   // The end of the road. It has no count — nothing about the told story is measured (A10) — so it
   // is a destination rather than a milestone, and it opens once there is anything to read.
   const readable = p.beats.done > 0;
   add(strip, add(
-    el('li', { class: `journey-stop journey-end${readable ? ' is-open' : ''}` }),
-    el('span', { class: 'visually-hidden', text: readable ? 'Tell: there is something to read' : 'Tell: nothing to read yet' }),
-    add(el('span', { class: 'journey-node', 'aria-hidden': 'true', style: '--stop: var(--accent); --fill: 0%' }), icon('stories', { size: 14 })),
+    el('li', { class: `journey-stop journey-end${readable ? ' is-open' : ''}${here === 'tell' ? ' is-here' : ''}` }),
+    add(
+      el('a', { href: '#/build/tell', 'aria-current': (location.hash || '').startsWith('#/build/tell') ? 'step' : null }),
+      el('span', { class: 'visually-hidden', text: readable ? 'Tell: there is something to read' : 'Tell: nothing to read yet' }),
+      add(el('span', { class: 'journey-node', 'aria-hidden': 'true', style: '--stop: var(--accent); --fill: 0%' }), icon('stories', { size: 14 })),
+    ),
   ));
-  return strip;
+  return nav;
 }
 
 /**

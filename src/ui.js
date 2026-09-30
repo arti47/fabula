@@ -10,9 +10,12 @@ import { icon } from './icons.js';
 // ---------------------------------------------------------------------------
 
 export function explain(...paragraphs) {
+  // `screen-note` marks this as *the screen's* explanation, as against the several collapsible
+  // disclosures that share the `.explain` look (a card's examples, a Learn entry). Only one of
+  // these may appear on a screen, and D41 says only a few screens carry one at all.
   return el(
     'details',
-    { class: 'explain' },
+    { class: 'explain screen-note' },
     el('summary', { text: 'What is this screen for?' }),
     add(el('div'), ...paragraphs.map((p) => el('p', { text: p }))),
   );

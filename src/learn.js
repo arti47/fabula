@@ -2,7 +2,7 @@
 // opened. Every card in the app links here (CLAUDE.md §6.2 layer 2).
 
 import { el, add, clear } from './core.js';
-import { explain, clearActionBar, exampleLine, groupBanner } from './ui.js';
+import { clearActionBar, exampleLine, groupBanner } from './ui.js';
 import { LEARN_CHAPTERS, DRAWING_TIPS } from '../data-learn.js';
 import { getCard, GROUPS } from '../data.js';
 
@@ -53,10 +53,6 @@ export function learnScreen({ openId } = {}) {
   clearActionBar();
   const wrap = el('div');
   add(wrap, el('h2', { text: 'Learn' }));
-  add(wrap, explain(
-    'Everything the book teaches, in one place: what each card is for, how the five steps go, and how to draw your story.',
-    'Search it, or open a chapter and read down. Nothing here changes your story.',
-  ));
 
   const results = el('div', { class: 'learn-results' });
   const search = el('input', {

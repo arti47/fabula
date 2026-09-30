@@ -196,6 +196,15 @@ a { color: var(--accent); }
 }
 /* Four counts in one line at 360: at 0.8rem they were 328px wide in 316px of room, and the
    second line put the chrome 19px over budget. */
+/* D44 — what the step is for, said once and visibly. Every step screen used to carry a collapsed
+   `explain()` *and* a note under it: two explanations, one of them hidden. This is the survivor. */
+.step-lead {
+  margin: 0 0 var(--rhythm);
+  max-width: 54ch;
+  font-size: 1.06rem; line-height: 1.5;
+  color: var(--ink-soft);
+}
+
 /* D37 — the booklet's teaching is something being said to you, not app copy. It was a bare <p>
    on six screens and indistinguishable from the app's own notes; it is a bubble now, with the
    step's colour down its speaking edge and a tail so the shape reads as speech before the words
@@ -226,21 +235,30 @@ a { color: var(--accent); }
 
 /* The journey strip (D35): five stops on one road, replacing four counts in a row. The road is
    drawn behind the stops rather than between them, so nothing has to be measured in JS. */
+.journey-nav { display: block; }
 .journey {
   position: relative;
-  display: flex; justify-content: space-between; align-items: flex-start;
-  margin: 4px 0 0; padding: 0 2px; list-style: none;
+  display: flex; justify-content: space-between; align-items: center;
+  margin: 2px 0 0; padding: 0; list-style: none;
 }
 .journey::before {
   content: ""; position: absolute; z-index: 0;
-  left: 12px; right: 12px; top: 12px; height: 2px;
+  left: 14px; right: 14px; top: 50%; height: 2px;
   background: var(--rule);
 }
 .journey-stop {
   position: relative; z-index: 1;
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-  min-width: 0;
+  display: flex; min-width: 0;
 }
+/* D44 — the stop is the step link now, so it has to be a tap target: 40px is the floor this
+   project measures on the wrapping label, and the node alone was 38. */
+.journey-stop > a {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  min-height: 40px; padding: 0 6px;
+  text-decoration: none; color: inherit;
+  border-radius: 10px;
+}
+.journey-stop > a:hover { background: rgb(255 246 230 / 0.06); }
 .journey-node {
   display: grid; place-items: center;
   width: 25px; height: 25px; border-radius: 50%;
@@ -1312,8 +1330,8 @@ input[type="file"] {
   overflow: hidden;
   background: var(--paper-sunken);
   border-bottom: 0;
-  padding-top: 16px;
-  padding-bottom: 8px;
+  padding-top: 10px;
+  padding-bottom: 4px;
 }
 .story-header-art {
   display: block;

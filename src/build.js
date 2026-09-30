@@ -3,21 +3,25 @@
 
 import { icon } from './icons.js';
 import { el, add } from './core.js';
-import { explain, clearActionBar, castRow } from './ui.js';
+import { clearActionBar, castRow } from './ui.js';
 import { STEPS } from '../data.js';
 import { getCurrentStory } from './store.js';
-import { blankSteps, castStrip } from './derived.js';
+import { castStrip } from './derived.js';
 import { ideaStep } from './idea.js';
 import { ingredientsGrid, ingredientQuestion } from './ingredients.js';
 import { structureList, beatScreen } from './structure.js';
 import { boostGrid, boostScreen } from './boost.js';
 import { tellScreen } from './tell.js';
 
+// One sentence per step, said once (D44). Structure's and Boost's are the sentences those two
+// modules used to print under the blurb — they are kept rather than the thinner ones because they
+// carry the permissions (A9 and P5 for the beats, P8 for the boosts), and §10.8 wants the sentence
+// that states a permission to survive next to the control that grants it.
 const STEP_BLURB = {
   idea: 'One sentence about what your story is. Roll the die if you have not got one.',
   ingredients: 'Who is in it, who is against them, where it happens, and the thing that starts it all.',
-  structure: 'The nine beats, from “once upon a time” to “in the end”.',
-  boost: 'Ten questions that make the story better — none of them compulsory.',
+  structure: 'Nine beats, in the order stories usually go. You can write them in any order you like, and leave any of them for later.',
+  boost: 'Ten questions to make the story deeper. Use them in any order, and skip any you do not like — you do not have to answer them all.',
   tell: 'Read the whole thing back, before and after the boosts.',
 };
 
@@ -26,22 +30,27 @@ export function buildScreen({ step, entryId, qIndex = 0, beatNumber, boostId, fr
   if (!story) return noStory();
 
   const current = STEPS.find((s) => s.id === step) || STEPS[0];
-  const blanks = blankSteps(story);
   const screen = el('div');
 
-  add(screen, stepNav(current.id, blanks));
-  // The nav pill above already says "3. Structure" in the accent colour; a heading two centimetres
-  // below saying it again cost 45px on a phone and told nobody anything. It stays in the document
-  // for the heading outline and for a screen reader, and stops being drawn twice.
-  add(screen, el('h2', { class: 'visually-hidden', text: `${current.n}. ${current.name}` }));
-  // What the story has made, above the work it is making (S3) — on the screens that survey the
-  // step, never on the one-question screens, where it pushed the writing field off a 320 phone.
+  // A screen that surveys the step (the grid, the board, the fan) against one that answers a
+  // single question. The difference decides almost everything below: a question screen carries
+  // the question, not a paragraph about the step it belongs to.
   const surveying = !entryId && !beatNumber && !boostId;
-  if (surveying) add(screen, castRow(castStrip(story)));
-  add(screen, explain(
-    STEP_BLURB[current.id],
-    'You do not have to do these in order, and you can leave anything blank and come back to it. The story is yours.',
-  ));
+
+  // D44 — the section nav is gone: the journey strip in the story header carries the same five
+  // steps, in the same order, and it is sticky. That frees the step's own heading to be *drawn*
+  // on the survey screens, because nothing else there names the step any more (§6, reversing the
+  // consequence D37 recorded): the strip names its stops only to a screen reader. On a question
+  // screen the card's own headline is the heading, so the step's stays in the outline only.
+  add(screen, el('h2', { class: surveying ? null : 'visually-hidden', text: `${current.n}. ${current.name}` }));
+  if (surveying) {
+    // What the step is for, said once. It was said twice — a collapsed `explain()` and a visible
+    // note under it — and D41 keeps `explain()` only where a screen is genuinely unclear.
+    add(screen, el('p', { class: 'step-lead', text: STEP_BLURB[current.id] }));
+    // What the story has made, above the work it is making (S3). Never on a question screen,
+    // where it pushed the writing field off a 320 phone.
+    add(screen, castRow(castStrip(story)));
+  }
 
   if (current.id === 'idea') {
     add(screen, ideaStep(story)); // owns its own action bar
@@ -67,31 +76,10 @@ export function buildScreen({ step, entryId, qIndex = 0, beatNumber, boostId, fr
   return screen;
 }
 
-function stepNav(currentId, blanks) {
-  const nav = el('nav', { class: 'section-nav', 'aria-label': 'Story steps' });
-  for (const step of STEPS) {
-    add(nav, add(
-      el('a', {
-        href: step.route,
-        'aria-current': step.id === currentId ? 'step' : null,
-      }),
-      document.createTextNode(`${step.n}. ${step.name}`),
-      blanks[step.id] && step.id !== currentId
-        ? el('span', { class: 'blank-dot', role: 'img', 'aria-label': 'still has blanks' })
-        : null,
-    ));
-  }
-  return nav;
-}
-
 function noStory() {
   clearActionBar();
   const screen = el('div');
   add(screen, el('h2', { text: 'No story open' }));
-  add(screen, explain(
-    'This is where you build a story, one step at a time.',
-    'Nothing is open at the moment. Pick one off your shelf, or start a new one, and the five steps appear here.',
-  ));
   add(screen, add(
     el('p', { class: 'empty' }),
     icon('empty-shelf', { size: 48 }),

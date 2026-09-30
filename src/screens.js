@@ -46,10 +46,6 @@ export function deckScreen(params) {
   // the outline for a screen reader and stops being drawn a second time.
   add(screen, el('h2', { class: 'visually-hidden', text: section.label }));
   add(screen, groupBanner(section.group));
-  add(screen, explain(
-    'Every card in the deck, to look at whenever you like.',
-    'Tap one to read what it is for and how the book uses it. Nothing here changes your story — this is the shelf, not the workbench.',
-  ));
 
   const grid = el('div', { class: 'card-grid' });
   for (const card of section.cards()) {
@@ -75,10 +71,6 @@ export function cardScreen(params) {
 
   add(screen, el('a', { href: '#/deck', text: '← Back to the deck', class: 'back-link' }));
   add(screen, el('h2', { text: card.headline }));
-  add(screen, explain(
-    'One card, close up: what it is for, what it asks you, and how the book answers it.',
-    'This is the card on its own, away from your story — nothing you do here changes what you have written.',
-  ));
   add(screen, el('p', { class: 'note', text: `${GROUPS[card.group]?.name}${card.beatName ? ` · ${card.beatName}` : ''}${card.letter ? ` · die face ${card.letter}` : ''}` }));
   add(screen, cardTile(card));
   add(screen, el('p', { class: 'guidance', text: card.guidance }));

@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { blankStory, normalizeStory, SCHEMA_VERSION, removeEntry, describeImport } from '../src/store.js';
-import { progress, blankSteps, storyBlurb, hasAnyAnswer, ingredientProgress, beatProgress, boostProgress, ideaDone } from '../src/derived.js';
+import { progress, storyBlurb, hasAnyAnswer, ingredientProgress, beatProgress, boostProgress, ideaDone } from '../src/derived.js';
 
 test('a blank story has every field a screen reads', () => {
   const s = blankStory('teller-1', 'Test');
@@ -90,13 +90,6 @@ test('hasAnyAnswer ignores blanks and whitespace', () => {
   assert.equal(hasAnyAnswer({ answers: { a: '  ' } }), false);
   assert.equal(hasAnyAnswer({ answers: { a: '', b: 'yes' } }), true);
   assert.equal(hasAnyAnswer(undefined), false);
-});
-
-test('the gentle blank marks follow the counts', () => {
-  const s = blankStory('t', 'x');
-  assert.deepEqual(blankSteps(s), { idea: true, ingredients: true, structure: true, boost: true, tell: false });
-  s.idea.text = 'something';
-  assert.equal(blankSteps(s).idea, false);
 });
 
 test('removing a character takes its answers and nothing else', () => {

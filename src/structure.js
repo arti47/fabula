@@ -50,7 +50,6 @@ export function prefillBeat2(story) {
 
 export function structureList(story) {
   const wrap = el('div');
-  add(wrap, el('p', { class: 'note', text: 'Nine beats, in the order stories usually go. You can write them in any order you like, and leave any of them for later.' }));
 
   const list = el('ol', { class: 'beat-list' });
   for (const beat of BEATS) {
