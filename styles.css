@@ -1650,3 +1650,15 @@ button.place { width: 100%; border: 0; background: none; text-align: left; font:
   .book-page { break-after: page; }
   .book-turns, .book-byline { display: none !important; }
 }
+
+/* D64 — the card's name above its question: which ingredient this is, in its group's colour and
+   with its sigil, because the cropped art no longer shows the name the deck prints on it. */
+.card-eyebrow {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  margin: 0 0 2px;
+  font-family: var(--font-numeral); font-size: var(--fs-xs); letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--card-color, var(--accent));
+}
+.card-eyebrow svg { display: block; }
+.card-eyebrow-name { font-family: var(--font); text-transform: none; letter-spacing: 0; font-size: var(--fs-sm); color: var(--ink-soft); }
+.card-eyebrow-name::before { content: "· "; }

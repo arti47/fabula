@@ -3,7 +3,7 @@
 //   everything  -> cache first, so the app works in a room with no signal
 // Bump CACHE_VERSION on any shipped-file change.
 
-const CACHE_VERSION = 'story-machine-v39';
+const CACHE_VERSION = 'story-machine-v40';
 
 const APP_SHELL = [
   './',

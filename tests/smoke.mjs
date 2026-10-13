@@ -1430,6 +1430,22 @@ try {
       assert.deepEqual(wordy, [], JSON.stringify(words));
     });
 
+    // D64 — an Ingredient question says which card it is on. The cropped art hides the name the
+    // deck prints, and "How old are they?" reads the same for the hero and the antagonist.
+    const eyebrows = {};
+    for (const kind of ['hero', 'villain', 'world', 'event']) {
+      await p16.goto(base + `#/build/ingredients/new-${kind === 'event' ? 'event' : kind}`, { waitUntil: 'domcontentloaded' });
+      if (kind === 'event') await p16.goto(base + '#/build/ingredients/inciting/0', { waitUntil: 'domcontentloaded' });
+      await present(p16, '#answer');
+      eyebrows[kind] = await p16.evaluate(() => document.querySelector('.stage-panel .card-eyebrow')?.textContent.trim() || '');
+    }
+    check('an ingredient question names its card (D64)', () => {
+      assert.match(eyebrows.hero, /Main character/i, JSON.stringify(eyebrows));
+      assert.match(eyebrows.villain, /Antagonist/i, JSON.stringify(eyebrows));
+      assert.match(eyebrows.world, /World/i, JSON.stringify(eyebrows));
+      assert.match(eyebrows.event, /Something happens/i, JSON.stringify(eyebrows));
+    });
+
     // D60 — Tell is a book: a cover, a page per beat wearing its card, and pages that turn.
     await p16.goto(base + '#/build/tell', { waitUntil: 'domcontentloaded' });
     await present(p16, '.book-pages');

@@ -13,7 +13,7 @@ import { el, add, uid, debounce, isBlank } from './core.js';
 import { actionBar, cardTile, dealtFace, showToast, answerStage, confirmModal, teachingLine, optionsSheet, dealerBar } from './ui.js';
 import { fieldWithSparks } from './sparks.js';
 import { icon } from './icons.js';
-import { INGREDIENTS } from '../data.js';
+import { INGREDIENTS, GROUPS } from '../data.js';
 import { saveStory, removeEntry } from './store.js';
 import { hasAnyAnswer, dealNeighbours } from './derived.js';
 import { renderStoryHeader } from './router.js';
@@ -192,6 +192,18 @@ export function ingredientQuestion(story, entryId, qIndex) {
   });
 
   const body = [];
+  // D64 — which card this is, above its question. The art is cropped to its picture, so the card's
+  // printed name (Main character, Antagonist…) was off the screen, and "How old are they?" read
+  // the same for the hero and the villain. Named once it has a name; numbered if there are two.
+  const siblings = entriesFor(current, card.kind);
+  const at = siblings.findIndex((e) => e.id === entry.id);
+  const named = entry.answers?.name;
+  body.push(add(
+    el('p', { class: 'card-eyebrow', style: `--card-color: var(${GROUPS[card.group]?.colorVar || '--accent'})` }),
+    GROUPS[card.group]?.badge ? icon(GROUPS[card.group].badge, { size: 16 }) : null,
+    el('span', { text: `${card.headline}${siblings.length > 1 && isBlank(named) ? ` ${at + 1}` : ''}` }),
+    isBlank(named) ? null : el('span', { class: 'card-eyebrow-name', text: named }),
+  ));
   body.push(el('h2', { class: 'question-label', text: question.label }));
   if (question.hint) body.push(el('p', { class: 'note', text: question.hint }));
 

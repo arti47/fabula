@@ -620,6 +620,13 @@ const MUTANTS = [
     to: "  add(panel, el('h2', { text: 'Make a story with the deck' }), el('input', { type: 'text', id: 'teller-name' }));",
     harness: 'smoke',
   },
+  {
+    name: 'an ingredient question stops naming its card (D64)',
+    file: 'src/ingredients.js',
+    from: "    el('span', { text: `${card.headline}${siblings.length > 1 && isBlank(named) ? ` ${at + 1}` : ''}` }),",
+    to: "    el('span', { text: '' }),",
+    harness: 'smoke',
+  },
 ];
 
 const COMMANDS = {
