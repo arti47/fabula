@@ -161,6 +161,29 @@ screens were *longer* than their phone versions. Every string, card, question an
 | D51 | Behaviour | **Leaf, remember, keep clear, tick** | The lightbox turns through the card's group (swipe, arrows, buttons); a screen remembers where you were on it for the session; the focused field stays clear of the keyboard; one 20ms haptic tick when the die lands (Android, off under reduced motion). D38 stands — a tick is not a sound |
 | D52 | Delivery | **One batch** | All seventeen at once, one merge |
 
+### 1.6 The Dealer (Phase 16 — "cluttered, wordy, intimidating", recorded)
+
+Measured on a 390×844 phone before deciding: every build screen stacked eight bands (bar, title,
+five-stop journey with counts, heading, lead, cast strip, guidance bubble, the work) and a
+question screen put 18–25 controls in the first viewport; Boost said 177 words before a scroll,
+Idea 189; and the first thing a new player met was a form. The owner chose the most radical
+direction, then "do everything according to your recommendations". Every rule, card, question
+and permission is kept; only the way they are dealt changes.
+
+| # | Decision | Answer | What it binds |
+|---|---|---|---|
+| D53 | Concept | **The Dealer** | One card fills the screen; you write on it; swipe it or tap Next and the next card is dealt. Every other thing lives behind one button. **Supersedes D34's five rooms on the question screens** — the spreads keep them |
+| D54 | Chrome | **One bar: ☰, the place, the pile** | The story header, the journey strip, the cast strip, the step's heading and lead are gone from the build screens. Progress is a **pile** of cards in the bar that thickens and says the counts in words; it opens the five steps. Settings and the storyteller move into the menu. **Supersedes D35, D44, D47's beads and the bar half of D49**; chrome budget 140px → 60px |
+| D55 | Order | **The deal follows the booklet** | `dealOrder(story)`: Idea → every question of every Ingredient card the story has → beats 1–9 → the ten Boosts → Tell. An order, never a gate: every card stays reachable from its spread (P2, A9, P8); a skipped card is not dealt (P1); a second hero is (P3) |
+| D56 | Card options | **One labelled ⋯ per card** | Skip (P1, P8), add another (P3), remove, see the whole step. On a Boost the two powers the step is for stay on the card as two chips — *Somebody new* (P6) and *Change a beat* (P7) — each opening its choices |
+| D57 | Teaching | **One line printed, the rest behind ?** | The card prints the first sentence of its guidance; ? opens the whole of it, set as speech (D37), with every worked example and the booklet's own answer. §0.1 holds: the teaching is on the card being answered. **Amends D48's fold on dealt cards** |
+| D58 | First run | **One button: Deal me a story** | No name form. A storyteller and an untitled story are made and the Idea card is dealt; the title and the teller's name are asked at the end, on the book's cover. A new story from the shelf deals straight away too |
+| D59 | Shelf | **Books with their covers** | Two-up on a phone, four from 768; the title and the idea on the cover; ⋯ for rename and delete. Another of an Ingredient card is a blank card with a plus on it |
+| D60 | Tell | **A paged book** | A cover the story's card fills, one page per beat wearing that beat's card, an appendix, an end page with the ways to keep it. Pages turn sideways (swipe, arrows, two buttons); print lays them out one after another |
+| D61 | Learning the Dealer | **One note, once** | The first card ever dealt says how the Dealer works in one line and never again. It blocks nothing. The walkthrough stays (§6.2) |
+| D62 | Sparks | **A bulb and one word** | "Stuck?" with a bulb; the Idea screen's five open tables wait behind the same bulb. Still labelled a house aid (§2.1) |
+| D63 | Settings | **Fewer panels** | Saving and loading a backup are one panel |
+
 ---
 
 ## 2. Sources and precedence
@@ -311,9 +334,10 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
   table. The step you are standing in sets `--accent` and tints the ground through
   `:root[data-step]`, written as literal hex rather than `color-mix()` so nothing depends on a
   browser feature. `prefers-contrast: more` still applies.
-- **One bar, one menu** (D31). The tab bar is gone. Stories, Build, Deck and Learn live behind the
-  menu button; the bar names the place you are standing in and marks it `aria-current`. Fixed
-  chrome stays under 140px (160 at 320, where the counts wrap) — it was 210px with a tab bar.
+- **One bar, one menu** (D31, D54). Stories, Build, Deck, Learn, Settings and the storyteller
+  live behind the menu button; the bar names the place — on a story, the step — you are standing
+  in and marks it `aria-current`, and carries the story's pile. Fixed chrome stays under 60px — it
+  was 210px with a tab bar and 128 with the story header.
 - **Responsive**: zero horizontal overflow at 320 / 360 / 390px; tablet layouts at 768 and 1024
   that add density rather than stretching (D12).
 - **Safe areas.** The viewport is `viewport-fit=cover`, so the bar grows by
@@ -346,6 +370,7 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | `tools/dead-data.mjs` | The dead-data scan (§9): exports nothing reads, imports nothing uses |
 | `tests/shell.test.mjs` | The shipped-file invariants: every module cached offline and listed in §5.1, no live SVG filter in a background, and every stylesheet structurally sound |
 | `tests/icons.test.mjs` | Every tab and header control has an icon, and no icon is drawn that nothing asks for |
+| `tests/deal.test.mjs` | The Dealer's order (D55): the booklet's sequence, every question once, P1 and P3 in the deal, neighbours, the teaching line, naming the storyteller later (D58) |
 | `tests/harness.mjs` | Shared server, browser and fixture loading, and the one route list every harness measures |
 | `tests/make-fixtures.mjs` | Regenerates the three seed states (`npm run fixtures`) |
 | `README.md` | Setup, offline/privacy statement, and the licensing note (§12 of the template) |
@@ -360,23 +385,23 @@ A card whose guidance or examples exist in `data.js` but appear on no screen is 
 | Module | Responsibility |
 |---|---|
 | `core.js` | Constants, DOM/util helpers (incl. null-safe `add`), `roll()` on `crypto`. No imports |
-| `ui.js` | Modals, toasts, confirms, `explain()`, the pinned action bar, the card component and its two sides (`cardBack`, `dealtFace`), the card lightbox and its leafing through a group (D51), `watchClamps()` folding long guidance to three lines (D48), the answering stage (`answerStage`), the two-column `answerLayout`, `burst()` (D36) and `cardFan()` (D43) |
+| `ui.js` | Modals, toasts, confirms, `explain()`, the pinned action bar, the card component and its two sides (`cardBack`, `dealtFace`), the card lightbox and its leafing through a group (D51), `watchClamps()` folding long guidance to three lines (D48), the answering stage (`answerStage`), `burst()` (D36), `cardFan()` (D43), and the Dealer's parts: `teachingLine` (D57), `optionsSheet` (D56), `dealerBar`, `swipeToDeal` and `dealerHint` (D53, D61) |
 | `cards.js` | One lookup per kind of thing: `getCard(id)` resolves any card in any group, including nothing else (§10.16) |
 | `store.js` | Storytellers, stories, autosave, `takeSnapshot`/`ensureSnapshot`, JSON export/import, the die-roll log |
-| `derived.js` | Progress counts, "what's still blank", the story's cover (one of the cards *that* story uses, D40) and cast strip, `assemble`/`asPlainText` for the Tell page |
-| `build.js` | The guided five-step path: the step heading, the one-line lead, and what each step renders (its nav is the journey strip, D44) |
+| `derived.js` | Progress counts, "what's still blank", the story's cover (one of the cards *that* story uses, D40), `assemble`/`asPlainText` for the Tell page, and the deal: `dealOrder`/`dealNeighbours` (D55) |
+| `build.js` | The guided five-step path: the step heading (outline only, D54), what each step renders, and the swipe and the once-only note on a dealt card (D53, D61) |
 | `idea.js` | Step 1: the die on its table (D34) — still the control after it lands (D48), with a haptic tick (D51) — Prompt cards, the idea sentence, the roll history, sparks |
 | `ingredients.js` | Step 2: the workbench of four stations (D34), add-another, skip/unskip, and the one-question-at-a-time view with pips |
 | `structure.js` | Step 3: the nine beats as a map — stops on a drawn route (D34) — one-beat view with pips, beat 2 pre-fill (A5) |
 | `boost.js` | Step 4: the ten boosts held as a fan (D34), card-spawning (P6), beat rewrites (P7), the snapshot (A8), re-freeze |
-| `tell.js` | Step 5: the assembled story as a book page with drop caps (D34, D37), before/after toggle, print, plain-text save and copy |
-| `library.js` | Storyteller profiles, the shelf (a row that opens, a ⋯ sheet for rename and delete, three progress dots — D49), create/rename/delete/open, the storyteller manager (switch, add, remove); example stories |
+| `tell.js` | Step 5: the assembled story as a paged book — cover, a page per beat wearing its card, appendix, end (D60) — with drop caps (D37), before/after toggle, naming the story and its teller (D58), print, plain-text save and copy |
+| `library.js` | Storyteller profiles, first run as one button (D58), the shelf of books with their covers and a ⋯ for rename and delete (D59), create/rename/delete/open, the storyteller manager (switch, add, remove); example stories |
 | `deck.js` | Browse all 30 cards as reference — **currently inside `screens.js`**; splits out when it grows search or filters |
 | `learn.js` | The rules library as an index of chapter covers plus one screen per chapter (D42); search on the index; card entries resolve through `getCard`, and one route resolves either a chapter id or an entry id |
 | `sparks.js` | Draws three sparks for an input, fills in the names the story has, inserts at the cursor; always labelled a house aid |
 | `settings.js` | Text size, export/import (as panels, the file input styled — D50), the storyteller manager, deleting the open story, about — **currently inside `screens.js`** |
 | `tutorial.js` | The ten-step first-story walkthrough, linked from the empty shelf and Settings |
-| `router.js` | Hash routing, the menu and the place you are standing in, section nav (incl. scrolling the current pill into view), the story header and the journey strip — which is also the step nav (D44) and carries the nine beats as beads on its Structure stop (D47) — the storyteller's face in the bar (D49), and the per-screen scroll memory (D51) |
+| `router.js` | Hash routing, the menu and the place you are standing in, section nav (incl. scrolling the current pill into view), the pile in the bar that says the counts and opens the five steps (D54), the storyteller and Settings in the menu, and the per-screen scroll memory (D51) |
 | `icons.js` | The app's own SVG icons and drawings, stroked in `currentColor` — house-drawn chrome, never the deck's art (D25) |
 | `zoom.js` | The zoom lock: refuses pinch gestures iOS Safari grants despite the viewport meta |
 | `main.js` | Entry point / boot: text size, header icons, the zoom lock, keeping the focused field clear of the keyboard (D51), the guidance fold, the router, the service worker |
@@ -390,26 +415,24 @@ list, then bump `CACHE_VERSION` — in the same change.
 
 ```
 ┌──────────────────────────────┐
-│ ☰  Build                🦊  ⚙   sticky, 44px + safe area
+│ ☰  Structure                🂠 11   sticky, 44px + safe area
 ├──────────────────────────────┤
-│ the story's cover, its title, and the journey (the step nav)   sticky
+│ the dealt card: its picture, the question, the field, one line of teaching ?, pips
+│                       ← swipe for the next card
 ├──────────────────────────────┤
-│ step heading + lead, one block (survey screens only)
-│ screen content ← scrolls
-├──────────────────────────────┤
-│ action bar (Next card · Roll · Read my story)   fixed
+│  ‹        ⋯              Next ›   fixed
 └──────────────────────────────┘
-  ☰ opens: Stories · Build · Deck · Learn     🦊 opens: switch, add or remove a storyteller
+  ☰ opens: Stories · Build · Deck · Learn · Settings · the storyteller
+  🂠 (the pile) opens: the five steps, each with its counts
 ```
 
 - **One primary per screen** (D46), counted across the screen and the action bar together. Asserted.
 
-- The **story header is this app's persistent resource header** (§6.2): the title and the counts
-  that tell a kid what is still blank, visible from every in-story screen, drawn since D35 as a
-  road with four milestones and a destination on it. It is progress, never a score. Two lines, not three — who is telling the story does not change while it is being written,
-  and is named on the shelf and in Settings (D22).
-- **Fixed chrome has a budget**: the bar and the story header together stay under 140px (160 at
-  320, where the four counts need a second line). Asserted on every route at every width.
+- The **pile is this app's persistent resource header** (§6.2, D54): the cards the story has,
+  stacked in the bar on every in-story screen, saying the counts in words and opening the five
+  steps. It is progress, never a score.
+- **Fixed chrome has a budget**: 60px — the bar is the chrome. Asserted on every route at every
+  width.
 - **Nothing is named twice on one screen.** Asserted. On the **build** screens the section nav is
   gone (D44) — the journey strip's five stops are the step links, and they name their stops only
   to a screen reader — so the step's own `<h2>` is **drawn** again on the survey screens, which
@@ -437,15 +460,15 @@ list, then bump `CACHE_VERSION` — in the same change.
 
 1. **`explain()`** — a collapsed `<details>`, 2–4 sentences in the app's voice, **on the screens
    that are genuinely unclear** and no others (D41): Settings, where the privacy promise lives,
-   and the worked example, which is read-only and does not say so otherwise. Every step screen
-   instead carries one visible `.step-lead` line saying what the step is for. The rule the harness
+   and the worked example, which is read-only and does not say so otherwise. Since D54 no step
+   screen carries a lead line either: the dealt card says what it wants. The rule the harness
    enforces is **no screen explains itself twice**, which is the rule that was worth having.
 2. **The rules library** — one entry per card and per step, in the app's own words, in play order,
    searchable, collapsed until opened. **Every card links to its entry.**
 3. **The tutorial** — a first-story walkthrough on its own route, linked from the home screen while
    the shelf is empty and permanently from Settings.
-4. **In-context teaching** — the booklet's example appears on the card being answered, not in a
-   separate chapter. This is the layer that actually lands, and it is where the booklet's teaching
+4. **In-context teaching** — the booklet's teaching and examples are on the card being answered,
+   not in a separate chapter: its first sentence printed, the rest and the examples behind ? (D57). This is the layer that actually lands, and it is where the booklet's teaching
    lives (§0.1).
 
 **Voice**: the app uses the book's own names — Ordinary World, Call to Action, the Threshold,
@@ -537,20 +560,21 @@ ships.** Fill the row when you build the rule, not at audit time.
 | Rule | Shape | Data | Engine | Surface | Test |
 |---|---|---|---|---|---|
 | P1 skip any card | Permission | — | `store.skipCard` | Skip button, every card | skipped card stays reachable |
-| P1 skip a card | Permission | `story.skipped` | `ingredients.ingredientsGrid` | "Skip this one for now" + "Bring it back" | `ingredients: a skipped card comes back` |
+| P1 skip a card | Permission | `story.skipped` | `ingredients.ingredientQuestion` options, `derived.dealOrder` | ⋯ → "Skip this card for now" (not dealt after); "Bring it back" on the spread | `ingredients: a skipped card comes back` · `P1: a skipped card is not dealt` |
 | P2 any order | Permission | — | `ingredients.ingredientsGrid`, pips | Card grid; numbered pips inside a card | `ingredients: the tile counts answers` |
-| P3 two heroes | Permission | — | `ingredients.addEntry` | "Add another main character", uncapped | `ingredients: a second main character is allowed` |
-| P4 re-roll freely | Permission | `PROMPTS`, `DIE_FACES` | `idea.roll` | Roll again, always enabled | `idea: every roll is kept, none discarded` |
-| P5 leave it blank | Permission | — | `derived.progress` | Counts in the story header, never a block | `progress counts what is answered, and nothing else` |
-| House sparks | Permission (ours) | `IDEA_SPARKS`, `INPUT_SPARKS` | `sparks.drawSparks`, `sparks.fieldWithSparks` | "Stuck? Three words" under every field, labelled "ours, not the deck's" | `every input the app asks for has a table` · `every table belongs to a real input` |
-| P6 boost spawns a card | Permission | `BOOSTS[].canSpawn`, `cast[].origin` | `boost.boostScreen` → `ingredients.addEntry`, `derived.spawnedBy` | "This gives me a new character", listed back on the boost | `P6: what a boost made is derived from the card, not recorded twice` |
-| P7 boost rewrites a beat | Permission | `BOOSTS[].suggestsBeats` | `boost.boostScreen` → `#/build/structure/N/from/<boost>` | "Change beat N", with the way back | `P7: every beat a boost points at exists, and the snapshot still holds the old text` |
+| P3 two heroes | Permission | — | `ingredients.addEntry` | A blank card with a plus on the spread, and ⋯ → "Add another …"; both dealt | `ingredients: a second main character is allowed` · `P3: a second main character is dealt too` |
+| P4 re-roll freely | Permission | `PROMPTS`, `DIE_FACES` | `idea.roll` | The die on the table; once thrown, the die on the dealt card rolls again, always enabled | `idea: every roll is kept, none discarded` |
+| P5 leave it blank | Permission | — | `derived.progress` | The pile's counts (D54), never a block; Next always deals | `progress counts what is answered, and nothing else` |
+| House sparks | Permission (ours) | `IDEA_SPARKS`, `INPUT_SPARKS` | `sparks.drawSparks`, `sparks.fieldWithSparks` | A bulb, "Stuck?", under every field, labelled "ours, not the deck's" (D62) | `every input the app asks for has a table` · `every table belongs to a real input` |
+| P6 boost spawns a card | Permission | `BOOSTS[].canSpawn`, `cast[].origin` | `boost.boostScreen` → `ingredients.addEntry`, `derived.spawnedBy` | The card's *Somebody new* chip → "This gives me a new character", listed back on the boost (D56) | `P6: what a boost made is derived from the card, not recorded twice` |
+| P7 boost rewrites a beat | Permission | `BOOSTS[].suggestsBeats` | `boost.boostScreen` → `#/build/structure/N/from/<boost>` | The card's *Change a beat* chip → "Change beat N", with the way back (D56) | `P7: every beat a boost points at exists, and the snapshot still holds the old text` |
 | A5 beat 2 pre-fill | Sequence | — | `structure.prefillBeat2` | Beat 2, pre-filled, with a provenance line | `editing beat 2 does not rewrite the ingredient it came from` |
-| A9 any beat, any time | Permission | `BEATS` | `structure.beatScreen` pips | Numbered pips 1–9, blanks dotted | `structure: the header counts written beats` |
+| A9 any beat, any time | Permission | `BEATS` | `structure.beatScreen` pips | Numbered pips 1–9, blanks dashed; the map of nine on the spread | `structure: the pile counts written beats` |
 | A8 snapshot | Procedure | `story.snapshot`, `store.boostingHasBegun` | `store.ensureSnapshot`, `store.takeSnapshot` | Locks on the first boost answered or skipped; re-freeze confirms and names the loss | `opening the Boost step is not the same as boosting` · `the before-version locks the moment a boost is answered or skipped` |
 | D10 before/after | Procedure | `story.snapshot` | `derived.assemble(story, version)` | Tell page toggle, `aria-pressed` | `both versions render from one record` |
 | P9 tell it again | Permission | — | `tell.tellScreen` | Reachable any time, never withheld | `an empty story reads back as empty rather than crashing` |
-| P8 skip a boost | Permission | `story.boosts[].skipped` | `boost.boostScreen` | "Skip this one" / "Bring this one back" | `P8: a skipped boost comes back` |
+| P8 skip a boost | Permission | `story.boosts[].skipped` | `boost.boostScreen` | ⋯ → "Skip this one" / "Bring this one back" (D56) | `P8: a skipped boost comes back` |
+| D55 the deal | Procedure | `INGREDIENTS`, `BEATS`, `BOOSTS` | `derived.dealOrder`, `derived.dealNeighbours` | Next and the swipe on every dealt card | `the deal follows the booklet: idea, ingredients, nine beats, ten boosts, tell` |
 | P10 draw it | Permission | `DRAWING_TIPS` | **guidance only** | Learn chapter, 7 tips | `the drawing chapter is guidance only — it names no control` |
 | D11 worked stories | Procedure | `EXAMPLE_STORIES` | `library.exampleScreen` → `derived.assemble` | Two readable stories on the shelf, copyable | `Hänsel and Gretel is told twice, and the two tellings differ` |
 
@@ -571,10 +595,10 @@ horizontal overflow at 320/360/390 and no stretched layout at 768/1024; no stray
 `null`/`undefined`/`NaN` text; nothing under the fixed tab bar; every screen's primary action above
 the fold; section nav reaches every sibling; no tap target under 40px measured on the wrapping
 label; the action bar never grows past one bar; the current section-nav pill stays in view; fixed
-chrome inside its budget; the counts still on screen after scrolling (§6.2); an unanswered card lying face-down and the Deck showing every face; the question sitting on the card, not under it; every beat frame wearing its own card and showing the text written on it; the told story opening on a full-width cover; the cast strip showing who the story has and keeping off the question screens; the spine carrying one bone per beat and filling the written ones; every card wearing its group's sigil beside the group's name; the told story closing on its ornament; each step naming itself on the root and owning a distinct accent and ground; the journey carrying five stops, saying its counts in words, marking where you stand and filling as the story fills; the booklet's teaching set as speech rather than app copy; no screen explaining itself twice and every step screen leading with one visible line; the step nav folded into the journey — five stops, all links, one marked current, in a named landmark, none under 40px — with the step heading drawn again on a survey screen and the step's description kept off the question screens; Settings stating where the stories are kept (§4); the first screen opening on at least three real card faces, marked as decoration, with Start beside the field it submits rather than pinned; the shelf's stories not all wearing the same picture, each cover standing beside its words; Learn opening on an index of covers with no entries on it and search still there, a chapter carrying its own nine entries and a way back, and a card's link still landing on its entry inside the right chapter; the Ingredients step standing on four named, tilted stations that each carry their cards; an unrolled die lying on its table at 64px or more, as a button that deals a Prompt card when thrown; the nine beats standing as stops on a drawn route rather than in rows, staggered rather than level; the ten boosts held as a fan — every card turned, overlapping its neighbour, and neither end of the hand clipped outside the scroller; the told story setting its connector on a line of its own and dropping a cap on each passage, on a page with a fore-edge; numerals set in the numeral face; a finished card wearing a pressed wax seal; the ninth beat drawing one burst on the write that fills it and none on merely arriving at a story already whole; nothing named twice; the two-up layouts really give two columns at 1024
+chrome inside its budget; the counts still on screen after scrolling (§6.2); an unanswered card lying face-down and the Deck showing every face; the question sitting on the card, not under it; every beat frame wearing its own card and showing the text written on it; the told story opening on a full-width cover; the pile showing what the story has made and thickening; every card wearing its group's sigil beside the group's name; the told story closing on its ornament; each step naming itself on the root and owning a distinct accent and ground; the booklet's teaching set as speech rather than app copy; no screen explaining itself twice and no lead line on any; Settings stating where the stories are kept (§4); the first screen opening on at least three real card faces, marked as decoration, with Start beside the field it submits rather than pinned; the shelf's stories not all wearing the same picture, each cover standing beside its words; Learn opening on an index of covers with no entries on it and search still there, a chapter carrying its own nine entries and a way back, and a card's link still landing on its entry inside the right chapter; the Ingredients step standing on four named, tilted stations that each carry their cards; an unrolled die lying on its table at 64px or more, as a button that deals a Prompt card when thrown; the nine beats standing as stops on a drawn route rather than in rows, staggered rather than level; the ten boosts held as a fan — every card turned, overlapping its neighbour, and neither end of the hand clipped outside the scroller; the told story setting its connector on a line of its own and dropping a cap on each passage, on a page with a fore-edge; numerals set in the numeral face; a finished card wearing a pressed wax seal; the ninth beat drawing one burst on the write that fills it and none on merely arriving at a story already whole; nothing named twice; the two-up layouts really give two columns at 1024
 and one at 390; the action bar measured continuously from 320 to 1024 in 8px steps, because it is
 the one thing sensitive to width rather than to layout and a five-width sample walked straight past
-a defect band nine pixels wide; one primary action per screen, at most six text sizes and three families on any route; the nine beats as beads on the Structure stop and no second bar, the Idea stop's tick, blank and written pips drawn differently, long guidance folding to three lines and opening again, no Delete lying on a shelf row and Delete last behind its ⋯, the row itself opening the story, Tell's primary being Print, the file input styled over its own label, the lightbox turning to the next card, a screen keeping your place when you come back to it, and at 1024 a Deck card beside its words and the bench two-up; the full walk: storyteller → story → roll → idea → ingredients → beats → boost → tell.
+a defect band nine pixels wide; one primary action per screen, at most six text sizes and three families on any route; blank and written pips drawn differently, long guidance folding to three lines and opening again on a Deck card, no Delete lying on a shelf and Delete last behind its ⋯, a book on the shelf opening its story with its title on its cover, Tell's primary being Print, the file input styled over its own label, the lightbox turning to the next card, a screen keeping your place when you come back to it, and at 1024 a Deck card beside its words and the bench two-up; the Dealer (D53–D61): the first screen's one control dealing straight to the Idea card with no form before it, the storyteller in the menu only once there is one, the pile saying the counts in words, staying in the bar and opening five drawn steps with the current one marked, a build screen carrying no section nav, lead, cast strip or story header, a dealt card carrying back, ⋯ and Next with Next dealing the booklet's next card, a swipe dealing it too, fewer than 90 words on a dealt card before a scroll, the card printing the first line of its teaching with ? opening the rest and the examples, Tell as a book with a cover its picture fills, a page per beat wearing its card and pages that turn, the note on how the Dealer works shown once, the story and its teller named on the cover, and Next from the Idea dealing the first ingredient; the full walk: deal → roll → idea → ingredients → beats → boost → tell → name it.
 
 **C. Interaction audit (`npm run audit`, ~2 min).** Visits every route — including the screens
 *inside* a step — clicks every visible control in isolation with storage reset between clicks, and
@@ -602,7 +626,7 @@ stories, a story with 4 heroes, 2 villains, 3 worlds, every beat long, all 10 bo
 text, whitespace-only answers — what a kid types when nobody is watching). `tests/probe-layout.mjs` prints per route: height in viewports, control count,
 primary-action offset, smallest tap target, overflow per width. A probe prints; it does not assert.
 
-**Mutation pass (`npm run mutants`, `-- all` for the browser ones).** Seventy-eight mutants, each breaking
+**Mutation pass (`npm run mutants`, `-- all` for the browser ones).** Eighty-two mutants, each breaking
 one rule the app is supposed to keep — the pre-fill, the snapshot, the die, a permission's control,
 the placeholder path, the update toast, the zoom lock. A mutant that survives is a rule that can break silently,
 and is a finding against the harness rather than the app.
@@ -647,11 +671,11 @@ mattered, with a verified-clean list.
 
 | Action | What it destroys | How it is protected |
 |---|---|---|
-| Delete a story | everything in it | confirms, naming the idea, the characters, the beats and the boosts. Reachable from the shelf row's ⋯ sheet, where it is last and never beside Open (D49), **and** from Settings for the story you have open |
-| Remove a storyteller | them, and all their stories | confirms, counting the stories that go. Reachable from the storyteller's face in the bar (D49) and from Settings; the last storyteller is removable, which returns the app to first run |
+| Delete a story | everything in it | confirms, naming the idea, the characters, the beats and the boosts. Reachable from the ⋯ on its book on the shelf, where it is last and never beside Open (D49, D59), **and** from Settings for the story you have open |
+| Remove a storyteller | them, and all their stories | confirms, counting the stories that go. Reachable from the storyteller in the menu (D54) and from Settings; the last storyteller is removable, which returns the app to first run |
 | Re-freeze the before-version | the draft you started boosting with | confirms, naming what is replaced |
 | Load a backup | any story on the shelf sharing an id | confirms, **listing the stories by name** |
-| Remove a character or world | every answer on that card | confirms; the snapshot keeps its own copy |
+| Remove a character or world | every answer on that card | confirms; behind the card's ⋯, last (D56); the snapshot keeps its own copy |
 | Skip a card or a boost | nothing — answers are kept | reversible, "bring it back" |
 | Switch storyteller | nothing | reversible |
 | Clear a field | that answer | **not protected** — it is typing, and autosave is the point. Accepted |
@@ -688,6 +712,7 @@ rather than a broken image, and the harness must pass with `assets/cards/` empty
 
 | Date | Change | Verification | Cache |
 |---|---|---|---|
+| 2026-10-13 | **The Dealer: the app stops being a set of forms and deals you cards.** Told it was still cluttered, wordy and intimidating, I measured first: eight bands on every build screen, 18–25 controls in a question screen's first viewport, 177 words before a scroll on Boost and 189 on Idea, and a form before the first card. Recorded as D53–D63. **One card at a time**: the dealt card is the screen — its picture, its question, the field, one printed line of its teaching, the pips — and Next or a swipe deals the next one in the booklet's own order (`dealOrder`), which is an order and never a gate: every spread still opens any card (P2, A9, P8), a skipped card is not dealt (P1), a second hero is (P3). **Everything else behind two buttons**: ☰ (places, Settings, the storyteller) and the card's ⋯ (skip, add another, remove, see the step); on a Boost, P6 and P7 stay on the card as two chips. **Progress is a pile of cards in the bar**, saying the counts in words and opening the five steps; the story header, the journey strip, the cast strip and the step's heading and lead are gone, and the chrome fell from 128px to the 44px bar. **The teaching**: the first sentence on the card, the rest and every example behind ? — §0.1 holds. **First run is one button**, *Deal me a story*; the title and the teller's name are asked on the book's cover at the end. **The shelf is books**; **Tell is a paged book**, a cover its picture fills and a page per beat wearing that beat's card. Measured after, at 390: Idea 189 → 65 words above the fold, Boost 177 → 98, a beat 79 → 54, Ingredients 3.3 → 2.1 screens, the shelf 90 → 28 words, the first screen 82 → 24. **Found on the way, all mine**: the book's pages were as tall as its longest, so the cover stood on half a screen of nothing — a book is one size now; the once-only note covered the pips the walk then tried to tap, so it is marked seen the moment it shows and lets taps through; four sentence-long Boost buttons were clutter of their own making, now two chips; the interaction audit could not see a page turn because it only knew the window's scroll, and it now counts the book's; and removing the tutorial link from the empty shelf would have broken §6.2's rule that it lives there while the shelf is empty — restored. | `npm test` 97/97 (a new `deal.test.mjs`: the booklet's order, every question once, P1 and P3 in the deal, neighbours, the teaching line, naming the teller later) and the scan clean; smoke clean over 30 routes × 5 widths with the walk rebuilt for the Dealer and eleven new checks; interaction (202 controls), a11y and update path clean; `npm run mutants -- all` **82/82 caught** — fifteen re-pointed or replaced because this change moved or retired the code they guarded (the journey, the spine, the cast strip and the story header are gone, so their mutants now guard the pile, the deal and the note), and seven new | v39 |
 | 2026-10-13 | Recorded the owner's working agreement at the top of this file: progress reported in 5% steps, and every change kept faithful to the deck's rules (§0, §3, §10.7). No app code changed. | — | — |
 | 2026-09-30 | **The real-device checklist.** Every harness runs in a desktop Chromium, so everything v38 added that depends on hardware or the OS — the notch inset, the keyboard keeping a field in view, the haptic tick, swiping the lightbox, the file picker behind a styled label, print, install and offline — has only ever been verified by inference. `docs/DEVICE-CHECK.md` is 25 steps in five groups, about ten minutes, with iOS and Android columns and a findings table; each ✗ becomes a numbered finding in `docs/AUDIT.md` and a harness check (§10.5). No app code changed. | Every step checked against the shipped code: control names, sheet order (Rename, Close, Delete), the lightbox's count, the reduced-motion gate on the tick | — |
 | 2026-09-30 | **UX/UI audit, one batch: hierarchy, density and the tablet.** Measured every route at 390 and 1024 before touching anything. Seventeen changes, every string, card, question and rule unchanged (D46–D52). **The work moved up**: heading and lead are one block, the cast strip lives only on Ingredients and Tell, and long guidance folds to three lines with *Read more* — the whole text stays in the document, so §0.1 holds; the first beat frame on the Structure map rose from 345px to 267px on a 390 phone. **One of everything**: one primary per screen (the boost screen carried three), five text sizes and a reading size where there were thirty-one (Idea alone set ten), three families where the question screens set five, and one progress object — the spine folded into the Structure stop as nine beads on its rim, the Idea stop drawing a tick rather than "yes", and pips that say written, blank or here without being read. **The tablet stopped being worse than the phone**: Ingredients at 1024 was 3.7 screens against 3.4 on a phone and is 2.2 now, with the bench two-up; a Deck card stands beside its words, 2.5 screens → 1.0. **The shelf**: the row opens the story, Rename and Delete sit behind a labelled ⋯ with Delete last, and the storyteller is a face in the bar on every screen (amends D31). **Settings** became panels with a styled file button and an A at each end of the slider; **Tell's** primary is Print. **Behaviour**: the lightbox leafs through a card's group by swipe, arrow or button; a screen remembers where you were on it; the focused field stays clear of the keyboard; one haptic tick when the die lands; the bar clears a notch (`viewport-fit=cover` was set with no inset behind it). **Two defects the mutation pass found, one in the app.** `hidden` did not hide the storyteller button, because `.icon-button` sets a display and beats the attribute — so on first run the bar carried an empty ring, and the mutant that hid it for good changed nothing. `[hidden]` means hidden everywhere now. And the action-bar clamp's mutant survived because Print made Tell's bar short enough that no bar in the app could break it; the sweep now feeds the bar a long context and measures the clamp's own rule, two lines, rather than inferring it from a height the smaller type no longer reaches. | `npm test` 89/89 and the scan clean; smoke clean over 30 routes × 5 widths with two new per-route checks (one primary action; at most six sizes and three families) and fifteen new feature checks — beads on the stop and no second bar, the Idea tick, pips drawn apart, guidance folding and opening, no Delete on a shelf row and Delete last behind ⋯, the row opening its story, the storyteller in the bar only once there is one, Print as Tell's primary, the file input styled over its label, the lightbox turning, a screen keeping your place, and at 1024 a Deck card beside its words and the bench two-up — plus the bar's context held to two lines; interaction (261 controls), a11y and update path clean; `npm run mutants -- all` 78 mutants: 76 caught, 14 of them new, and five re-pointed after this change moved their code. **Both survivors were proved to bite by hand after the fix** — the storyteller hidden for good (14 findings) and the clamp removed (the context at 4.0 lines from 432px) — and the suites re-run clean | v38 |

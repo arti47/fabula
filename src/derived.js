@@ -200,29 +200,48 @@ export function coverCard(story) {
   return cards[h % cards.length];
 }
 
-/**
- * What the story has invented so far (S3): every character and world with something written on
- * it, in the order they were made, with the card each one wears. Derived, never stored.
- */
-export function castStrip(story) {
-  const heroCard = INGREDIENTS.find((i) => i.kind === 'hero');
-  const villainCard = INGREDIENTS.find((i) => i.kind === 'villain');
-  const worldCard = INGREDIENTS.find((i) => i.kind === 'world');
-  const people = (story.cast || []).filter(hasAnyAnswer).map((c) => ({
-    id: c.id,
-    kind: c.kind,
-    art: (c.kind === 'villain' ? villainCard : heroCard)?.art,
-    name: isBlank(c.answers?.name)
-      ? (c.kind === 'villain' ? 'The antagonist' : 'The main character')
-      : c.answers.name,
-    href: `#/build/ingredients/${c.id}`,
-  }));
-  const places = (story.worlds || []).filter(hasAnyAnswer).map((w) => ({
-    id: w.id,
-    kind: 'world',
-    art: worldCard?.art,
-    name: isBlank(w.answers?.whereWhen) ? 'That place' : w.answers.whereWhen,
-    href: `#/build/ingredients/${w.id}`,
-  }));
-  return [...people, ...places];
+// ---------------------------------------------------------------------------
+// The deal (D55): the order the Dealer hands the cards out in.
+//
+// The booklet's own order — the Idea, then the four Ingredients (every character, antagonist and
+// world the story has, each question in turn), then the nine beats, then the ten Boosts, then
+// Tell. It is an order, never a gate: every card stays reachable from its spread in any order
+// (P2, A9, P8), and a skipped Ingredient is simply not dealt (P1). Derived, never stored.
+// ---------------------------------------------------------------------------
+
+const KIND_NAME = { hero: 'Main character', villain: 'Antagonist', world: 'World', event: 'Something happens' };
+
+export function dealOrder(story) {
+  const order = [{ route: '#/build/idea', label: 'The idea' }];
+  for (const card of INGREDIENTS) {
+    if ((story.skipped || []).includes(card.id)) continue;
+    let entries;
+    if (card.kind === 'event') entries = [{ id: 'inciting' }];
+    else if (card.kind === 'world') entries = story.worlds || [];
+    else entries = (story.cast || []).filter((c) => c.kind === card.kind);
+    // A kind with nothing yet is dealt as a fresh card, made on arrival.
+    if (!entries.length) {
+      order.push({ route: `#/build/ingredients/new-${card.kind}`, label: KIND_NAME[card.kind] });
+      continue;
+    }
+    for (const entry of entries) {
+      card.questions.forEach((q, i) => {
+        order.push({ route: `#/build/ingredients/${entry.id}/${i}`, label: `${KIND_NAME[card.kind]}: ${q.label}` });
+      });
+    }
+  }
+  for (const beat of BEATS) order.push({ route: `#/build/structure/${beat.n}`, label: `Beat ${beat.n}: ${beat.beatName}` });
+  for (const boost of BOOSTS) order.push({ route: `#/build/boost/${boost.id}`, label: `Boost: ${boost.headline}` });
+  order.push({ route: '#/build/tell', label: 'Read your story' });
+  return order;
+}
+
+/** The cards either side of the one you are holding. A route the deal does not know has neither. */
+export function dealNeighbours(story, route) {
+  const order = dealOrder(story);
+  // An Ingredient card opened without a question number is its first question.
+  const wanted = /^#\/build\/ingredients\/(?!new-)[\w-]+$/.test(route) ? `${route}/0` : route;
+  const at = order.findIndex((o) => o.route === wanted);
+  if (at < 0) return { prev: null, next: null, index: -1, total: order.length };
+  return { prev: order[at - 1] || null, next: order[at + 1] || null, index: at, total: order.length };
 }

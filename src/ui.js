@@ -349,27 +349,6 @@ export function cardTile(card, { href, sub, blank = false, done = false } = {}) 
   );
 }
 
-/**
- * The cast strip (S3): who and where the story has, pinned above the work.
- *
- * Steps one to four are forms; without this a kid writes for twenty minutes and never sees what
- * they have made. Each chip wears the card its answers live on and links back to it. Returns null
- * when the story has invented nobody, so an empty strip never takes up room.
- */
-export function castRow(entries) {
-  if (!entries.length) return null;
-  const strip = el('div', { class: 'cast-strip' });
-  add(strip, el('h3', { class: 'visually-hidden', text: 'Who and where, so far' }));
-  for (const entry of entries) {
-    const chip = el('a', { class: `cast-chip is-${entry.kind}`, href: entry.href });
-    const art = el('span', { class: 'cast-art', 'aria-hidden': 'true' });
-    if (entry.art) art.style.backgroundImage = `url("assets/cards/${entry.art}.webp")`;
-    add(chip, art);
-    add(chip, el('span', { class: 'cast-name', text: entry.name }));
-    add(strip, chip);
-  }
-  return strip;
-}
 
 /**
  * A card that arrives face-down and turns over (D26/D29).
@@ -434,10 +413,6 @@ export function groupBanner(groupId) {
 }
 
 /**
- * The answering layout: a card face and the question about it. One column on a phone, two on a
- * tablet — the card stays visible beside the field instead of scrolling away above it (D12).
- */
-/**
  * The answering stage (D29): the card at its real proportion, and the question written on it.
  *
  * The field sits on a panel laid over the card's lower half, so the illustration is visible above
@@ -454,13 +429,6 @@ export function answerStage(face, body) {
   );
 }
 
-export function answerLayout(face, body) {
-  return add(
-    el('div', { class: 'answer-layout' }),
-    add(el('div', { class: 'answer-face' }), face),
-    add(el('div', { class: 'answer-body' }), ...body),
-  );
-}
 
 /** Example line, labelling anything this project added rather than Sefirot (§2.2). */
 export function exampleLine(example) {
@@ -470,4 +438,137 @@ export function exampleLine(example) {
     document.createTextNode(example.text),
     example.house ? el('span', { class: 'house-flag', text: 'our example' }) : null,
   );
+}
+
+// ---------------------------------------------------------------------------
+// The Dealer (D53): one card at a time, nothing else on the table.
+// ---------------------------------------------------------------------------
+
+/** The first sentence of a passage — what the card says out loud before you ask for more. */
+export function firstSentence(text) {
+  const m = String(text || '').match(/^.*?[.!?](?=\s|$)/);
+  return m ? m[0] : String(text || '');
+}
+
+/**
+ * The card's teaching, one line on the card and the rest one tap away (D57).
+ *
+ * §0.1 says the booklet's teaching appears on the card being answered, and it does: its first
+ * sentence is printed under the question. The rest of it, and the worked examples, open from the
+ * "?" over the same card — they used to be a bubble, a disclosure and a list, three more things to
+ * look at on a screen whose job is one question.
+ */
+export function teachingLine(card, { examples = [], answer = null, learnId = card.id } = {}) {
+  const line = el('p', { class: 'teaching' });
+  add(line, el('span', { class: 'teaching-text', text: firstSentence(card.guidance) }));
+  add(line, add(el('button', {
+    type: 'button', class: 'teaching-more',
+    'aria-label': `More about “${card.headline}”, with examples`,
+    onclick: () => {
+      const body = [el('p', { class: 'guidance', text: card.guidance })];
+      if (answer) {
+        body.push(el('h3', { text: answer.title }));
+        body.push(el('p', { text: answer.text }));
+      }
+      if (examples.length) {
+        body.push(el('h3', { text: 'How other stories do it' }));
+        body.push(add(el('ul', { class: 'example-list' }), ...examples.map(exampleLine)));
+      }
+      body.push(el('p', {}, el('a', { class: 'back-link', href: `#/learn/${learnId}`, text: 'Read more about this card →' })));
+      modal({ title: card.headline, body, actions: [{ label: 'Back to the card', kind: 'secondary' }] });
+    },
+  }), icon('help', { size: 22 })));
+  return line;
+}
+
+/**
+ * The things a card can do besides be answered, behind one labelled ⋯ (D56): skip it, add another,
+ * invent a character, go and change a beat. Each is a permission the booklet grants, so each is a
+ * control — they are simply not all on the table at once.
+ */
+export function optionsSheet(title, items) {
+  const real = items.filter(Boolean);
+  // Destructive last, wherever the caller listed it (§6.1).
+  real.sort((a, b) => (a.kind === 'danger') - (b.kind === 'danger'));
+  modal({
+    title,
+    body: [],
+    actions: [
+      ...real.map((item) => ({
+        label: item.label,
+        kind: item.kind || 'secondary',
+        onClick: item.href ? () => { location.hash = item.href; } : item.onClick,
+      })),
+      { label: 'Close', kind: 'secondary' },
+    ],
+  });
+}
+
+/**
+ * The Dealer's bar: back, the card's ⋯, and Next — the one primary on the screen (D46, D53).
+ * `next` and `prev` are `{ route, label }`; the visible word stays short and the full name of the
+ * next card is what a screen reader hears.
+ */
+export function dealerBar({ prev, next, nextText = 'Next', options = null }) {
+  const mount = qs('#action-bar-mount');
+  clear(mount);
+  const bar = el('div', { class: 'action-bar dealer-bar' });
+  add(bar, prev
+    ? add(el('a', { class: 'button secondary icon-only', href: prev.route, 'aria-label': `Back: ${prev.label}` }), icon('prev', { size: 22 }))
+    : el('span', { class: 'dealer-gap' }));
+  if (options) {
+    add(bar, add(el('button', {
+      type: 'button', class: 'button secondary icon-only dealer-more',
+      'aria-label': 'More things this card can do', 'aria-haspopup': 'dialog',
+      onclick: options,
+    }), icon('more', { size: 22 })));
+  }
+  if (next) {
+    add(bar, add(
+      el('a', { class: 'button dealer-next', href: next.route, 'aria-label': `${nextText}: ${next.label}` }),
+      el('span', { text: nextText }),
+      icon('next', { size: 20 }),
+    ));
+  }
+  add(mount, bar);
+  return el('div', { class: 'action-bar-spacer' });
+}
+
+/**
+ * Swipe the card for the next or the last one (D53). Only a clear sideways stroke counts, and
+ * never one that starts in a field, a button or a link — those are for writing and tapping.
+ */
+export function swipeToDeal(node, { prev, next }) {
+  let start = null;
+  node.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('textarea, input, button, a, select')) return;
+    start = { x: e.clientX, y: e.clientY };
+  });
+  node.addEventListener('pointerup', (e) => {
+    if (!start) return;
+    const dx = e.clientX - start.x;
+    const dy = e.clientY - start.y;
+    start = null;
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    const to = dx < 0 ? next : prev;
+    if (to) location.hash = to.route;
+  });
+  return node;
+}
+
+/**
+ * Shown once, on the first card a storyteller is ever dealt (D61): how the Dealer works, in one
+ * line, pointing at the bar. It covers nothing and blocks nothing — a note, not a modal.
+ */
+export function dealerHint(seen, onSeen) {
+  if (seen) return null;
+  // Once means once: it is marked seen the moment it is shown, so the next card is clear.
+  onSeen();
+  const hint = el('div', { class: 'dealer-hint', role: 'note' });
+  add(hint, el('p', { text: 'Write on the card. Swipe it, or tap Next, for the next one. ⋯ holds skip and more.' }));
+  add(hint, el('button', {
+    type: 'button', class: 'button secondary', text: 'Got it',
+    onclick: () => hint.remove(),
+  }));
+  return hint;
 }

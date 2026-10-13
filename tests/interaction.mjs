@@ -41,6 +41,8 @@ const SIGNATURE = () => ({
   hash: location.hash,
   printed: window.__printed || 0,
   scroll: Math.round(window.scrollY / 20), // scrolling somewhere is a real change
+  // So is turning a page of the book (D60): it scrolls the book sideways, not the window.
+  page: Math.round((document.querySelector('.book-pages')?.scrollLeft || 0) / 20),
 
   // A hash of the whole screen, not its length and its first 400 characters. Summarised that way,
   // any text swapped for text of the same length further down the page was invisible — the audit
@@ -101,8 +103,9 @@ try {
         return {
           label: (node.textContent || node.getAttribute('aria-label') || node.tagName).trim().slice(0, 40),
           visible: node.offsetParent !== null && rect.width > 0 && rect.height > 0,
-          // A nav pill for the screen you are already on is meant to do nothing.
-          isCurrent: node.getAttribute('aria-current') !== null,
+          // A nav pill for the screen you are already on is meant to do nothing, and so is a
+          // control that says it is disabled (the first page has no page before it).
+          isCurrent: node.getAttribute('aria-current') !== null || node.disabled === true,
         };
       }, i);
 

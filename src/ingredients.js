@@ -10,11 +10,12 @@
 // reachable in any order from the pips, so the permission survives the format.
 
 import { el, add, uid, debounce, isBlank } from './core.js';
-import { actionBar, cardTile, dealtFace, showToast, answerStage, confirmModal } from './ui.js';
+import { actionBar, cardTile, dealtFace, showToast, answerStage, confirmModal, teachingLine, optionsSheet, dealerBar } from './ui.js';
 import { fieldWithSparks } from './sparks.js';
+import { icon } from './icons.js';
 import { INGREDIENTS } from '../data.js';
 import { saveStory, removeEntry } from './store.js';
-import { hasAnyAnswer } from './derived.js';
+import { hasAnyAnswer, dealNeighbours } from './derived.js';
 import { renderStoryHeader } from './router.js';
 
 // ---------------------------------------------------------------------------
@@ -87,7 +88,6 @@ export function ingredientsGrid(story) {
     const station = el('section', { class: 'bench-station', style: `--tilt: ${[-0.5, 0.55, -0.45, 0.6][stationIndex % 4]}deg` });
     add(wrap, station);
     add(station, el('h3', { class: 'bench-label', text: card.headline }));
-    add(station, el('p', { class: 'guidance', text: card.guidance }));
 
     if (skipped) {
       add(station, add(
@@ -109,7 +109,7 @@ export function ingredientsGrid(story) {
       const answered = Object.values(entry.answers || {}).filter((v) => !isBlank(v)).length;
       add(grid, cardTile(card, {
         href: `#/build/ingredients/${entry.id}`,
-        sub: `${answered} of ${card.questions.length} answered`,
+        sub: `${answered}/${card.questions.length}`,
         blank: !hasAnyAnswer(entry),
         done: answered === card.questions.length,
       }));
@@ -118,35 +118,26 @@ export function ingredientsGrid(story) {
     });
 
     if (!entries.length) {
-      add(grid, cardTile(card, { href: `#/build/ingredients/new-${card.kind}`, sub: 'Nothing written yet', blank: true }));
+      add(grid, cardTile(card, { href: `#/build/ingredients/new-${card.kind}`, blank: true }));
     }
     add(station, grid);
 
-    const row = el('div', { class: 'row-actions' });
+    // P3 — another of the same card is one more card on the bench: a blank one with a plus on it,
+    // rather than a sentence-long button under the row (D59).
     if (card.repeatable && entries.length) {
-      add(row, el('button', {
-        type: 'button', class: 'button secondary',
-        text: card.kind === 'world' ? 'Add another world' : `Add another ${card.kind === 'hero' ? 'main character' : 'antagonist'}`,
+      const another = card.kind === 'world' ? 'Add another world' : `Add another ${card.kind === 'hero' ? 'main character' : 'antagonist'}`;
+      add(grid, add(el('button', {
+        type: 'button', class: 'card add-card', 'aria-label': another,
         onclick: () => {
           const { story: next, id } = addEntry(current, card.kind);
           saveStory(next);
           location.hash = `#/build/ingredients/${id}`;
         },
-      }));
+      }), icon('plus', { size: 30 }), el('span', { class: 'add-card-label', text: 'Another' })));
     }
-    add(row, el('button', {
-      type: 'button', class: 'button secondary', text: 'Skip this one for now',
-      onclick: () => {
-        saveStory({ ...current, skipped: [...current.skipped, card.id] });
-        showToast('Skipped — you can bring it back any time');
-        window.dispatchEvent(new HashChangeEvent('hashchange'));
-      },
-    }));
-    add(station, row);
   });
 
   add(wrap, actionBar({
-    context: 'Answer them in any order — or none of them yet',
     label: 'Next: Structure',
     href: '#/build/structure',
   }));
@@ -183,8 +174,8 @@ export function ingredientQuestion(story, entryId, qIndex) {
   const question = card.questions[index];
   const wrap = el('div');
 
-  add(wrap, el('a', { class: 'back-link', href: '#/build/ingredients', text: '← All four ingredients' }));
-  add(wrap, el('h3', { class: 'question-card-name', text: card.headline }));
+  // D53 — the card is the screen. No way back to the spread drawn on it, no card name over it (the
+  // art prints its own): the bar's ⋯ and the menu hold those.
 
   // Pips: every question reachable in any order (P2 inside the card).
   const pips = el('nav', { class: 'pips', 'aria-label': 'Questions' });
@@ -199,7 +190,6 @@ export function ingredientQuestion(story, entryId, qIndex) {
       isBlank(entry.answers?.[q.key]) ? el('span', { class: 'blank-dot' }) : null,
     ));
   });
-  add(wrap, pips);
 
   const body = [];
   body.push(el('h2', { class: 'question-label', text: question.label }));
@@ -222,25 +212,42 @@ export function ingredientQuestion(story, entryId, qIndex) {
   field.addEventListener('input', save);
   body.push(...fieldWithSparks(field, { key: `${card.kind}.${question.key}`, story: current }));
 
+  // The teaching, one line on the card; the rest and the booklet's own answer behind "?" (D57).
   const exampleAnswer = card.example?.answers?.[question.key];
-  if (exampleAnswer) {
-    body.push(el(
-      'details',
-      { class: 'explain' },
-      el('summary', { text: `How ${card.example.ref} answers this` }),
-      el('div', {}, el('p', { text: exampleAnswer })),
-    ));
-  }
+  body.push(teachingLine(card, {
+    answer: exampleAnswer ? { title: `How ${card.example.ref} answers “${question.label}”`, text: exampleAnswer } : null,
+  }));
+  body.push(pips);
 
   add(wrap, answerStage(dealtFace(card, { deal: true }), body));
 
-  // Adding one of these is a permission (P3); taking it away again has to be possible too.
-  // Destructive, so it sits at the end of the scroll rather than in the thumb's arc (§6.3.11).
-  if (card.repeatable && entriesFor(current, card.kind).length > 1) {
-    const label = entryLabel(card, entry, 0, 1);
-    add(wrap, el('button', {
-      type: 'button', class: 'button danger', text: `Remove ${label}`,
-      onclick: () => confirmModal({
+  // Everything else this card can do, behind its ⋯ (D56). Each is a permission (P1, P3) or its
+  // undo, so each is a control; the destructive one sorts itself last.
+  const deal = dealNeighbours(current, location.hash);
+  const label = entryLabel(card, entry, 0, 1);
+  const options = () => optionsSheet(label, [
+    card.repeatable ? {
+      label: card.kind === 'world' ? 'Add another world' : `Add another ${card.kind === 'hero' ? 'main character' : 'antagonist'}`,
+      onClick: () => {
+        const { story: next, id } = addEntry(current, card.kind);
+        saveStory(next);
+        location.hash = `#/build/ingredients/${id}`;
+      },
+    } : null,
+    {
+      label: 'Skip this card for now',
+      onClick: () => {
+        saveStory({ ...current, skipped: [...current.skipped, card.id] });
+        showToast('Skipped — bring it back from the ingredients any time');
+        location.hash = deal.next?.route || '#/build/ingredients';
+      },
+    },
+    { label: 'See all four ingredients', href: '#/build/ingredients' },
+    // Adding one of these is a permission (P3); taking it away again has to be possible too.
+    card.repeatable && entriesFor(current, card.kind).length > 1 ? {
+      label: `Remove ${label}`,
+      kind: 'danger',
+      onClick: () => confirmModal({
         title: `Remove ${label}?`,
         message: `Every answer on this card goes with it. The rest of the story is untouched, and if you `
           + `have already read your story once, the saved version keeps them.`,
@@ -251,18 +258,16 @@ export function ingredientQuestion(story, entryId, qIndex) {
           location.hash = '#/build/ingredients';
         },
       }),
-    }));
-  }
+    } : null,
+  ]);
 
-  const next = card.questions[index + 1];
-  const prev = card.questions[index - 1];
-  add(wrap, actionBar({
-    context: `Question ${index + 1} of ${card.questions.length}`,
-    label: next ? 'Next question' : 'Done with this card',
-    href: next ? `#/build/ingredients/${entryId}/${index + 1}` : '#/build/ingredients',
-    secondary: prev
-      ? el('a', { class: 'button secondary', href: `#/build/ingredients/${entryId}/${index - 1}`, text: 'Back' })
-      : null,
+  // Inside a card, Next walks its questions; off its last question the Dealer deals the next card.
+  const nextQ = card.questions[index + 1];
+  const prevQ = card.questions[index - 1];
+  add(wrap, dealerBar({
+    prev: prevQ ? { route: `#/build/ingredients/${entryId}/${index - 1}`, label: prevQ.label } : deal.prev,
+    next: nextQ ? { route: `#/build/ingredients/${entryId}/${index + 1}`, label: nextQ.label } : deal.next,
+    options,
   }));
   return wrap;
 }

@@ -3,11 +3,13 @@
 // The booklet's permission P4 governs this screen: roll as often as you like, at no cost, until a
 // Prompt card gives you something. Nothing here is ever refused.
 
-import { el, add, clear, randomInt, debounce, isBlank, nowIso } from './core.js';
-import { actionBar, zoomableFace, dealtFace, exampleLine, answerLayout } from './ui.js';
+import { el, add, clear, randomInt, debounce, nowIso } from './core.js';
+import { dealtFace, answerStage, teachingLine, dealerBar } from './ui.js';
 import { PROMPTS, IDEA_CARD, DIE_FACES } from '../data.js';
 import { ideaSparkSection } from './sparks.js';
 import { saveStory } from './store.js';
+import { dealNeighbours } from './derived.js';
+import { icon } from './icons.js';
 import { renderStoryHeader } from './router.js';
 
 export function ideaStep(story) {
@@ -31,17 +33,14 @@ export function ideaStep(story) {
     save({ idea: { ...current.idea, text: field.value } });
   });
 
-  const ideaExamples = el('ul');
-  for (const ex of IDEA_CARD.examples) add(ideaExamples, exampleLine(ex));
-
-  add(wrap, answerLayout(zoomableFace(IDEA_CARD), [
+  // D53 — the Idea card is the first card dealt: its question, the sentence, one line of teaching
+  // and the rest behind "?" (D57). The five open spark tables wait behind one bulb (D62).
+  add(wrap, answerStage(dealtFace(IDEA_CARD, { deal: false }), [
     el('h2', { class: 'question-label', text: IDEA_CARD.headline }),
     el('p', { class: 'question-card-name', text: IDEA_CARD.starter }),
     field,
-    el('p', { class: 'guidance', text: IDEA_CARD.guidance }),
-    el('details', { class: 'explain' },
-      el('summary', { text: 'What other stories started as' }),
-      el('div', {}, ideaExamples)),
+    ideaSparks(),
+    teachingLine(IDEA_CARD, { examples: IDEA_CARD.examples }),
   ]));
 
   // ---- the die, on a table (D34) -------------------------------------------
@@ -49,8 +48,7 @@ export function ideaStep(story) {
   // screen and is itself the control; after one it moves to the corner of the Prompt card it
   // threw, which is where it already lived.
   const dieArea = el('div', { class: 'die-area die-table' });
-  add(wrap, el('h3', { text: 'No idea yet?' }));
-  add(wrap, el('p', { class: 'note', text: 'Roll the die. Each face sends you to one of the six Prompt cards. If it gives you nothing, roll again — you can do that as many times as you like.' }));
+  add(wrap, el('h3', { class: 'die-call', text: 'No idea yet? Roll the die.' }));
   add(wrap, dieArea);
   add(wrap, rollHistory(current));
 
@@ -92,18 +90,10 @@ export function ideaStep(story) {
       type: 'button', class: 'die-letter die-big', 'aria-label': 'Roll the die',
       text: '?', onclick: () => roll(),
     }));
-    add(dieArea, el('p', { class: 'note', text: 'Tap the die, or Roll the die below.' }));
   }
 
-  // ---- sparks (house aid) -------------------------------------------------
-  add(wrap, ideaSparkSection());
-
-  add(wrap, actionBar({
-    context: isBlank(current.idea.text) ? 'No idea written yet — that is fine' : 'Idea saved',
-    label: 'Roll the die',
-    onClick: roll,
-    secondary: el('a', { class: 'button secondary', href: '#/build/ingredients', text: 'Next' }),
-  }));
+  // The die is the control on the table, so Next is the one primary in the bar (D46).
+  add(wrap, dealerBar({ prev: null, next: dealNeighbours(current, '#/build/idea').next }));
 
   return wrap;
 }
@@ -121,16 +111,7 @@ function promptPanel(prompt, onRoll, { deal = false } = {}) {
   }));
   add(panel, dealtFace(prompt, { deal }));
   add(panel, el('h3', { class: 'prompt-headline', text: prompt.headline }));
-  add(panel, el('p', { class: 'guidance', text: prompt.guidance }));
-
-  const list = el('ul');
-  for (const ex of prompt.examples) add(list, exampleLine(ex));
-  add(panel, list);
-
-  add(panel, el('button', {
-    type: 'button', class: 'button secondary', text: 'Roll again',
-    onclick: onRoll,
-  }));
+  add(panel, teachingLine(prompt, { examples: prompt.examples }));
   return panel;
 }
 
@@ -145,3 +126,21 @@ function rollHistory(story) {
   return box;
 }
 
+
+/**
+ * The Idea screen's open spark tables (house aid, §2.1) behind one bulb (D62): five buttons and a
+ * line of fragments were a second screen's worth of things to look at under the first question.
+ */
+function ideaSparks() {
+  const box = el('div', { class: 'idea-sparks' });
+  let section = null;
+  const toggle = add(el('button', {
+    type: 'button', class: 'button secondary spark-bulb', 'aria-expanded': 'false',
+    onclick: () => {
+      // Made when asked for, gone when closed: a hidden section is still words in the document.
+      if (section) { section.remove(); section = null; } else { section = ideaSparkSection(); box.append(section); }
+      toggle.setAttribute('aria-expanded', String(Boolean(section)));
+    },
+  }), icon('bulb', { size: 20 }), el('span', { text: 'Stuck?' }));
+  return add(box, toggle);
+}

@@ -57,20 +57,6 @@ export function nowIso() {
   return new Date().toISOString();
 }
 
-/** "3 minutes ago" / "2 days ago", for the story shelf. */
-export function relativeTime(iso) {
-  const then = new Date(iso).getTime();
-  if (Number.isNaN(then)) return '';
-  const mins = Math.round((Date.now() - then) / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins} minute${mins === 1 ? '' : 's'} ago`;
-  const hours = Math.round(mins / 60);
-  if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
-  const days = Math.round(hours / 24);
-  if (days < 30) return `${days} day${days === 1 ? '' : 's'} ago`;
-  return new Date(iso).toLocaleDateString();
-}
-
 export function debounce(fn, ms = 400) {
   let t;
   return (...args) => {

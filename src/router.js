@@ -4,9 +4,7 @@ import { el, add, clear, qs } from './core.js';
 import { modal } from './ui.js';
 import { icon } from './icons.js';
 import { getCurrentStory, getCurrentStoryteller } from './store.js';
-import { progress, coverCard } from './derived.js';
-import { BEATS } from '../data.js';
-import { isBlank } from './core.js';
+import { progress } from './derived.js';
 import { deckScreen, cardScreen, settingsScreen, notFoundScreen } from './screens.js';
 import { learnScreen } from './learn.js';
 import { tutorialScreen } from './tutorial.js';
@@ -48,28 +46,13 @@ function markHere() {
   const hash = location.hash || '#/stories';
   const place = PLACES.find((p) => p.match.test(hash));
   const settings = hash.startsWith('#/settings');
-  here.textContent = settings ? 'Settings' : (place ? place.label : 'Stories');
-  here.setAttribute('href', settings ? '#/settings' : (place ? place.href : '#/stories'));
+  // On a story, the bar names the step you are standing in — it is the only heading drawn (D54).
+  const step = hash.startsWith('#/build')
+    ? STEP_ROWS.find((r) => r.id === (stepFor(hash) || (hash.startsWith('#/build/tell') ? 'tell' : null)))
+    : null;
+  here.textContent = settings ? 'Settings' : (step ? step.name : (place ? place.label : 'Stories'));
+  here.setAttribute('href', settings ? '#/settings' : (step ? step.route : (place ? place.href : '#/stories')));
   here.setAttribute('aria-current', 'page');
-}
-
-/**
- * The storyteller, as a face in the bar (S8). It was a name and a pill crowded together above the
- * shelf's heading, and only on the shelf; the one control that switches, adds and removes a
- * storyteller now sits beside Settings on every screen, and is hidden when there is nobody yet.
- */
-function renderTellerButton() {
-  const button = qs('#teller-button');
-  if (!button) return;
-  const teller = getCurrentStoryteller();
-  button.hidden = !teller;
-  if (!teller) return;
-  button.querySelector('[data-teller]').textContent = teller.emoji;
-  button.title = teller.name;
-  if (!button.dataset.wired) {
-    button.dataset.wired = 'yes';
-    button.addEventListener('click', () => storytellerManager());
-  }
 }
 
 /** The header's own links are navigation too: say when you are standing on one. */
@@ -83,27 +66,36 @@ function markHeaderLinks() {
   }
 }
 
-/** The menu: one button, four places, the one you are standing on marked. */
+/**
+ * The menu: the one button that opens everything else (D31, D54). The four places, then Settings
+ * and the storyteller — who moved here from the bar, which now carries nothing but where you are
+ * and your story's pile.
+ */
 function openMenu() {
   const hash = location.hash || '#/stories';
   const list = el('div', { class: 'place-list' });
-  for (const place of PLACES) {
-    const here = place.match.test(hash);
-    const row = el('a', {
-      class: `place${here ? ' is-here' : ''}`,
-      href: place.href,
-      'aria-current': here ? 'page' : null,
-    });
-    row.append(icon(place.id, { size: 26 }));
-    add(row, add(
-      el('span', { class: 'place-text' }),
-      el('span', { class: 'place-name', text: place.label }),
-      el('span', { class: 'place-blurb', text: place.blurb }),
+  const row = (href, iconName, name, blurb, here) => add(
+    el('a', { class: `place${here ? ' is-here' : ''}`, href, 'aria-current': here ? 'page' : null }),
+    icon(iconName, { size: 26 }),
+    add(el('span', { class: 'place-text' }), el('span', { class: 'place-name', text: name }), el('span', { class: 'place-blurb', text: blurb })),
+  );
+  for (const place of PLACES) add(list, row(place.href, place.id, place.label, place.blurb, place.match.test(hash)));
+  add(list, row('#/settings', 'settings', 'Settings', 'Text size, backups', hash.startsWith('#/settings')));
+  const teller = getCurrentStoryteller();
+  let close = () => {};
+  if (teller) {
+    // Named for everything it does: switch, add and remove (§0.2).
+    add(list, add(
+      el('button', {
+        type: 'button', class: 'place place-teller', 'aria-label': 'Switch, add or remove a storyteller',
+        onclick: () => { close(); storytellerManager(); },
+      }),
+      el('span', { class: 'teller-face', 'aria-hidden': 'true', text: teller.emoji }),
+      add(el('span', { class: 'place-text' }), el('span', { class: 'place-name', text: teller.name }), el('span', { class: 'place-blurb', text: 'Switch, add or remove' })),
     ));
-    add(list, row);
   }
-  const close = modal({ title: 'Go somewhere else', body: [list], actions: [{ label: 'Stay here', kind: 'secondary' }] });
-  for (const row of list.querySelectorAll('a')) row.addEventListener('click', () => close());
+  close = modal({ title: 'Go somewhere else', body: [list], actions: [{ label: 'Stay here', kind: 'secondary' }] });
+  for (const link of list.querySelectorAll('a')) link.addEventListener('click', () => close());
 }
 
 function wireMenu() {
@@ -113,101 +105,71 @@ function wireMenu() {
   button.addEventListener('click', openMenu);
 }
 
-/** The persistent resource header: the counts that say what is still blank (§6). */
+const STEP_ROWS = [
+  { id: 'idea', name: 'Idea', route: '#/build/idea', sigil: 'die' },
+  { id: 'ingredients', name: 'Ingredients', route: '#/build/ingredients', sigil: 'flask' },
+  { id: 'structure', name: 'Structure', route: '#/build/structure', sigil: 'number' },
+  { id: 'boost', name: 'Boost', route: '#/build/boost', sigil: 'magnifier' },
+  { id: 'tell', name: 'Tell', route: '#/build/tell', sigil: 'stories' },
+];
+
+/** What each step has, in words — the same counts the header always carried (§6.2, A10). */
+function stepCounts(p) {
+  return {
+    idea: p.idea ? 'written' : 'not yet',
+    ingredients: `${p.ingredients.done} of ${p.ingredients.total}`,
+    structure: `${p.beats.done} of ${p.beats.total} beats`,
+    boost: `${p.boosts.done} of ${p.boosts.total}`,
+    tell: p.beats.done ? 'something to read' : 'nothing to read yet',
+  };
+}
+
+/**
+ * The persistent resource header, as a pile of cards (D54). It used to be the story's cover, its
+ * title and a five-stop road with counts under each — a band of chrome on every screen. Progress
+ * is now the thing it is in the box: the cards you have written, stacked, thickening as the story
+ * grows, in the bar. It says the counts in words to a screen reader and opens the five steps.
+ * Still progress, never a score (A10). Every module calls this after a save.
+ */
 export function renderStoryHeader() {
   const header = qs('#story-header');
+  if (header) { header.hidden = true; clear(header); }
+  const button = qs('#pile-button');
+  if (!button) return;
   const story = getCurrentStory();
   const onStoryScreen = (location.hash || '').startsWith('#/build');
-  if (!story || !onStoryScreen) {
-    header.hidden = true;
-    clear(header);
-    return;
-  }
+  button.hidden = !story || !onStoryScreen;
+  if (button.hidden) return;
   const p = progress(story);
-  clear(header);
-  header.hidden = false;
-  // Two lines, not three. Who is telling the story does not change while you write it, and it is
-  // named on the shelf and in Settings; the counts do change, which is what this header is for.
-  // The cover the story wears (G6). Only the looks that want art behind their header show it;
-  // the others hide it in CSS, so the markup is the same either way.
-  const cover = coverCard(story);
-  add(header, el('div', {
-    class: 'story-header-art',
-    'aria-hidden': 'true',
-    style: `background-image: url("assets/cards/${cover.art}.webp")`,
-  }));
-  add(header, el('p', { class: 'story-header-title', text: story.title }));
-  add(header, journeyStrip(p, story));
-}
-
-/**
- * The nine beats as beads on the Structure stop's rim (S5). They were a second bar under the
- * header — the same progress drawn twice, one band apart. Folded into the milestone they belong
- * to, the rim thickens bead by bead and costs no height: the beads sit on the node's own border.
- */
-function beadRing(story) {
-  const spine = el('span', { class: 'spine' });
-  for (const beat of BEATS) {
-    add(spine, el('span', { class: `spine-bone${isBlank(story.beats?.[beat.n]?.text) ? '' : ' is-written'}`, style: `--i: ${beat.n - 1}` }));
+  const written = (p.idea ? 1 : 0) + p.ingredients.done + p.beats.done + p.boosts.done;
+  const counts = stepCounts(p);
+  button.setAttribute('aria-label', `Your story so far: Idea ${counts.idea}, Ingredients ${counts.ingredients}, `
+    + `Beats ${p.beats.done} of ${p.beats.total}, Boosts ${counts.boost}. Open the five steps`);
+  const stack = el('span', { class: 'pile-stack', 'aria-hidden': 'true', style: `--layers: ${Math.min(5, 1 + Math.ceil(written / 5))}` });
+  for (let i = 0; i < Math.min(5, 1 + Math.ceil(written / 5)); i += 1) add(stack, el('i'));
+  button.replaceChildren(stack, el('span', { class: 'pile-count', 'aria-hidden': 'true', text: String(written) }));
+  if (!button.dataset.wired) {
+    button.dataset.wired = 'yes';
+    button.addEventListener('click', openSteps);
   }
-  return spine;
 }
 
-/**
- * The five steps as a road with four milestones on it, rather than four numbers (D35).
- *
- * Same information the counts carried, same words, and still never a score (§1): a stop shows how
- * much of its step is answered and nothing about how good it is. The stops are not labelled in
- * text on purpose — the section nav names all five directly underneath, in this order, and §6
- * forbids naming a thing twice on one screen. Each carries its group's sigil, its group's colour
- * and a hidden name, so the channel is never colour alone.
- */
-function journeyStrip(p, story) {
-  const stops = [
-    { id: 'idea', name: 'Idea', route: '#/build/idea', sigil: 'die', color: 'var(--group-prompt)', value: p.idea ? 'yes' : 'not yet', fill: p.idea ? 1 : 0 },
-    { id: 'ingredients', name: 'Ingredients', route: '#/build/ingredients', sigil: 'flask', color: 'var(--group-ingredient)', value: `${p.ingredients.done}/${p.ingredients.total}`, fill: p.ingredients.done / p.ingredients.total },
-    { id: 'structure', name: 'Beats', route: '#/build/structure', sigil: 'number', color: 'var(--group-structure)', value: `${p.beats.done}/${p.beats.total}`, fill: p.beats.done / p.beats.total },
-    { id: 'boost', name: 'Boosts', route: '#/build/boost', sigil: 'magnifier', color: 'var(--group-boost)', value: `${p.boosts.done}/${p.boosts.total}`, fill: p.boosts.done / p.boosts.total },
-  ];
-  const here = stepFor(location.hash || '');
-  // D44 — the stops are the step nav. The strip already drew five milestones in the order the
-  // section nav listed them, so the nav was a second copy of the same five names taking a band of
-  // its own; folding it in here also makes the navigation sticky, which the nav never was.
-  const nav = el('nav', { class: 'journey-nav', 'aria-label': 'Story steps' });
-  const strip = add(nav, el('ol', { class: 'journey' })).lastChild;
-  for (const stop of stops) {
-    const node = add(
-      el('span', { class: `journey-node${stop.id === 'structure' ? ' has-ring' : ''}`, 'aria-hidden': 'true', style: `--stop: ${stop.color}; --fill: ${Math.round(stop.fill * 100)}%` }),
-      icon(stop.sigil, { size: 14 }),
-      stop.id === 'structure' ? beadRing(story) : null,
-    );
-    // The Idea stop answers yes or no, and a word under a milestone read as a label that had lost
-    // its sentence. A drawn tick says yes; nothing says not yet. The words stay for a screen reader.
-    const value = stop.id === 'idea'
-      ? add(el('span', { class: 'journey-value', 'aria-hidden': 'true' }), p.idea ? icon('check', { size: 12 }) : null)
-      : el('span', { class: 'journey-value', 'aria-hidden': 'true', text: stop.value });
-    add(strip, add(
-      el('li', { class: `journey-stop${here === stop.id ? ' is-here' : ''}` }),
-      add(
-        el('a', { href: stop.route, 'aria-current': here === stop.id ? 'step' : null }),
-        el('span', { class: 'visually-hidden', text: `${stop.name} ${stop.value}` }),
-        node,
-        value,
-      ),
+/** The five steps, each with what it has — the step nav, one tap behind the pile (D54). */
+function openSteps() {
+  const story = getCurrentStory();
+  if (!story) return;
+  const counts = stepCounts(progress(story));
+  const here = stepFor(location.hash || '') || ((location.hash || '').startsWith('#/build/tell') ? 'tell' : null);
+  const list = el('nav', { class: 'place-list step-list', 'aria-label': 'Story steps' });
+  for (const step of STEP_ROWS) {
+    add(list, add(
+      el('a', { class: `place${here === step.id ? ' is-here' : ''}`, href: step.route, 'aria-current': here === step.id ? 'step' : null }),
+      icon(step.sigil, { size: 26 }),
+      add(el('span', { class: 'place-text' }), el('span', { class: 'place-name', text: step.name }), el('span', { class: 'place-blurb', text: counts[step.id] })),
     ));
   }
-  // The end of the road. It has no count — nothing about the told story is measured (A10) — so it
-  // is a destination rather than a milestone, and it opens once there is anything to read.
-  const readable = p.beats.done > 0;
-  add(strip, add(
-    el('li', { class: `journey-stop journey-end${readable ? ' is-open' : ''}${here === 'tell' ? ' is-here' : ''}` }),
-    add(
-      el('a', { href: '#/build/tell', 'aria-current': (location.hash || '').startsWith('#/build/tell') ? 'step' : null }),
-      el('span', { class: 'visually-hidden', text: readable ? 'Tell: there is something to read' : 'Tell: nothing to read yet' }),
-      add(el('span', { class: 'journey-node', 'aria-hidden': 'true', style: '--stop: var(--accent); --fill: 0%' }), icon('stories', { size: 14 })),
-    ),
-  ));
-  return nav;
+  const close = modal({ title: story.title, body: [list], actions: [{ label: 'Back to the card', kind: 'secondary' }] });
+  for (const link of list.querySelectorAll('a')) link.addEventListener('click', () => close());
 }
 
 /**
@@ -282,7 +244,6 @@ function render() {
   wireMenu();
   markHere();
   markHeaderLinks();
-  renderTellerButton();
   renderStoryHeader();
   centreCurrentPill();
   window.scrollTo(0, scrollMemory.get(hash) || 0);

@@ -8,12 +8,13 @@
 //                                            control that names what it would discard
 
 import { el, add, debounce, isBlank } from './core.js';
-import { actionBar, cardTile, dealtFace, exampleLine, showToast, confirmModal, answerStage } from './ui.js';
+import { actionBar, cardTile, dealtFace, showToast, confirmModal, answerStage, teachingLine, optionsSheet, dealerBar } from './ui.js';
 import { BOOSTS, BEATS, INGREDIENTS, getCard } from '../data.js';
 import { saveStory, ensureSnapshot, takeSnapshot } from './store.js';
-import { spawnedBy } from './derived.js';
+import { spawnedBy, dealNeighbours } from './derived.js';
 import { addEntry } from './ingredients.js';
 import { fieldWithSparks } from './sparks.js';
+import { icon } from './icons.js';
 import { renderStoryHeader } from './router.js';
 
 /** Collect nodes for the answer column, skipping nullish ones the way `add` does. */
@@ -47,12 +48,6 @@ export function boostGrid(story) {
   const current = snapshotOnEntry(story);
   const wrap = el('div');
 
-  if (current.snapshot) {
-    add(wrap, el('p', {
-      class: 'provenance',
-      text: 'Your story as it was when you started boosting is saved. You will be able to read both versions on the Tell page.',
-    }));
-  }
 
   // D34 — this step's room is a hand of cards, fanned. The ten Boosts have no order and no arc
   // (unlike the nine beats), so overlapping them the way you would hold them costs nothing and
@@ -64,7 +59,7 @@ export function boostGrid(story) {
     const done = !isBlank(state.answer);
     add(grid, cardTile(boost, {
       href: `#/build/boost/${boost.id}`,
-      sub: state.skipped ? 'Skipped' : (done ? 'Answered' : 'Not yet'),
+      sub: state.skipped ? 'Skipped' : null,
       blank: !done && !state.skipped,
       done,
     }));
@@ -73,9 +68,9 @@ export function boostGrid(story) {
   });
   add(wrap, grid);
 
-  const answered = BOOSTS.filter((b) => !isBlank(boostState(current, b.id).answer)).length;
-  add(wrap, el('h3', { text: 'The before-version' }));
-  add(wrap, el('p', { class: 'note', text: current.snapshot ? `Frozen when you started boosting.` : 'Nothing frozen yet.' }));
+  // A8 — the before-version, at the end of the scroll: one line saying it exists, and the one
+  // destructive control, which confirms and names what it discards.
+  add(wrap, el('p', { class: 'note before-note', text: current.snapshot ? 'Your story from before the boosts is saved, to read beside the new one.' : 'Nothing frozen yet.' }));
   add(wrap, el('button', {
     type: 'button', class: 'button danger', text: 'Re-freeze it to how the story is now',
     onclick: () => confirmModal({
@@ -91,7 +86,6 @@ export function boostGrid(story) {
   }));
 
   add(wrap, actionBar({
-    context: `${answered} of ${BOOSTS.length} answered — none of them are required`,
     label: 'Read my story',
     href: '#/build/tell',
   }));
@@ -115,7 +109,6 @@ export function boostScreen(story, boostId) {
   }
 
   const wrap = el('div');
-  add(wrap, el('a', { class: 'back-link', href: '#/build/boost', text: '← All ten boosts' }));
   const body = [];
   push(body, el('h2', { class: 'question-label', text: boost.headline }));
   const state = boostState(current, boost.id);
@@ -131,69 +124,58 @@ export function boostScreen(story, boostId) {
   }, 400);
   field.addEventListener('input', save);
   push(body, ...fieldWithSparks(field, { key: boost.id, story: current }));
-  push(body, el('p', { class: 'guidance', text: boost.guidance }));
+  if (state.skipped) push(body, el('p', { class: 'provenance', text: 'Skipped for now — ⋯ brings it back.' }));
 
-  // P8 — skipping is a control, and it is reversible.
-  push(body, el('button', {
-    type: 'button', class: 'button secondary',
-    text: state.skipped ? 'Bring this one back' : 'Skip this one',
-    onclick: () => {
-      saveStory(writeBoost(current, boost.id, { skipped: !state.skipped }));
-      showToast(state.skipped ? 'Back in the pile' : 'Skipped — nothing here is required');
-      window.dispatchEvent(new HashChangeEvent('hashchange'));
-    },
-  }));
-
-  // P6 — a boost may invent a new Ingredient card.
+  // P6 and P7 are what this step is for, so they stay on the card — as at most two small chips,
+  // each opening the choices it stands for, rather than four sentence-long buttons (D56).
+  const powers = el('div', { class: 'card-powers' });
   if (boost.canSpawn.length) {
-    push(body, el('h3', { text: 'Does this give you somebody new?' }));
-    push(body, el('p', { class: 'note', text: 'In the book, this is the card that invents a whole new character — and the story gets better for it. Make one here and it joins your ingredients.' }));
-    const row = el('div', { class: 'row-actions' });
-    for (const kind of boost.canSpawn) {
-      const card = INGREDIENTS.find((i) => i.kind === kind);
-      add(row, el('button', {
-        type: 'button', class: 'button secondary',
-        text: kind === 'hero' ? 'This gives me a new character' : 'This gives me another antagonist',
-        onclick: () => {
-          // The card records which boost made it; nothing else needs to.
-          const { story: next, id } = addEntry(current, kind, `boost:${boost.id}`);
-          saveStory(next);
-          showToast(`New ${card.headline.toLowerCase()} added`);
-          location.hash = `#/build/ingredients/${id}`;
-        },
-      }));
-    }
-    push(body, row);
+    add(powers, add(el('button', {
+      type: 'button', class: 'button secondary chip-action',
+      onclick: () => optionsSheet('Somebody new', boost.canSpawn.map((kind) => {
+        const card = INGREDIENTS.find((i) => i.kind === kind);
+        return {
+          label: kind === 'hero' ? 'This gives me a new character' : 'This gives me another antagonist',
+          onClick: () => {
+            // The card records which boost made it; nothing else needs to.
+            const { story: next, id } = addEntry(current, kind, `boost:${boost.id}`);
+            saveStory(next);
+            showToast(`New ${card.headline.toLowerCase()} added`);
+            location.hash = `#/build/ingredients/${id}`;
+          },
+        };
+      })),
+    }), icon('plus', { size: 18 }), el('span', { text: 'Somebody new' })));
   }
+  if (boost.suggestsBeats.length) {
+    add(powers, add(el('button', {
+      type: 'button', class: 'button secondary chip-action',
+      onclick: () => optionsSheet('Change a beat', boost.suggestsBeats.map((n) => {
+        const beat = BEATS.find((b) => b.n === n);
+        return {
+          label: `Change beat ${n}: ${beat.beatName}`,
+          onClick: () => {
+            const marked = state.editedBeats.includes(n) ? state.editedBeats : [...state.editedBeats, n];
+            saveStory(writeBoost(current, boost.id, { editedBeats: marked }));
+            location.hash = `#/build/structure/${n}/from/${boost.id}`;
+          },
+        };
+      })),
+    }), icon('build', { size: 18 }), el('span', { text: 'Change a beat' })));
+  }
+  if (powers.childNodes.length) push(body, powers);
 
+  // P6, listed back: what this card has made so far.
   const made = spawnedBy(current, boost.id);
   if (made.length) {
-    push(body, el('h3', { text: 'Made from this card' }));
-    const list = el('ul');
-    for (const entry of made) {
-      const label = entry.answers?.name || (entry.kind === 'villain' ? 'A new antagonist' : 'A new main character');
-      add(list, el('li', {}, el('a', { class: 'back-link', href: `#/build/ingredients/${entry.id}`, text: `${label} →` })));
-    }
+    const list = el('p', { class: 'provenance made-from' });
+    add(list, document.createTextNode('Made from this card: '));
+    made.forEach((entry, i) => {
+      const label = entry.answers?.name || (entry.kind === 'villain' ? 'a new antagonist' : 'a new main character');
+      if (i) add(list, document.createTextNode(', '));
+      add(list, el('a', { href: `#/build/ingredients/${entry.id}`, text: label }));
+    });
     push(body, list);
-  }
-
-  // P7 — a boost may send you back to rewrite a beat.
-  if (boost.suggestsBeats.length) {
-    push(body, el('h3', { text: 'Does a beat need changing?' }));
-    const row = el('div', { class: 'row-actions' });
-    for (const n of boost.suggestsBeats) {
-      const beat = BEATS.find((b) => b.n === n);
-      add(row, el('button', {
-        type: 'button', class: 'button secondary',
-        text: `Change beat ${n}: ${beat.beatName}`,
-        onclick: () => {
-          const marked = state.editedBeats.includes(n) ? state.editedBeats : [...state.editedBeats, n];
-          saveStory(writeBoost(current, boost.id, { editedBeats: marked }));
-          location.hash = `#/build/structure/${n}/from/${boost.id}`;
-        },
-      }));
-    }
-    push(body, row);
   }
 
   if (state.editedBeats.length) {
@@ -203,24 +185,27 @@ export function boostScreen(story, boostId) {
     }));
   }
 
-  if (boost.examples?.length) {
-    push(body, el('h3', { text: 'How other stories answer it' }));
-    const list = el('ul');
-    for (const ex of boost.examples) add(list, exampleLine(ex));
-    push(body, list);
-  }
+  // The teaching, one line on the card; the rest and the examples behind "?" (D57).
+  push(body, teachingLine(boost, { examples: boost.examples || [] }));
 
   add(wrap, answerStage(dealtFace(boost, { deal: true }), body));
 
-  const index = BOOSTS.findIndex((b) => b.id === boost.id);
-  const next = BOOSTS[index + 1];
-  add(wrap, actionBar({
-    context: `Boost ${index + 1} of ${BOOSTS.length}`,
-    label: next ? 'Next boost' : 'Read my story',
-    href: next ? `#/build/boost/${next.id}` : '#/build/tell',
-    secondary: index > 0
-      ? el('a', { class: 'button secondary', href: `#/build/boost/${BOOSTS[index - 1].id}`, text: 'Back' })
-      : null,
+  const deal = dealNeighbours(current, location.hash);
+  add(wrap, dealerBar({
+    prev: deal.prev,
+    next: deal.next,
+    // P8 — skipping is a control, and it is reversible; it lives behind ⋯ with the way to all ten.
+    options: () => optionsSheet(boost.headline, [
+      {
+        label: state.skipped ? 'Bring this one back' : 'Skip this one',
+        onClick: () => {
+          saveStory(writeBoost(current, boost.id, { skipped: !state.skipped }));
+          showToast(state.skipped ? 'Back in the pile' : 'Skipped — nothing here is required');
+          window.dispatchEvent(new HashChangeEvent('hashchange'));
+        },
+      },
+      { label: 'See all ten boosts', href: '#/build/boost' },
+    ]),
   }));
   return wrap;
 }

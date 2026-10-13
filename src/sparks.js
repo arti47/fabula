@@ -6,6 +6,7 @@
 
 import { el, add, clear, randomInt, isBlank } from './core.js';
 import { IDEA_SPARKS, SPARK_PLACEHOLDERS, sparksFor } from '../data-sparks.js';
+import { icon } from './icons.js';
 
 const HOW_MANY = 3;
 
@@ -85,10 +86,11 @@ export function sparkControl({ key, story, onPick }) {
 
   add(box, add(
     el('div', { class: 'sparks-head' }),
-    el('button', {
-      type: 'button', class: 'button secondary', text: 'Stuck? Three words',
+    // D62 — a bulb and one word, not a sentence-long button under every field.
+    add(el('button', {
+      type: 'button', class: 'button secondary spark-bulb', 'aria-label': 'Stuck? Three words',
       onclick: roll,
-    }),
+    }), icon('bulb', { size: 20 }), el('span', { text: 'Stuck?' })),
     el('span', { class: 'house-flag', text: 'ours, not the deck’s' }),
   ));
   add(box, list, live);

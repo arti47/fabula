@@ -64,6 +64,16 @@ async function present(page, selector, timeout = 5000) {
 }
 
 /** Read text, but a node that is not there is one finding rather than the end of the walk. */
+/** The story's counts, as the pile in the bar says them (D54): the persistent header, in words. */
+async function pileSays(page) {
+  try {
+    return (await page.getAttribute('#pile-button', 'aria-label', { timeout: 5000 })) || '';
+  } catch {
+    failures.push(`walk stalled: the pile had nothing to say (at ${page.url().split('#')[1] || '/'})`);
+    return '';
+  }
+}
+
 async function read(page, selector) {
   try {
     return await page.textContent(selector, { timeout: 5000 });
@@ -107,8 +117,8 @@ try {
 
       if (route === '#/build/idea') {
         // If the fixture did not load, every other measurement below is of an empty app.
-        const seeded = await read(page, '.story-header-title');
-        check(`${width} fixture loaded`, () => assert.equal(seeded, 'The dragon next door'));
+        const seeded = await page.inputValue('#idea-text').catch(() => '');
+        check(`${width} fixture loaded`, () => assert.match(seeded, /dragon/));
       }
 
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
@@ -125,10 +135,8 @@ try {
       });
       check(`${width} ${route} stray text`, () => assert.deepEqual(stray, []));
 
-      // D41 amends §6.2. The old rule was "every screen carries an `explain()`", which put a
-      // 44px collapsed row saying nothing on fourteen screens, two of which had a single field.
-      // The rule now is the one actually worth enforcing: **no screen explains itself twice**,
-      // and every step screen says in one visible line what the step is for.
+      // D41 amends §6.2: no screen explains itself twice. D54 took the step's lead line off the
+      // build screens altogether — the card says what it wants — so no lead appears anywhere now.
       const explains = await page.evaluate(() => {
         const screen = document.querySelector('#screen');
         const d = screen.querySelector('details.screen-note');
@@ -139,12 +147,8 @@ try {
       });
       check(`${width} ${route} says what it is for, once`, () => {
         if (explains.explain) assert.equal(explains.explain.open, false, 'explain() should start collapsed');
-        assert.ok(explains.leads <= 1, `${explains.leads} step leads on one screen`);
-        assert.ok(!(explains.explain && explains.leads), 'the screen explains itself twice');
+        assert.equal(explains.leads, 0, 'a step lead is back on the table');
       });
-      if (/^#\/build\/(idea|ingredients|structure|boost|tell)$/.test(route)) {
-        check(`${width} ${route} leads with what the step is for`, () => assert.equal(explains.leads, 1));
-      }
 
       const bar = await page.evaluate(() => {
         const b = document.querySelector('.action-bar');
@@ -185,19 +189,21 @@ try {
         .map((b) => b.textContent.trim()));
       check(`${width} ${route} one primary action`, () => assert.ok(primaries.length <= 1, JSON.stringify(primaries)));
 
-      // §6.2: the counts are meant to be visible from every in-story screen. A skin rule once set
-      // `position: relative` on the header and quietly ended that, which nothing noticed.
+      // §6.2: the counts are visible from every in-story screen — since D54 as the pile in the
+      // bar, which is sticky, says them in words and opens the five steps.
       if (route.startsWith('#/build')) {
-        const stuck = await page.evaluate(async () => {
+        const pile = await page.evaluate(async () => {
           window.scrollTo(0, 400);
           await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-          const box = document.querySelector('.story-header')?.getBoundingClientRect();
-          const header = document.querySelector('.app-header')?.getBoundingClientRect();
+          const b = document.querySelector('#pile-button');
+          const box = b?.getBoundingClientRect();
           window.scrollTo(0, 0);
-          return box && header ? Math.round(box.top - header.bottom) : null;
+          return b && !b.hidden ? { top: Math.round(box.top), label: b.getAttribute('aria-label') || '' } : null;
         });
         check(`${width} ${route} the counts stay on screen`, () => {
-          assert.ok(stuck !== null && Math.abs(stuck) <= 2, `story header sits ${stuck}px from the header after scrolling`);
+          assert.ok(pile, 'no pile in the bar');
+          assert.ok(pile.top >= 0 && pile.top < 60, `the pile sits at ${pile.top}px after scrolling`);
+          assert.match(pile.label, /Beats \d+ of 9/);
         });
       }
 
@@ -217,11 +223,9 @@ try {
         const h = (sel) => { const n = document.querySelector(sel); return n && !n.hidden ? n.getBoundingClientRect().height : 0; };
         return Math.round(h('.app-header') + h('.story-header'));
       });
-      // One band now (D31): a 44px header and the story header, and nothing else fixed anywhere.
-      // The story header is taller than a bar because it carries the story's cover behind the
-      // title — that is the look, not chrome creep. It was 210px with a tab bar; it is ~126 now,
-      // and only at 320, where the four counts wrap, does it need the extra line's 30px.
-      const chromeBudget = width <= 320 ? 160 : 140;
+      // One band (D54): the 44px bar is all the chrome there is. It was 210px with a tab bar and
+      // 128 with the story header; the pile in the bar replaced the header.
+      const chromeBudget = 60;
       check(`${width} ${route} fixed chrome stays out of the way`, () => assert.ok(chrome <= chromeBudget, `${chrome}px of chrome`));
 
       // The nav pill and a heading two centimetres below it saying the same thing is one of them
@@ -361,14 +365,13 @@ try {
   const opensOnTheDeck = await page.evaluate(() => {
     const fan = document.querySelector('.card-fan');
     const faces = [...document.querySelectorAll('.fan-card')];
-    const start = [...document.querySelectorAll('#screen .button')].find((b) => b.textContent.trim() === 'Start');
-    const field = document.querySelector('#teller-name');
+    const deal = [...document.querySelectorAll('#screen .button')].find((b) => /Deal me a story/.test(b.textContent));
     return {
       faces: faces.length,
       decorative: fan ? fan.getAttribute('aria-hidden') === 'true' && faces.every((f) => f.alt === '') : false,
-      startTop: start ? Math.round(start.getBoundingClientRect().top) : null,
-      fieldTop: field ? Math.round(field.getBoundingClientRect().top) : null,
-      pinned: Boolean(start && start.closest('.action-bar')),
+      dealTop: deal ? Math.round(deal.getBoundingClientRect().top) : null,
+      pinned: Boolean(deal && deal.closest('.action-bar')),
+      form: document.querySelectorAll('#screen input, #screen textarea').length,
       viewport: window.innerHeight,
     };
   });
@@ -376,56 +379,55 @@ try {
     assert.ok(opensOnTheDeck.faces >= 3, `${opensOnTheDeck.faces} card faces on the first screen`);
     assert.equal(opensOnTheDeck.decorative, true, 'the spread is not marked as decoration');
   });
-  check('and Start stands beside the field it submits', () => {
-    assert.ok(opensOnTheDeck.startTop !== null, 'no Start button');
-    assert.equal(opensOnTheDeck.pinned, false, 'Start is pinned across the screen again');
-    assert.ok(opensOnTheDeck.startTop < opensOnTheDeck.viewport, 'Start is below the fold');
-    assert.ok(opensOnTheDeck.startTop > opensOnTheDeck.fieldTop, 'Start sits above its own field');
+  // D58 — one button, and it deals. The name form between a kid and the first card is gone.
+  check('and its one control deals a story (D58)', () => {
+    assert.ok(opensOnTheDeck.dealTop !== null, 'no Deal me a story button');
+    assert.equal(opensOnTheDeck.pinned, false, 'it is pinned across the screen');
+    assert.ok(opensOnTheDeck.dealTop < opensOnTheDeck.viewport, 'it is below the fold');
+    assert.equal(opensOnTheDeck.form, 0, 'the first screen asks for something before it deals');
   });
 
-  // D49: the storyteller's face is in the bar only once there is a storyteller. `hidden` alone
-  // did not hide it — `.icon-button` sets a display, which beats the attribute — so on first run
-  // the bar carried an empty ring, and the mutant that hid it for good changed nothing at all.
-  const faceBefore = await page.evaluate(() => document.querySelector('#teller-button')?.getBoundingClientRect().width || 0);
-  await type(page, '#teller-name', 'Ada');
-  // Start stands beside the field now (D43), not pinned across the foot of the screen.
+  // D54: the storyteller lives in the menu, and only once there is one.
+  const tellerInMenu = async () => {
+    await tap(page, '#menu-button');
+    await present(page, '.place-list');
+    const row = await page.evaluate(() => document.querySelector('.place-teller')?.textContent.trim() || '');
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(50);
+    return row;
+  };
+  const tellerBefore = await tellerInMenu();
   await tap(page, '.first-run-go .button');
-  await present(page, 'text=No stories yet');
-  const faceAfter = await page.evaluate(() => {
-    const b = document.querySelector('#teller-button');
-    return { w: b ? b.getBoundingClientRect().width : 0, text: b?.textContent.trim() || '' };
+  await present(page, '#idea-text');
+  const dealtTo = page.url().split('#')[1];
+  check('Deal me a story lands on the first card (D58)', () => assert.equal(dealtTo, '/build/idea'));
+  const tellerAfter = await tellerInMenu();
+  check('the storyteller is in the menu, and only once there is one (D54)', () => {
+    assert.equal(tellerBefore, '', 'a storyteller row is in the menu on first run');
+    assert.match(tellerAfter, /Switch, add or remove/);
   });
-  check('the storyteller is a face in the bar, and only once there is one (D49)', () => {
-    assert.equal(faceBefore, 0, 'an empty storyteller button is showing on first run');
-    assert.ok(faceAfter.w >= 40, 'no storyteller in the bar after naming one');
-    assert.ok(faceAfter.text.length > 0, 'the storyteller button is empty');
-  });
-  await tap(page, '.action-bar .button');
-  await type(page, '#prompt-input', 'The dragon next door');
-  await tap(page, '.modal-actions .button');
-  await present(page, '.story-header-title');
-  check('walk: story header names the story', async () => {});
-  const title = await read(page, '.story-header-title');
-  check('walk: title', () => assert.equal(title, 'The dragon next door'));
-  const counts = await read(page, '.journey');
-  check('walk: progress counts', () => {
-    assert.match(counts, /Ingredients 0\/4/);
-    assert.match(counts, /Beats 0\/9/);
-    assert.match(counts, /Boosts 0\/10/);
+  const counts = await pileSays(page);
+  check('walk: the pile says the counts in words (D54)', () => {
+    assert.match(counts, /Ingredients 0 of 4/);
+    assert.match(counts, /Beats 0 of 9/);
+    assert.match(counts, /Boosts 0 of 10/);
   });
   // Step 1: the idea, the die, the sparks.
   await page.goto(base + '#/build/idea');
   await type(page, '#idea-text', 'a lighthouse that walks');
   await page.waitForTimeout(600); // debounced autosave
-  await tap(page, '.action-bar .button:not(.secondary)');
+  // The die is the control on the table (D34); the bar's one primary is Next (D46).
+  await tap(page, '.die-big');
   await present(page, '.prompt-panel');
   const firstLetter = await read(page, '.die-letter');
   check('idea: the die lands on a real face', () => assert.match(firstLetter, /^[PMQGNS]$/));
 
-  await tap(page, '.prompt-panel .button');
+  // P4 — the die that landed is still the die: tap it to roll again.
+  await tap(page, '.prompt-panel .die-letter');
   const history = await settled(page, '.roll-history', /rolled 2 times/);
   check('idea: every roll is kept, none discarded', () => assert.match(history, /rolled 2 times/));
 
+  await tap(page, '.idea-sparks .spark-bulb');
   await tap(page, '.spark-row .button');
   const spark = await read(page, '.spark-out');
   check('idea: sparks produce something', () => assert.ok(spark.trim().length > 5, 'no spark text'));
@@ -445,8 +447,8 @@ try {
   await page.goto(base + '#/build/idea');
   const savedIdea = await page.inputValue('#idea-text');
   check('idea: the sentence persists', () => assert.equal(savedIdea, 'a lighthouse that walks'));
-  const headerAfter = await read(page, '.journey');
-  check('idea: the header knows there is an idea', () => assert.match(headerAfter, /Idea yes/));
+  const headerAfter = await pileSays(page);
+  check('idea: the pile knows there is an idea', () => assert.match(headerAfter, /Idea written/));
 
   // Step 2: ingredients, one question at a time, in any order.
   await page.goto(base + '#/build/ingredients');
@@ -482,20 +484,25 @@ try {
   await page.goto(base + '#/build/ingredients');
   const gridText = await read(page, '#screen');
   check('ingredients: the tile takes the character\'s name', () => assert.match(gridText, /Bo/));
-  check('ingredients: the tile counts answers', () => assert.match(gridText, /2 of 6 answered/));
-  const headerCounts = await read(page, '.journey');
-  check('ingredients: the header counts the card', () => assert.match(headerCounts, /Ingredients 1\/4/));
+  check('ingredients: the tile counts answers', () => assert.match(gridText, /2\/6/));
+  const headerCounts = await pileSays(page);
+  check('ingredients: the pile counts the card', () => assert.match(headerCounts, /Ingredients 1 of 4/));
 
   // P3: the same card twice.
-  await tap(page, 'text=Add another main character');
+  // P3: another of the same card is a blank card with a plus on it (D59).
+  await tap(page, '[aria-label="Add another main character"]');
   await present(page, '#answer');
   await page.goto(base + '#/build/ingredients');
-  const twoHeroes = await page.evaluate(() => document.querySelectorAll('.card-grid')[0].children.length);
+  const twoHeroes = await page.evaluate(() => document.querySelectorAll('.card-grid')[0].querySelectorAll('a.card').length);
   check('ingredients: a second main character is allowed', () => assert.equal(twoHeroes, 2));
 
-  // P1: skip a card, and get it back.
-  const skipButtons = await page.$$('text=Skip this one for now');
-  await skipButtons[1].click();
+  // P1: skip a card from its ⋯ (D56), and get it back from the spread.
+  await page.goto(base + '#/build/ingredients/new-villain');
+  await present(page, '#answer');
+  await tap(page, '.dealer-more');
+  await tap(page, '.modal-actions button:has-text("Skip this card for now")');
+  await page.waitForTimeout(200);
+  await page.goto(base + '#/build/ingredients');
   const afterSkip = await settled(page, '#screen', /Skipped for now/);
   check('ingredients: skipping says so and offers it back', () => assert.match(afterSkip, /Skipped for now/));
   await tap(page, 'text=Bring it back');
@@ -583,22 +590,24 @@ try {
   await page.goto(base + '#/build/structure/9');
   await type(page, '#beat-text', 'In the end everyone goes home.');
   await page.waitForTimeout(600);
-  const beatCounts = await read(page, '.journey');
-  check('structure: the header counts written beats', () => assert.match(beatCounts, /Beats 2\/9/));
+  const beatCounts = await pileSays(page);
+  check('structure: the pile counts written beats', () => assert.match(beatCounts, /Beats 2 of 9/));
 
   // Step 4: the boosts, the snapshot, and the two permissions the booklet demonstrates.
   await page.goto(base + '#/build/boost');
   const boostTiles = await page.evaluate(() => document.querySelectorAll('.card-grid .card').length);
   check('boost: all ten are offered', () => assert.equal(boostTiles, 10));
   const frozenNote = await read(page, '#screen');
-  check('A8: the before-version is frozen on arrival', () => assert.match(frozenNote, /as it was when you started boosting/));
+  check('A8: the before-version is frozen on arrival', () => assert.match(frozenNote, /from before the boosts is saved/));
 
   await page.goto(base + '#/build/boost/boost-help');
   await type(page, '#boost-answer', 'He needs a sister');
   await page.waitForTimeout(600);
 
   // P6: this card invents a character, and the new card carries where it came from.
-  await tap(page, 'text=This gives me a new character');
+  // P6 sits behind the card's own chip now (D56): one tap to the choice, one to make it.
+  await tap(page, '.card-powers button:has-text("Somebody new")');
+  await tap(page, '.modal-actions button:has-text("This gives me a new character")');
   await settled(page, '.question-label', /How old are they\?/);
   await type(page, '#answer', 'a bit younger');
   await page.waitForTimeout(600);
@@ -607,14 +616,15 @@ try {
   check('P6: the spawned card is listed on the boost that made it', () => assert.match(spawnedList, /Made from this card/));
   const ingredientCount = await page.evaluate(() => {
     location.hash = '#/build/ingredients';
-    return new Promise((r) => setTimeout(() => r(document.querySelectorAll('.card-grid')[0].children.length), 100));
+    return new Promise((r) => setTimeout(() => r(document.querySelectorAll('.card-grid')[0].querySelectorAll('a.card').length), 100));
   });
   check('P6: it joins the ingredients', () => assert.ok(ingredientCount >= 2, `only ${ingredientCount} main characters`));
 
   // P7: a boost sends you back to a beat, and offers the way back.
   await page.goto(base + '#/build/boost/boost-too-easy');
-  await tap(page, 'text=Change beat 4');
-  await settled(page, '.provenance', /came here from a Boost card/);
+  await tap(page, '.card-powers button:has-text("Change a beat")');
+  await tap(page, '.modal-actions button:has-text("Change beat 4")');
+  await settled(page, '.back-link', /Back to/);
   await type(page, '#beat-text', 'They are abandoned twice, and the second time the birds eat the crumbs.');
   await page.waitForTimeout(600);
   const backLink = await read(page, '.back-link');
@@ -644,11 +654,14 @@ try {
   await page.goto(base + '#/build/boost/boost-narrator');
   check('P8: a boost starts unskipped', async () => {});
   const before = await boostFlag();
-  await tap(page, 'text=Skip this one');
-  await settled(page, '#screen', /Bring this one back/);
+  // P8 lives behind the card's ⋯ now (D56): still a control, still reversible.
+  await tap(page, '.dealer-more');
+  await tap(page, '.modal-actions button:has-text("Skip this one")');
+  await settled(page, '#screen', /Skipped for now/);
   const skipped = await boostFlag();
-  await tap(page, 'text=Bring this one back');
-  await settled(page, '#screen', /Skip this one/);
+  await tap(page, '.dealer-more');
+  await tap(page, '.modal-actions button:has-text("Bring this one back")');
+  await page.waitForFunction(() => !/Skipped for now/.test(document.querySelector('#screen').textContent), null, { timeout: 5000 }).catch(() => {});
   const unskipped = await boostFlag();
   check('P8: skipping a boost is recorded, and undone again', () => {
     assert.notEqual(before, true, 'it was already skipped before the test touched it');
@@ -714,13 +727,25 @@ try {
   check('D10: after the boosts holds the rewritten beat', () => assert.match(afterText, /abandoned twice/));
   check('D10: and the before-version did not', () => assert.ok(!/abandoned twice/.test(beforeText)));
 
+  // D58: the story and its teller are named at the end, on the book's cover.
+  await tap(page, '.book-byline button:has-text("Give it a title")');
+  await type(page, '#prompt-input', 'The dragon next door');
+  await tap(page, '.modal-actions .button');
+  const named = await settled(page, '.told-title', /The dragon next door/);
+  check('D58: the story is named on its own cover', () => assert.match(named, /The dragon next door/));
+  await tap(page, '.book-byline button:has-text("Who wrote it?")');
+  await type(page, '#prompt-input', 'Ada');
+  await tap(page, '.modal-actions .button');
+  const byline = await settled(page, '.book-byline', /by Ada/);
+  check('D58: and so is the storyteller', () => assert.match(byline, /by Ada/));
+
   // D33: the step you are standing in owns the screen's colour. Read the computed accent on each
   // of the four rooms — the token is what every control, frame and heading hangs off, so if it
   // stops changing the rooms stop being told apart.
   const rooms = {};
   for (const [step, route] of [['idea', '#/build/idea'], ['ingredients', '#/build/ingredients'], ['structure', '#/build/structure'], ['boost', '#/build/boost']]) {
     await page.goto(base + route);
-    await present(page, '.journey');
+    await present(page, '#pile-button');
     rooms[step] = await page.evaluate(() => {
       const css = getComputedStyle(document.documentElement);
       return {
@@ -740,51 +765,62 @@ try {
     assert.equal(new Set(papers).size, 4, `only ${new Set(papers).size} distinct grounds: ${papers.join(' ')}`);
   });
 
-  // D35: the strip is the counts. It may draw them, but it must still say them, and it must mark
-  // where you are standing — colour is never the only channel (§6).
+  // D54: the pile is the counts, and it opens the five steps. It must say them in words, mark
+  // where you are standing, and draw each step — colour is never the only channel (§6).
   await page.goto(base + '#/build/structure');
-  await present(page, '.journey');
+  await present(page, '#pile-button');
+  await tap(page, '#pile-button');
+  await present(page, '.step-list');
   const strip = await page.evaluate(() => {
-    const stops = [...document.querySelectorAll('.journey-stop')];
+    const stops = [...document.querySelectorAll('.step-list a')];
     return {
       stops: stops.length,
-      here: stops.filter((s) => s.classList.contains('is-here')).map((s) => s.textContent.trim()),
-      text: document.querySelector('.journey').textContent,
-      filled: stops.filter((s) => {
-        const node = s.querySelector('.journey-node');
-        return node && node.style.getPropertyValue('--fill') !== '0%';
-      }).length,
-      sigils: stops.filter((s) => s.querySelector('.journey-node svg path')).length,
+      here: stops.filter((s) => s.getAttribute('aria-current') === 'step').map((s) => s.textContent.trim()),
+      text: document.querySelector('.step-list').textContent,
+      sigils: stops.filter((s) => s.querySelector('svg path')).length,
+      named: Boolean(document.querySelector('nav.step-list[aria-label]')),
     };
   });
-  check('the journey has five stops', () => assert.equal(strip.stops, 5));
-  check('and still says the counts in words', () => {
+  await page.keyboard.press('Escape');
+  check('the pile opens five steps (D54)', () => assert.equal(strip.stops, 5));
+  check('and says the counts in words', () => {
     assert.match(strip.text, /Idea/);
-    assert.match(strip.text, /Ingredients \d+\/4/);
-    assert.match(strip.text, /Beats \d+\/9/);
-    assert.match(strip.text, /Boosts \d+\/10/);
+    assert.match(strip.text, /\d+ of 4/);
+    assert.match(strip.text, /\d+ of 9 beats/);
+    assert.match(strip.text, /\d+ of 10/);
   });
-  check('the stop you are standing on is marked', () => {
-    assert.equal(strip.here.length, 1, `${strip.here.length} stops marked`);
-    assert.match(strip.here[0], /Beats/);
+  check('the step you are standing on is marked', () => {
+    assert.equal(strip.here.length, 1, `${strip.here.length} steps marked`);
+    assert.match(strip.here[0], /Structure/);
   });
-  check('a stop fills as its step fills', () => assert.ok(strip.filled >= 2, `${strip.filled} stops carry any fill`));
-  check('every stop is drawn, not coloured alone', () => assert.equal(strip.sigils, 5));
+  check('every step is drawn, not coloured alone, in a named landmark', () => {
+    assert.equal(strip.sigils, 5);
+    assert.equal(strip.named, true);
+  });
 
-  // D37: the booklet's teaching is marked as something said, not as the app's own copy. It was a
-  // bare <p> on six screens, indistinguishable from a note.
+  // D57: the booklet's teaching is on the card being answered — one line printed, the rest and
+  // the examples one tap away, set as speech (D37) — never only in the data (§0.1).
   await page.goto(base + '#/build/structure/7');
-  await present(page, '.guidance');
+  await present(page, '.teaching');
+  const line = await read(page, '.teaching-text');
+  await tap(page, '.teaching-more');
+  await present(page, '.modal .guidance');
   const spoken = await page.evaluate(() => {
-    const g = document.querySelector('.guidance');
+    const g = document.querySelector('.modal .guidance');
     if (!g) return null;
-    const box = g.getBoundingClientRect();
-    return { text: g.textContent.trim().length, left: getComputedStyle(g).borderLeftWidth, w: Math.round(box.width) };
+    return {
+      text: g.textContent.trim(),
+      left: getComputedStyle(g).borderLeftWidth,
+      examples: document.querySelectorAll('.modal .example-list li').length,
+    };
   });
-  check('the guidance is spoken, not printed', () => {
-    assert.ok(spoken, 'no guidance bubble on a beat screen');
-    assert.ok(spoken.text > 40, 'the bubble is empty');
+  await page.keyboard.press('Escape');
+  check('the card prints the first line of its teaching (D57)', () => assert.ok(line.trim().length > 10, `"${line}"`));
+  check('and ? opens the rest, spoken, with the examples', () => {
+    assert.ok(spoken, 'no teaching sheet');
+    assert.ok(spoken.text.startsWith(line.trim()) && spoken.text.length > line.trim().length, 'the sheet does not hold the whole teaching');
     assert.equal(spoken.left, '3px');
+    assert.ok(spoken.examples >= 1, 'no examples in the sheet');
   });
 
   // D34: the Ingredients step is a workbench, not four identical blocks. Four stations, each a
@@ -976,35 +1012,33 @@ try {
     for (const node of document.querySelectorAll('.burst')) node.remove();
   }, beforeBurst);
 
-  // D44: the step nav is the journey strip. One band fewer on every build screen, and the
-  // navigation became sticky in the bargain — the nav it replaced scrolled away.
+  // D54: a build screen carries nothing but the work. No section nav, no lead, no cast strip, no
+  // story header; the bar names the step and the step's heading stays in the outline only.
   await page.goto(base + '#/build/structure');
-  await present(page, '.journey');
-  const folded = await page.evaluate(() => {
-    const links = [...document.querySelectorAll('.journey-stop a')];
+  await present(page, '#pile-button');
+  const plain = await page.evaluate(() => {
     const h2 = document.querySelector('#screen h2');
+    const header = document.querySelector('#story-header');
     return {
       navInScreen: document.querySelectorAll('#screen .section-nav').length,
-      links: links.length,
-      current: links.filter((a) => a.getAttribute('aria-current')).length,
-      labelled: Boolean(document.querySelector('.journey-nav[aria-label]')),
-      shortest: Math.min(...links.map((a) => Math.round(a.getBoundingClientRect().height))),
-      headingDrawn: h2 ? !h2.classList.contains('visually-hidden') : false,
+      leads: document.querySelectorAll('.step-lead').length,
+      strip: document.querySelectorAll('.cast-chip').length,
+      header: Boolean(header && !header.hidden && header.getBoundingClientRect().height > 0),
+      headingHidden: h2 ? h2.classList.contains('visually-hidden') : false,
       headingText: h2 ? h2.textContent : '',
+      here: document.querySelector('#here')?.textContent.trim(),
     };
   });
-  check('the step nav folded into the journey (D44)', () => {
-    assert.equal(folded.navInScreen, 0, 'the build screen still carries a section nav');
-    assert.equal(folded.links, 5, `${folded.links} steps reachable from the strip`);
-    assert.equal(folded.current, 1, `${folded.current} stops marked current`);
-    assert.equal(folded.labelled, true, 'the strip is not a named landmark');
-    assert.ok(folded.shortest >= 40, `smallest stop is ${folded.shortest}px`);
+  check('a build screen carries nothing but the work (D54)', () => {
+    assert.equal(plain.navInScreen, 0, 'a section nav is back on a build screen');
+    assert.equal(plain.leads, 0, 'a step lead is back');
+    assert.equal(plain.strip, 0, 'the cast strip is back');
+    assert.equal(plain.header, false, 'the story header is back');
   });
-  // With nothing else naming the step, the step's own heading is drawn again — the consequence
-  // D37 recorded, reversed by removing the thing that was naming it twice.
-  check('and the step heading is drawn again (D44)', () => {
-    assert.equal(folded.headingDrawn, true, 'the step heading is still undrawn');
-    assert.match(folded.headingText, /Structure/);
+  check('and the bar names the step, the heading stays in the outline (D54)', () => {
+    assert.equal(plain.here, 'Structure');
+    assert.equal(plain.headingHidden, true);
+    assert.match(plain.headingText, /Structure/);
   });
   // On a question screen the card's own headline is the heading, so the step's goes back to the
   // outline and the step's description does not follow you into a single question.
@@ -1037,23 +1071,26 @@ try {
   await page.goto(base + '#/stories');
   await present(page, '.example-row');
   const covers = await page.evaluate(() => {
-    const srcs = [...document.querySelectorAll('.story-cover img, .shelf-cover-img')]
-      .map((i) => i.getAttribute('src'));
-    const row = document.querySelector('.example-row');
-    const cover = row.querySelector('.shelf-cover');
+    const srcs = [...document.querySelectorAll('.book-cover-img')].map((i) => i.getAttribute('src'));
+    const tile = document.querySelector('.book-tile');
+    const label = tile?.querySelector('.book-label');
+    const t = tile?.getBoundingClientRect();
+    const l = label?.getBoundingClientRect();
     return {
       srcs,
       distinct: new Set(srcs).size,
-      beside: cover ? Math.round(cover.getBoundingClientRect().width) : null,
-      rowW: Math.round(row.getBoundingClientRect().width),
+      onCover: Boolean(t && l && l.bottom <= t.bottom + 1 && l.top >= t.top && l.height < t.height * 0.6),
+      rows: document.querySelectorAll('.story-row .card-sub, .shelf-progress').length,
     };
   });
   check('stories do not all wear the same cover (D40)', () => {
     assert.ok(covers.srcs.length >= 2, 'nothing on the shelf wears a cover');
     assert.ok(covers.distinct > 1, `${covers.srcs.length} covers, all the same picture`);
   });
-  check('and a cover stands beside its words, not over them', () => {
-    assert.ok(covers.beside !== null && covers.beside < covers.rowW * 0.5, `the cover takes ${covers.beside} of ${covers.rowW}px`);
+  // D59: a shelf of books — the title sits on the cover like a book's, not in a row of words.
+  check('a story is a book with its title on its cover (D59)', () => {
+    assert.equal(covers.onCover, true, 'the title is not on the cover');
+    assert.equal(covers.rows, 0, 'the shelf carries rows of counts again');
   });
 
   // D42: Learn was 3,299 words, 77 controls and 42 near-identical collapsed rows in one flat
@@ -1120,29 +1157,17 @@ try {
     assert.equal(banner.inGrid, false, 'a divider is sitting in the card grid');
   });
 
-  // S1/S3: the story has to be visible as a thing, not only as a fraction.
+  // D54: the story is visible as a thing in the bar — a pile that thickens as it is written.
   await page.goto(base + '#/build/ingredients');
-  await present(page, '.card-grid');
-  const madeSoFar = await page.evaluate(() => ({
-    chips: [...document.querySelectorAll('.cast-chip')].map((c) => c.textContent.trim()),
-    bones: document.querySelectorAll('.spine-bone').length,
-    written: document.querySelectorAll('.spine-bone.is-written').length,
+  await present(page, '#pile-button');
+  const pile = await page.evaluate(() => ({
+    layers: document.querySelectorAll('#pile-button .pile-stack i').length,
+    count: Number(document.querySelector('#pile-button .pile-count')?.textContent || 0),
   }));
-  check('the strip shows who the story has', () => assert.ok(madeSoFar.chips.length >= 2, JSON.stringify(madeSoFar.chips)));
-  check('the spine has one bone per beat', () => assert.equal(madeSoFar.bones, 9));
-  check('and fills the ones that are written', () => {
-    assert.ok(madeSoFar.written > 0, 'no beat marked written');
-    assert.ok(madeSoFar.written < madeSoFar.bones, 'every beat marked written');
+  check('the pile shows what the story has made (D54)', () => {
+    assert.ok(pile.count > 5, `the pile counts ${pile.count} cards on a story at the Boost step`);
+    assert.ok(pile.layers >= 2, 'the pile does not thicken');
   });
-
-  // Never on a one-question screen: there it pushed the writing field off a 320 phone.
-  // Reached through the grid, because the walk builds its own story and the fixture's ids are
-  // not in it — a hardcoded id here lands on "no such card" and proves nothing.
-  const firstCard = await page.evaluate(() => document.querySelector('.card-grid a')?.getAttribute('href'));
-  await page.goto(base + firstCard);
-  await present(page, '.stage-card');
-  const onQuestion = await page.evaluate(() => document.querySelectorAll('.cast-chip').length);
-  check('the strip keeps off the question screens', () => assert.equal(onQuestion, 0));
 
   // A deck has two sides (D28). A card with nothing written on it is lying face-down; answering
   // it turns it over. The back has to be somewhere a kid actually sees it, or it is dead art.
@@ -1250,17 +1275,25 @@ try {
 
   // Adding a second character is a permission; removing it again has to exist, and confirm.
   await page.goto(base + '#/build/ingredients');
-  const heroesBefore = await page.evaluate(() => document.querySelectorAll('.card-grid')[0].children.length);
-  await tap(page, 'text=Add another main character');
+  const heroesBefore = await page.evaluate(() => document.querySelectorAll('.card-grid')[0].querySelectorAll('a.card').length);
+  await tap(page, '[aria-label="Add another main character"]');
   await settled(page, '.question-label', /How old are they\?/);
-  const removeShown = await page.evaluate(() => Boolean([...document.querySelectorAll('button')].find((b) => /^Remove /.test(b.textContent))));
-  check('a second character can be removed again', () => assert.ok(removeShown, 'no way to undo adding one'));
-  await tap(page, '#screen .button.danger');
+  // The way back out is behind the card's ⋯ (D56), last in the sheet and confirmed.
+  await tap(page, '.dealer-more');
+  await present(page, '.modal-actions');
+  const removeShown = await page.evaluate(() => {
+    const labels = [...document.querySelectorAll('.modal-actions button')].map((b) => b.textContent);
+    const at = labels.findIndex((t) => /^Remove /.test(t));
+    return { found: at >= 0, last: at === labels.length - 2 }; // only Close comes after it
+  });
+  check('a second character can be removed again', () => assert.ok(removeShown.found, 'no way to undo adding one'));
+  check('and Remove is the last thing in the sheet before Close', () => assert.ok(removeShown.last));
+  await tap(page, '.modal-actions .button.danger');
   const removeWarning = await settled(page, '.modal p', /answer/);
   check('removing one names what goes with it', () => assert.match(removeWarning, /Every answer on this card goes/));
   await tap(page, '.modal-actions .button:not(.secondary)');
   await page.waitForTimeout(200);
-  const heroesAfter = await page.evaluate(() => document.querySelectorAll('.card-grid')[0].children.length);
+  const heroesAfter = await page.evaluate(() => document.querySelectorAll('.card-grid')[0].querySelectorAll('a.card').length);
   check('and it actually goes', () => assert.equal(heroesAfter, heroesBefore));
 
   // A card there is only ever one of cannot be removed: the story would lose the thing that
@@ -1272,7 +1305,8 @@ try {
 
   // Removing a storyteller is destructive, so it must confirm and name the loss (§6.1).
   await page.goto(base + '#/stories');
-  await tap(page, '#teller-button');
+  await tap(page, '#menu-button');
+  await tap(page, '.place-teller');
   await present(page, '.teller-row');
   await tap(page, '.teller-row .button.danger');
   const warning = await settled(page, '.modal p', /stor/);
@@ -1288,18 +1322,18 @@ try {
   check('walk: the shelf shows the idea as the blurb', () => assert.match(persisted, /a lighthouse that walks/));
 
   // D23: the tablet adds columns rather than stretching a phone layout across a metre.
-  for (const [w, wanted] of [[1024, 2], [390, 1]]) {
+  for (const [w, shelf, wanted] of [[1024, 4, 2], [390, 2, 1]]) {
     const wide = await browser.newContext({ viewport: { width: w, height: 800 } });
     await seed(wide, 'stress');
     const widePage = await wide.newPage();
-    for (const route of ['#/stories', '#/learn']) {
+    for (const [route, sel, want] of [['#/stories', '.bookshelf', shelf], ['#/learn', '.two-up', wanted]]) {
       await widePage.goto(base + route, { waitUntil: 'domcontentloaded' });
-      await present(widePage, '.two-up');
-      const columns = await widePage.evaluate(() => {
-        const box = document.querySelector('.two-up');
+      await present(widePage, sel);
+      const columns = await widePage.evaluate((selector) => {
+        const box = document.querySelector(selector);
         return getComputedStyle(box).gridTemplateColumns.split(' ').filter(Boolean).length;
-      });
-      check(`${w} ${route} columns`, () => assert.equal(columns, wanted, `${columns} columns at ${w}`));
+      }, sel);
+      check(`${w} ${route} columns`, () => assert.equal(columns, want, `${columns} columns at ${w}`));
     }
     await wide.close();
   }
@@ -1307,11 +1341,15 @@ try {
   // Getting rid of things. Both controls existed before and neither was findable: the storyteller
   // one hid behind a button that said "Switch", and Settings — where a person looks to delete
   // themselves — offered neither. So the label is asserted, not just the behaviour.
+  await tap(page, '#menu-button');
+  await present(page, '.place-teller');
   const tellerControl = await page.evaluate(() => {
-    const b = document.querySelector('#teller-button');
-    return `${b.textContent} ${b.getAttribute('aria-label') || ''}`;
+    // Its accessible name is its label, and the label is what has to say "remove" (§0.2).
+    const b = document.querySelector('.place-teller');
+    return b.getAttribute('aria-label') || '';
   });
-  check('the shelf control says it can remove a storyteller', () => assert.match(tellerControl, /remove/i));
+  await page.keyboard.press('Escape');
+  check('the storyteller control says it can remove a storyteller', () => assert.match(tellerControl, /remove/i));
 
   await page.goto(base + '#/settings');
   await present(page, '#screen h2');
@@ -1327,35 +1365,127 @@ try {
   check('and the story actually goes', () => assert.match(emptyShelf, /No stories yet/));
 
   // The last storyteller is removable too: a person who wants off this device gets all the way off.
-  await tap(page, '#teller-button');
+  await tap(page, '#menu-button');
+  await tap(page, '.place-teller');
   await present(page, '.teller-row');
   await tap(page, '.teller-row .button.danger');
   await settled(page, '.modal', /Remove/);
   await tap(page, '.modal-actions .button:not(.secondary)');
-  const firstRun = await settled(page, '#screen h2', /Who is telling stories/);
-  check('the last storyteller can be removed', () => assert.match(firstRun, /Who is telling stories/));
+  const firstRun = await settled(page, '#screen h2', /Make a story with the deck/);
+  check('the last storyteller can be removed', () => assert.match(firstRun, /Make a story with the deck/));
 
   await context.close();
+
+  // Phase 16 (D53–D63): the Dealer.
+  {
+    const ctx16 = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    await seed(ctx16, 'mid-story');
+    const p16 = await ctx16.newPage();
+
+    // D53 — a dealt card's bar is back, ⋯ and Next, and Next deals the next card in the
+    // booklet's order: beat 7, then beat 8.
+    await p16.goto(base + '#/build/structure/7', { waitUntil: 'domcontentloaded' });
+    await present(p16, '.dealer-bar');
+    const bar = await p16.evaluate(() => {
+      const b = document.querySelector('.dealer-bar');
+      return {
+        back: Boolean(b.querySelector('a.icon-only[aria-label^="Back"]')),
+        more: Boolean(b.querySelector('.dealer-more')),
+        next: b.querySelector('.dealer-next')?.getAttribute('href'),
+      };
+    });
+    check('a dealt card carries back, ⋯ and Next (D53)', () => {
+      assert.equal(bar.back, true);
+      assert.equal(bar.more, true);
+      assert.equal(bar.next, '#/build/structure/8');
+    });
+    // D53 — swipe the card for the next one.
+    await p16.evaluate(() => {
+      const target = document.querySelector('.stage-card');
+      const box = target.getBoundingClientRect();
+      const y = box.top + box.height / 2;
+      const fire = (type, x) => target.dispatchEvent(new PointerEvent(type, { bubbles: true, clientX: x, clientY: y, pointerType: 'touch' }));
+      fire('pointerdown', box.right - 20);
+      fire('pointerup', box.left + 20);
+    });
+    await p16.waitForTimeout(200);
+    check('swiping the card deals the next one (D53)', () => assert.match(p16.url(), /#\/build\/structure\/8$/));
+
+    // D57 — the card is not a wall of words: a dealt card says what it asks in a handful.
+    const words = {};
+    for (const route of ['#/build/idea', '#/build/structure/7', '#/build/boost/boost-help', '#/build/ingredients/inciting/0']) {
+      await p16.goto(base + route, { waitUntil: 'domcontentloaded' });
+      await present(p16, '#screen textarea');
+      words[route] = await p16.evaluate(() => {
+        const vh = innerHeight;
+        const visible = [...document.querySelectorAll('#screen *')].filter((n) => {
+          const r = n.getBoundingClientRect();
+          return r.width > 2 && r.height > 2 && r.top < vh && r.bottom > 0 && !n.closest('.visually-hidden');
+        });
+        return visible.flatMap((n) => [...n.childNodes].filter((c) => c.nodeType === 3).map((c) => c.textContent)).join(' ').split(/\s+/).filter(Boolean).length;
+      });
+    }
+    check('a dealt card shows fewer than 90 words before you scroll (D57)', () => {
+      const wordy = Object.entries(words).filter(([, n]) => n >= 90);
+      assert.deepEqual(wordy, [], JSON.stringify(words));
+    });
+
+    // D60 — Tell is a book: a cover, a page per beat wearing its card, and pages that turn.
+    await p16.goto(base + '#/build/tell', { waitUntil: 'domcontentloaded' });
+    await present(p16, '.book-pages');
+    const book = await p16.evaluate(async () => {
+      const pages = document.querySelector('.book-pages');
+      const leaves = [...pages.querySelectorAll('.book-page')];
+      const passages = pages.querySelectorAll('.told-passage').length;
+      const art = pages.querySelectorAll('.book-page .book-art').length;
+      const before = pages.scrollLeft;
+      document.querySelector('.book-turn[aria-label="Next page"]').click();
+      await new Promise((r) => setTimeout(r, 700));
+      const head = leaves[0]?.querySelector('.told-head')?.getBoundingClientRect();
+      const coverBox = leaves[0]?.getBoundingClientRect();
+      return {
+        leaves: leaves.length, passages, art, turned: pages.scrollLeft > before,
+        cover: leaves[0]?.classList.contains('book-cover'),
+        coverFill: head && coverBox ? head.height / coverBox.height : 0,
+      };
+    });
+    check('Tell is a book with a cover and a page per beat (D60)', () => {
+      assert.equal(book.cover, true, 'the book does not open on its cover');
+      assert.ok(book.coverFill > 0.6, `the cover's picture fills ${Math.round(book.coverFill * 100)}% of its page`);
+      assert.ok(book.leaves >= book.passages + 2, `${book.leaves} pages for ${book.passages} passages`);
+      assert.equal(book.art, book.passages, 'a beat page does not wear its card');
+    });
+    check('and its pages turn (D60)', () => assert.equal(book.turned, true));
+    await ctx16.close();
+
+    // D61 — the note on how the Dealer works appears on the first card ever dealt, and only then.
+    const ctxHint = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const ph = await ctxHint.newPage();
+    await ph.goto(base + '#/stories', { waitUntil: 'domcontentloaded' });
+    await tap(ph, '.first-run-go .button');
+    await present(ph, '#idea-text');
+    const first = await ph.evaluate(() => document.querySelectorAll('.dealer-hint').length);
+    await tap(ph, '.dealer-next');
+    await present(ph, '#answer');
+    const second = await ph.evaluate(() => document.querySelectorAll('.dealer-hint').length);
+    check('the Dealer explains itself once, on the first card (D61)', () => {
+      assert.equal(first, 1, 'no note on the first card');
+      assert.equal(second, 0, 'the note follows you to the next card');
+    });
+    // D55 — Next from the Idea deals the first Ingredient question.
+    const dealt = await ph.evaluate(() => ({ route: location.hash, q: document.querySelector('.question-label')?.textContent }));
+    check('Next from the Idea deals the first ingredient (D55)', () => {
+      assert.match(dealt.route, /#\/build\/ingredients\/hero-[\w]+/);
+      assert.match(dealt.q || '', /How old are they\?/);
+    });
+    await ctxHint.close();
+  }
 
   // Phase 15 (D46–D52): the audit's fixes, each checked where it lives.
   {
     const ctx15 = await browser.newContext({ viewport: { width: 390, height: 844 } });
     await seed(ctx15, 'mid-story');
     const p15 = await ctx15.newPage();
-
-    // D47 — one progress object: the nine beats are beads on the Structure stop, not a bar.
-    await p15.goto(base + '#/build/structure', { waitUntil: 'domcontentloaded' });
-    await present(p15, '.beat-list');
-    const beads = await p15.evaluate(() => ({
-      onStop: document.querySelectorAll('.journey-node .spine-bone').length,
-      loose: document.querySelectorAll('.story-header > .spine').length,
-      tick: Boolean(document.querySelector('.journey-stop:first-child .journey-value svg')),
-    }));
-    check('the beats are beads on the Structure stop (D47)', () => {
-      assert.equal(beads.onStop, 9, `${beads.onStop} beads on the stop`);
-      assert.equal(beads.loose, 0, 'a second progress bar is still under the header');
-    });
-    check('and the Idea stop draws its yes (D47)', () => assert.ok(beads.tick, 'no tick on the Idea stop'));
 
     // D47 — a pip says written, blank or here without its number being read.
     await p15.goto(base + '#/build/structure/7', { waitUntil: 'domcontentloaded' });
@@ -1371,7 +1501,11 @@ try {
       assert.notEqual(blank.style, written.style, 'a blank pip looks like a written one');
     });
 
-    // D48 — long guidance folds to three lines, all of it still in the document, and opens.
+    // D48 — long guidance folds to three lines, all of it still in the document, and opens. Since
+    // D57 a dealt card prints one line and keeps the rest behind ?, so the fold lives on the Deck.
+    await p15.goto(base + '#/deck/card/idea', { waitUntil: 'domcontentloaded' });
+    await present(p15, '.guidance');
+    await p15.waitForTimeout(100);
     const fold = await p15.evaluate(async () => {
       const g = document.querySelector('.guidance.is-clamped');
       if (!g) return null;
@@ -1383,7 +1517,7 @@ try {
       return { shut, full, open: words.getBoundingClientRect().height, hidden: words.scrollHeight - words.clientHeight, expanded: g.querySelector('.more-toggle').getAttribute('aria-expanded') };
     });
     check('long guidance folds to three lines and opens (D48)', () => {
-      assert.ok(fold, 'no folded guidance on a beat screen');
+      assert.ok(fold, 'no folded guidance on a long Deck card');
       assert.ok(fold.shut < fold.full, 'folded, but nothing is hidden');
       assert.ok(fold.open > fold.shut * 1.4 && fold.hidden <= 1, `Read more did not open it: ${JSON.stringify(fold)}`);
       assert.equal(fold.expanded, 'true');
@@ -1492,7 +1626,12 @@ try {
     // test the clamp and the mutant that removes it survived. The guard is for the next long
     // context line, so the sweep supplies one — the messy fixture's approach, applied to the bar.
     await barPage.evaluate(() => {
-      document.querySelector('.action-bar .context').textContent = 'Tell it out loud — that is the whole point, and then tell it again to somebody who has not heard it yet';
+      // D54 took the context line off the Tell bar; the clamp still guards any bar that carries
+      // one, so the sweep adds one the way a screen would.
+      const bar = document.querySelector('.action-bar');
+      let ctx = bar.querySelector('.context');
+      if (!ctx) { ctx = document.createElement('span'); ctx.className = 'context'; bar.prepend(ctx); }
+      ctx.textContent = 'Tell it out loud — that is the whole point, and then tell it again to somebody who has not heard it yet';
     });
     const tall = [];
     const wordy = [];

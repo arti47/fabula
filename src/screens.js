@@ -151,7 +151,7 @@ export function settingsScreen() {
     scale,
     el('span', { class: 'scale-end is-big', 'aria-hidden': 'true', text: 'A' })));
 
-  panel('Your stories, as a file');
+  panel('Backup');
   add(into, el('p', { class: 'note', text: 'A backup you can keep, or move to another device. It is plain text you can open and read.' }));
   add(into, el('button', {
     type: 'button', class: 'button secondary', text: 'Save a backup file',
@@ -208,7 +208,7 @@ export function settingsScreen() {
   // S9 — the browser's own "Choose File / No file chosen" was the one unstyled control in the
   // app. The input stays the real control, laid invisibly over a label that looks like a button,
   // so it keeps its keyboard, its screen-reader name and its full tap area.
-  panel('Load a backup');
+  // D63 — saving and loading a backup are one panel: one thing, two directions.
   add(into, add(el('div', { class: 'file-button' }), file, el('label', { for: 'import-file', class: 'button secondary', text: 'Choose a backup file' })));
 
   panel('Your first story');

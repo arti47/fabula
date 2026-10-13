@@ -24,9 +24,13 @@ const PATHS = {
   'empty-page': ['M6.5 3.5h7.6L18 7.4v13.1H6.5z', 'M14 3.5v4h4', 'M9.3 12.2h5.4M9.3 15.4h5.4'],
   // Three rules — the way to everywhere else.
   menu: ['M4 7h16', 'M4 12h16', 'M4 17h16'],
-  check: ['M5 12.5 9.6 17 19 7.5'],
   prev: ['M14.5 5.5 8 12l6.5 6.5'],
   next: ['M9.5 5.5 16 12l-6.5 6.5'],
+  // A question mark in a ring — the card's teaching, one tap away (D57).
+  help: ['M12 3.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17z', 'M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.7.3-1 .8-1 1.5v.6', 'M12 16.6h0'],
+  // A bulb — stuck? a spark (D62).
+  bulb: ['M12 3.5a5.6 5.6 0 0 1 3.4 10c-.6.5-.9 1.1-.9 1.8v.7h-5v-.7c0-.7-.3-1.3-.9-1.8A5.6 5.6 0 0 1 12 3.5z', 'M9.8 18.6h4.4', 'M10.6 20.8h2.8'],
+  plus: ['M12 5v14', 'M5 12h14'],
   more: ['M5 12a1.2 1.2 0 1 0 2.4 0 1.2 1.2 0 1 0-2.4 0', 'M10.8 12a1.2 1.2 0 1 0 2.4 0 1.2 1.2 0 1 0-2.4 0', 'M16.6 12a1.2 1.2 0 1 0 2.4 0 1.2 1.2 0 1 0-2.4 0'],
   // The deck's five group sigils. `GROUPS[].badge` has named these since Phase 0 — die, hat,
   // flask, number, magnifier — and nothing has ever drawn one: dead data the scan could not see,

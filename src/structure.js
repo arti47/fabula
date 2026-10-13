@@ -7,10 +7,11 @@
 // Ruling A9: the order is presentational. Any beat is answerable at any time, and blank is legal.
 
 import { el, add, debounce, isBlank } from './core.js';
-import { actionBar, dealtFace, exampleLine, answerStage, burst } from './ui.js';
+import { actionBar, dealtFace, answerStage, burst, teachingLine, optionsSheet, dealerBar } from './ui.js';
 import { fieldWithSparks } from './sparks.js';
 import { BEATS, getCard } from '../data.js';
 import { saveStory } from './store.js';
+import { dealNeighbours } from './derived.js';
 import { renderStoryHeader } from './router.js';
 
 export function beatText(story, n) {
@@ -78,10 +79,8 @@ export function structureList(story) {
   }
   add(wrap, list);
 
-  const written = BEATS.filter((b) => !isBlank(beatText(story, b.n))).length;
   const firstBlank = BEATS.find((b) => isBlank(beatText(story, b.n)));
   add(wrap, actionBar({
-    context: `${written} of ${BEATS.length} written`,
     label: firstBlank ? `Write beat ${firstBlank.n}` : 'Next: Boost',
     href: firstBlank ? `#/build/structure/${firstBlank.n}` : '#/build/boost',
     secondary: firstBlank ? el('a', { class: 'button secondary', href: '#/build/boost', text: 'Boost' }) : null,
@@ -115,13 +114,9 @@ export function beatScreen(story, n, fromBoost) {
 
   const wrap = el('div');
   const boost = fromBoost ? getCard(fromBoost) : null;
-  add(wrap, el('a', {
-    class: 'back-link',
-    href: boost ? `#/build/boost/${boost.id}` : '#/build/structure',
-    text: boost ? `← Back to “${boost.headline}”` : '← All nine beats',
-  }));
+  // P7 — a Boost sent you here, so the way back to it stays on the card.
   if (boost) {
-    add(wrap, el('p', { class: 'provenance', text: `You came here from a Boost card: ${boost.headline}` }));
+    add(wrap, el('a', { class: 'back-link', href: `#/build/boost/${boost.id}`, text: `← Back to “${boost.headline}”` }));
   }
 
   const pips = el('nav', { class: 'pips', 'aria-label': 'Beats' });
@@ -136,14 +131,13 @@ export function beatScreen(story, n, fromBoost) {
       isBlank(beatText(current, b.n)) ? el('span', { class: 'blank-dot' }) : null,
     ));
   }
-  add(wrap, pips);
 
   const body = [];
   body.push(el('h2', { class: 'question-label', text: beat.headline }));
   body.push(el('p', { class: 'question-card-name', text: `Beat ${beat.n} · ${beat.beatName}` }));
 
   const field = el('textarea', {
-    id: 'beat-text', 'aria-label': `Beat ${beat.n}: ${beat.beatName}`, rows: '5',
+    id: 'beat-text', 'aria-label': `Beat ${beat.n}: ${beat.beatName}`, rows: '4',
     placeholder: 'A sentence or two is plenty',
   });
   field.value = beatText(current, beat.n);
@@ -164,7 +158,6 @@ export function beatScreen(story, n, fromBoost) {
   }, 400);
   field.addEventListener('input', save);
   body.push(...fieldWithSparks(field, { key: `beat.${beat.n}`, story: current }));
-  body.push(el('p', { class: 'guidance', text: beat.guidance }));
 
   if (PREFILLED_BEAT && beat.n === PREFILLED_BEAT.n && current.beats?.[beat.n]?.prefilledFrom) {
     body.push(el('p', {
@@ -173,32 +166,29 @@ export function beatScreen(story, n, fromBoost) {
     }));
   }
 
-  if (beat.example) {
-    body.push(el(
-      'details',
-      { class: 'explain' },
-      el('summary', { text: `How ${beat.example.ref} tells this beat` }),
-      el('div', {}, el('p', { text: beat.example.text })),
-    ));
-  }
-  if (beat.examples?.length) {
-    body.push(el('h3', { text: 'Other stories at this moment' }));
-    const list = el('ul');
-    for (const ex of beat.examples) add(list, exampleLine(ex));
-    body.push(list);
-  }
+  // The teaching, one line on the card; the rest and every worked example behind "?" (D57).
+  body.push(teachingLine(beat, {
+    examples: beat.examples || [],
+    answer: beat.example ? { title: `How ${beat.example.ref} tells this beat`, text: beat.example.text } : null,
+  }));
+  body.push(pips);
 
   add(wrap, answerStage(dealtFace(beat, { deal: true }), body));
 
-  const next = BEATS.find((b) => b.n === n + 1);
-  const prev = BEATS.find((b) => b.n === n - 1);
-  add(wrap, actionBar({
-    context: `Beat ${beat.n} of ${BEATS.length}`,
-    label: boost ? 'Back to the boost' : (next ? `Next: ${next.beatName}` : 'Done — on to the Boosts'),
-    href: boost ? `#/build/boost/${boost.id}` : (next ? `#/build/structure/${next.n}` : '#/build/boost'),
-    secondary: prev
-      ? el('a', { class: 'button secondary', href: `#/build/structure/${prev.n}`, text: 'Back' })
-      : null,
-  }));
+  if (boost) {
+    // Sent here by a Boost (P7): the only way forward is back to it.
+    add(wrap, dealerBar({
+      prev: null,
+      next: { route: `#/build/boost/${boost.id}`, label: boost.headline },
+      nextText: 'Back to the boost',
+    }));
+  } else {
+    const deal = dealNeighbours(current, location.hash);
+    add(wrap, dealerBar({
+      prev: deal.prev,
+      next: deal.next,
+      options: () => optionsSheet(`Beat ${beat.n}`, [{ label: 'See all nine beats', href: '#/build/structure' }]),
+    }));
+  }
   return wrap;
 }

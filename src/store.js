@@ -64,6 +64,11 @@ export function addStoryteller(name, emoji = '✶') {
   return teller;
 }
 
+/** A name given later (D58): first run deals a story before it asks who is telling it. */
+export function renameStoryteller(id, name) {
+  write(KEY.storytellers, getStorytellers().map((t) => (t.id === id ? { ...t, name } : t)));
+}
+
 export function removeStoryteller(id) {
   write(KEY.storytellers, getStorytellers().filter((t) => t.id !== id));
   for (const meta of listStories(id)) deleteStory(meta.id);

@@ -210,39 +210,6 @@ a { color: var(--accent); }
 }
 .icon-button:hover { background: var(--paper-sunken); color: var(--ink); }
 
-/* The persistent resource header: story title + what is still blank. */
-.story-header {
-  position: sticky; top: calc(var(--header-h) + env(safe-area-inset-top)); z-index: 25;
-  /* One band with the header above it (D31): no second background, no second rule. */
-  padding: 5px var(--gutter) 6px;
-  background: var(--paper-sunken);
-  border-bottom: 1px solid var(--rule);
-}
-.story-header-title {
-  font-family: var(--font-display); font-size: var(--fs-md); line-height: 1.25; margin: 0;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-/* Four counts in one line at 360: at 0.8rem they were 328px wide in 316px of room, and the
-   second line put the chrome 19px over budget. */
-/* D44 — what the step is for, said once and visibly. Every step screen used to carry a collapsed
-   `explain()` *and* a note under it: two explanations, one of them hidden. This is the survivor. */
-.step-lead {
-  margin: 0 0 var(--rhythm);
-  max-width: 54ch;
-  font-size: var(--fs-md); line-height: 1.45;
-  color: var(--ink-soft);
-}
-/* S1 — heading and lead are one block. Stacked tight on a phone; side by side from 600px, the
-   lead set against the heading's baseline so the pair reads as a title and its strapline. */
-.step-head { margin-bottom: var(--step); }
-.screen .step-head h2 { margin-bottom: 6px; }
-.step-head .step-lead { margin: 0; }
-@media (min-width: 600px) {
-  .step-head { display: flex; align-items: flex-end; gap: calc(var(--step) * 2); }
-  .screen .step-head h2 { flex: 0 0 auto; margin: 0; }
-  .step-head .step-lead { flex: 1 1 auto; padding-bottom: 12px; }
-}
-
 /* D37 — the booklet's teaching is something being said to you, not app copy. It was a bare <p>
    on six screens and indistinguishable from the app's own notes; it is a bubble now, with the
    step's colour down its speaking edge and a tail so the shape reads as speech before the words
@@ -283,54 +250,6 @@ a { color: var(--accent); }
    there because the nav already names the step and §6 forbids naming it twice — which left those
    five screens with no top at all once headings grew. The pill carries the weight instead. */
 .section-nav a[aria-current] { font-size: var(--fs-md); padding: 6px 16px; }
-
-/* The journey strip (D35): five stops on one road, replacing four counts in a row. The road is
-   drawn behind the stops rather than between them, so nothing has to be measured in JS. */
-.journey-nav { display: block; }
-.journey {
-  position: relative;
-  display: flex; justify-content: space-between; align-items: center;
-  margin: 2px 0 0; padding: 0; list-style: none;
-}
-.journey::before {
-  content: ""; position: absolute; z-index: 0;
-  left: 14px; right: 14px; top: 50%; height: 2px;
-  background: var(--rule);
-}
-.journey-stop {
-  position: relative; z-index: 1;
-  display: flex; min-width: 0;
-}
-/* D44 — the stop is the step link now, so it has to be a tap target: 40px is the floor this
-   project measures on the wrapping label, and the node alone was 38. */
-.journey-stop > a {
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-  min-height: 40px; padding: 0 6px;
-  text-decoration: none; color: inherit;
-  border-radius: 10px;
-}
-.journey-stop > a:hover { background: rgb(255 246 230 / 0.06); }
-.journey-node {
-  display: grid; place-items: center;
-  width: 25px; height: 25px; border-radius: 50%;
-  border: 2px solid var(--stop);
-  color: var(--ink);
-  /* The fill rises from the bottom of the stop, so a half-answered step looks half-full. */
-  background:
-    linear-gradient(to top, var(--stop) var(--fill), transparent var(--fill)),
-    var(--paper-sunken);
-}
-.journey-node svg { display: block; opacity: 0.9; }
-.journey-value {
-  font-family: var(--font-numeral); font-size: var(--fs-xs); line-height: 1.1;
-  min-height: 0.82rem; display: grid; place-items: center;
-  color: var(--ink-soft); font-variant-numeric: tabular-nums; white-space: nowrap;
-}
-/* Where you are standing now. The ring is a second channel for what the bar and the nav say. */
-.journey-stop.is-here .journey-node { box-shadow: 0 0 0 3px var(--paper-sunken), 0 0 0 5px var(--stop); }
-.journey-stop.is-here .journey-value { color: var(--ink); }
-.journey-end .journey-node { border-style: dashed; opacity: 0.5; }
-.journey-end.is-open .journey-node { border-style: solid; opacity: 1; }
 
 .screen { position: relative; padding: 12px var(--gutter) 0; max-width: 900px; margin: 0 auto; }
 .screen:focus { outline: none; }
@@ -637,7 +556,6 @@ input[type="file"] {
 }
 /* On the bench the guidance is a note lying on it, so it takes the darker ground — the bubble's
    own `--paper-raised` is the bench's colour here and it disappeared into the surface. */
-.bench-station .guidance { background: var(--paper-sunken); }
 /* The station's name on a tag nailed to the bench, not a heading on a line. */
 .bench-station .bench-label {
   display: inline-block;
@@ -649,7 +567,6 @@ input[type="file"] {
   /* The drawn rule every other h3 wears would fight the tag. */
   background-image: none;
 }
-.bench-station .guidance { margin-bottom: var(--step); }
 .bench-station .card-grid { margin-bottom: var(--step); }
 
 .roll-history { margin: var(--step) 0; }
@@ -724,11 +641,15 @@ input[type="file"] {
 .stage-panel {
   position: relative;
   margin: -18px var(--step) 0;
-  padding: var(--step) 14px 14px;
+  padding: 14px 16px 14px;
   border-radius: var(--card-radius);
   background: var(--paper-raised);
   box-shadow: 0 -1px 0 rgb(242 233 216 / 0.1), 0 -10px 26px rgb(0 0 0 / 0.55);
 }
+/* D53 — the back of the dealt card holds four things: the question, the field, one line of the
+   card's teaching, and the pips. Everything else is behind ? or ⋯. */
+.stage-panel .question-label { margin: 0 0 4px; }
+.stage-panel .pips { justify-content: center; margin: var(--step) 0 0; }
 .stage-panel > :first-child { margin-top: 0; }
 
 @media (min-width: 768px) {
@@ -856,7 +777,6 @@ input[type="file"] {
   box-shadow: var(--shadow);
   overflow: hidden;
 }
-.told-body > *:not(.told-head) { margin-left: 18px; margin-right: 18px; }
 
 /* A title block wearing the story's cover, not a heading on a white page. */
 .told-head {
@@ -964,12 +884,7 @@ input[type="file"] {
 @media (min-width: 768px) {
   .told-head { padding: 96px 28px 22px; }
   .told-title { font-size: 2.6rem; }
-  .told-body > *:not(.told-head) { margin-left: 28px; margin-right: 28px; max-width: 64ch; }
-}
-/* S4 — on a tablet the reading column stands in the middle of its page, margins either side,
-   rather than hugging the left edge of a card a metre wide. */
-@media (min-width: 1024px) {
-  .told-body > *:not(.told-head) { margin-left: auto; margin-right: auto; }
+  .book-page > :not(.book-art):not(.told-head) { max-width: 64ch; margin-left: auto; margin-right: auto; }
 }
 
 @media print {
@@ -1015,43 +930,6 @@ input[type="file"] {
 .modal h2 { margin-top: 0; }
 .modal-actions { display: flex; gap: var(--step); flex-wrap: wrap; margin-top: calc(var(--step) * 2); }
 
-/* A story wears the card it is most about (G6). Derived from the story, never stored. */
-.story-row { flex-direction: row; align-items: stretch; position: relative; }
-/* S7 — the title is the row's one control, stretched over the whole card. */
-.story-open {
-  all: unset; cursor: pointer;
-  font: inherit; color: inherit;
-  /* Its own box meets the 40px floor too, not only the row it is stretched over. */
-  display: inline-flex; align-items: center; min-height: 40px;
-}
-.story-open::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
-.story-open:focus-visible { outline: none; }
-.story-open:focus-visible::after { outline: 3px solid var(--focus); outline-offset: 2px; }
-.story-row .card-headline { padding-right: 40px; }
-.story-more { position: absolute; top: 2px; right: 2px; z-index: 2; }
-.story-row:hover { border-color: var(--accent); }
-.shelf-progress {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px;
-  margin-top: 8px;
-  font-family: var(--font-numeral); font-size: var(--fs-xs); color: var(--ink-soft);
-}
-.shelf-count { display: inline-flex; align-items: center; gap: 5px; }
-.shelf-dot {
-  width: 11px; height: 11px; border-radius: 50%;
-  border: 1.5px solid var(--stop);
-  background: linear-gradient(to top, var(--stop) var(--fill), transparent var(--fill));
-}
-.shelf-when { font-family: var(--font); font-size: var(--fs-xs); }
-/* D40 — a story on the shelf is a book you can see, not a row with a thumbnail. 62px showed a
-   smear of colour; at 96 the card is recognisable as the card it is. */
-.story-cover { flex: 0 0 96px; background: var(--paper-sunken); overflow: hidden; }
-/* The same cover, on the two worked stories. */
-.shelf-cover { flex: 0 0 84px; background: var(--paper-sunken); overflow: hidden; }
-.shelf-cover-img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 16%; display: block; }
-.story-cover img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 16%; display: block; }
-.story-row .card-body { flex: 1 1 auto; min-width: 0; }
-
-.example-row { border-top-color: var(--group-idea); margin-bottom: var(--step); text-decoration: none; color: inherit; }
 .row-actions { display: flex; gap: var(--step); flex-wrap: wrap; margin-top: var(--step); }
 
 .toast-mount { position: fixed; left: 0; right: 0; bottom: 96px; z-index: 60; display: flex; flex-direction: column; align-items: center; gap: var(--step); pointer-events: none; }
@@ -1413,53 +1291,6 @@ input[type="file"] {
   transform: rotateY(180deg);
 }
 
-/* ---------- what the story has made (S1, S3) ---------- */
-
-/* The nine beats as a thing that thickens, not a fraction. */
-/* S5 — the nine beats as beads on the Structure stop's rim, not a second bar under the header.
-   Each bead is centred on the node's 2px border (radius 11.5 of 25), so the ring costs nothing:
-   it replaces the border rather than surrounding it. */
-.spine { position: absolute; inset: 0; pointer-events: none; }
-.spine-bone {
-  position: absolute; left: 50%; top: 50%;
-  width: 4px; height: 4px; margin: -2px 0 0 -2px; border-radius: 50%;
-  background: rgb(242 233 216 / 0.28);
-  transform: rotate(calc(var(--i) * 40deg)) translateY(-11.5px);
-}
-.spine-bone.is-written { background: var(--group-structure); box-shadow: 0 0 3px var(--group-structure); }
-.journey-node.has-ring { border-color: transparent; position: relative; }
-
-/* Who and where the story has, above the work. */
-.cast-strip {
-  display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
-  margin: 0 calc(var(--gutter) * -1) var(--step);
-  padding: 0 var(--gutter) 2px;
-}
-.cast-strip::-webkit-scrollbar { display: none; }
-/* S17 — a strip that runs off the edge says so: the last chip fades rather than being sliced. */
-.cast-strip {
-  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
-  mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
-}
-.cast-chip {
-  flex: 0 0 auto;
-  display: inline-flex; align-items: center; gap: 7px;
-  min-height: 40px; padding: 4px 12px 4px 4px;
-  border: 1px solid var(--rule); border-radius: 999px;
-  background: var(--paper-raised); color: var(--ink);
-  text-decoration: none; font-size: var(--fs-xs);
-  max-width: 168px;
-}
-.cast-art {
-  flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%;
-  background-color: var(--paper-sunken);
-  background-size: cover; background-position: 50% 16%;
-}
-.cast-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cast-chip.is-villain { border-color: var(--group-prompt); }
-.cast-chip.is-world { border-color: var(--group-structure); }
-.cast-chip.is-hero { border-color: var(--group-ingredient); }
-
 /* ---------- the menu (D31) ---------- */
 
 .app-nav { display: flex; align-items: center; gap: 2px; min-width: 0; }
@@ -1569,12 +1400,6 @@ input[type="file"] {
   background: var(--paper-raised);
   box-shadow: var(--shadow);
 }
-.story-row { background: var(--paper-raised); }
-/* The worked stories wear their cover beside the words, the way a story on the shelf does.
-   `.card` is a *column* flex container, so `display: flex` alone left the cover stretched across
-   the full row with the text under it — the direction is what was missing, not the display. */
-.example-row { border-top: 0; display: flex; flex-direction: row; align-items: stretch; }
-.example-row .card-body { flex: 1 1 auto; min-width: 0; }
 .group-banner { border-left: 0; }
 
 /* ---- controls ---- */
@@ -1643,3 +1468,185 @@ input[type="file"] {
   opacity: 0; cursor: pointer; font-size: 16px;
 }
 .file-button input[type="file"]:focus-visible + label { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+
+/* =========================================================================
+   Phase 16 — the Dealer (D53–D63)
+   ========================================================================= */
+
+/* The pile: your story so far, as a stack of cards in the bar (D54). */
+.pile-button {
+  display: inline-flex; align-items: center; gap: 8px;
+  min-height: 44px; padding: 0 6px 0 10px;
+  background: none; border: 0; border-radius: var(--radius); cursor: pointer;
+  color: var(--ink);
+}
+.pile-button:hover { background: var(--paper-sunken); }
+.pile-stack { position: relative; width: 22px; height: 28px; }
+.pile-stack i {
+  position: absolute; left: 0; bottom: 0; width: 20px; height: 26px;
+  border-radius: 3px; border: 1.5px solid var(--accent);
+  background: var(--paper-raised);
+}
+.pile-stack i:nth-child(2) { transform: translate(2px, -2px) rotate(4deg); }
+.pile-stack i:nth-child(3) { transform: translate(-2px, -3px) rotate(-5deg); }
+.pile-stack i:nth-child(4) { transform: translate(3px, -5px) rotate(7deg); }
+.pile-stack i:nth-child(5) { transform: translate(-1px, -6px) rotate(-2deg); }
+.pile-stack i:last-child { background: var(--accent); }
+.pile-count { font-family: var(--font-numeral); font-size: var(--fs-sm); }
+
+/* The menu's two non-place rows: Settings and the storyteller (D54). */
+button.place { width: 100%; border: 0; background: none; text-align: left; font: inherit; color: inherit; cursor: pointer; }
+.teller-face {
+  display: grid; place-items: center; flex: 0 0 auto;
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 1px solid var(--rule); background: var(--paper-sunken); font-size: 1.1rem;
+}
+
+/* The card's teaching: one line, and ? for the rest (D57). */
+.teaching {
+  display: flex; align-items: flex-start; gap: 6px;
+  margin: var(--step) 0 0;
+  color: var(--ink-soft); font-style: italic; font-size: var(--fs-sm); line-height: 1.45;
+}
+.teaching-text { flex: 1 1 auto; padding-top: 10px; }
+.teaching-more {
+  flex: 0 0 auto; display: grid; place-items: center;
+  width: 44px; height: 44px; margin: 0 -8px 0 0;
+  border: 0; border-radius: 50%; background: none; cursor: pointer;
+  color: var(--accent);
+}
+.teaching-more:hover { background: var(--paper-sunken); }
+.example-list { padding-left: 1.1em; }
+
+/* The bar of a dealt card: back, ⋯, Next — and Next is the one that is filled (D46, D53). */
+.dealer-bar { justify-content: space-between; }
+.dealer-bar .icon-only { min-width: 48px; padding: 10px 12px; }
+.dealer-bar .icon-only svg { display: block; }
+.dealer-gap { flex: 0 0 48px; }
+.dealer-next { gap: 6px; padding-left: 26px; padding-right: 18px; margin-left: auto; }
+.dealer-more { margin-left: auto; }
+.dealer-next svg { display: block; }
+
+/* The once-only note about how the Dealer works (D61): above the bar, covering nothing. */
+.dealer-hint {
+  position: fixed; left: var(--gutter); right: var(--gutter);
+  bottom: calc(84px + env(safe-area-inset-bottom)); z-index: 19;
+  display: flex; align-items: center; gap: var(--step);
+  max-width: 520px; margin: 0 auto;
+  padding: 8px 8px 8px 14px; border-radius: 14px;
+  background: var(--ink); color: var(--paper);
+  box-shadow: var(--shadow);
+  font-size: var(--fs-sm); line-height: 1.35;
+  animation: hint-in 260ms ease-out both;
+  /* A note, not a wall: taps go through it to whatever is under, except on its own button. */
+  pointer-events: none;
+}
+.dealer-hint .button { pointer-events: auto; }
+.dealer-hint p { margin: 0; flex: 1 1 auto; }
+.dealer-hint .button { flex: 0 0 auto; }
+@keyframes hint-in { from { opacity: 0; transform: translateY(8px); } }
+
+/* A card's powers on the Boost step — two chips, not two paragraphs (P6, P7). */
+.card-powers { display: flex; flex-wrap: wrap; gap: 6px; margin-top: var(--step); }
+.chip-action { min-height: 40px; padding: 6px 14px; font-size: var(--fs-sm); gap: 6px; }
+.chip-action svg { display: block; color: var(--accent); }
+.made-from a { color: var(--accent); display: inline-flex; align-items: center; min-height: 40px; }
+
+/* Stuck? — a bulb and a word (D62). */
+.spark-bulb { gap: 6px; padding: 8px 14px; }
+.spark-bulb svg { display: block; color: var(--accent); }
+.idea-sparks { margin-top: var(--step); }
+.die-call { margin: calc(var(--rhythm) * 1.2) 0 var(--step); text-align: center; }
+
+/* Another of the same card: a blank card with a plus on it (P3). */
+.add-card {
+  display: grid; place-items: center; align-content: center; gap: 6px;
+  min-height: 160px; cursor: pointer;
+  border: 2px dashed var(--rule); background: transparent; color: var(--ink-soft);
+  font: inherit;
+}
+.add-card:hover { border-color: var(--accent); color: var(--accent); }
+.add-card-label { font-size: var(--fs-sm); }
+
+/* The shelf: books, each wearing its cover (D59). */
+.bookshelf {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: calc(var(--step) * 2) var(--step);
+  margin: 0 0 calc(var(--rhythm) * 1.2);
+}
+@media (min-width: 768px) { .bookshelf { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.book-tile {
+  position: relative; display: block;
+  border-radius: 6px 12px 12px 6px; overflow: hidden;
+  aspect-ratio: 955 / 1190;
+  background: var(--paper-sunken);
+  box-shadow: inset 6px 0 0 rgb(0 0 0 / 0.35), 0 2px 4px rgb(0 0 0 / 0.5), 0 10px 24px rgb(0 0 0 / 0.45);
+  color: var(--ink); text-decoration: none;
+}
+.book-tile:hover { transform: translateY(-2px); }
+.book-cover-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 16%; }
+.book-label {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 26px 10px 10px;
+  background: linear-gradient(to top, rgb(14 12 9 / 0.95) 55%, transparent);
+}
+.book-title { font-family: var(--font-display); font-size: var(--fs-md); line-height: 1.15; }
+.book-blurb {
+  font-size: var(--fs-xs); color: var(--ink-soft); font-style: italic;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.story-open { all: unset; cursor: pointer; font-family: var(--font-display); font-size: var(--fs-md); line-height: 1.15; min-height: 40px; display: flex; align-items: flex-end; }
+.story-open::after { content: ""; position: absolute; inset: 0; }
+.story-open:focus-visible { outline: none; }
+.story-open:focus-visible::after { outline: 3px solid var(--focus); outline-offset: -3px; }
+.story-more { position: absolute; top: 4px; right: 4px; z-index: 2; background: rgb(14 12 9 / 0.7); border-radius: 50%; color: var(--ink); }
+.example-shelf h3 { margin-bottom: var(--step); }
+
+/* First run: the fan, a line, and one button (D58). */
+.deal-me { font-size: var(--fs-lg); padding: 14px 30px; }
+
+/* Tell is a book (D60): pages side by side, one at a time, turned by swiping. */
+.book-pages {
+  display: flex; overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x mandatory; scrollbar-width: none;
+  overscroll-behavior-x: contain;
+  /* A book is one size: every page the height of the screen it sits on, each reading down inside
+     itself, rather than every page as tall as the longest one. */
+  height: max(420px, calc(100dvh - var(--header-h) - env(safe-area-inset-top) - 170px));
+}
+.book-pages::-webkit-scrollbar { display: none; }
+.book-pages:focus-visible { outline: 3px solid var(--focus); outline-offset: -3px; }
+.book-page {
+  flex: 0 0 100%; min-width: 0; scroll-snap-align: start;
+  padding: 0 18px 22px;
+  overflow-y: auto; overscroll-behavior-y: contain;
+}
+.book-cover { padding: 0 0 22px; display: flex; flex-direction: column; }
+/* The cover is a cover: the story's card fills the page and the title stands at its foot. */
+.book-cover .told-head { flex: 1 0 auto; display: flex; flex-direction: column; justify-content: flex-end; margin-bottom: 0; }
+.book-cover .told-head::after { background: linear-gradient(to top, var(--paper-raised) 6%, rgb(11 9 6 / 0.55) 40%, transparent 75%); }
+.book-cover .told-head-art { opacity: 1; background-position: 50% 22%; }
+.book-cover > :not(.told-head) { margin-left: 18px; margin-right: 18px; }
+.book-art {
+  display: block; width: calc(100% + 36px); margin: 0 -18px 14px;
+  height: min(34vh, 62vw); object-fit: cover; object-position: 50% 30%;
+  -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent);
+  mask-image: linear-gradient(to bottom, #000 70%, transparent);
+}
+.book-folio { text-align: center; font-family: var(--font-numeral); font-size: var(--fs-xs); color: var(--ink-faint); margin: 18px 0 0; }
+.book-byline { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+.book-turns { display: flex; justify-content: space-between; padding: 0 6px 6px; }
+.book-turn:disabled { opacity: 0.25; cursor: default; }
+.book-end .row-actions { margin-top: var(--rhythm); }
+@media (min-width: 768px) {
+  .book-page { padding: 0 32px 28px; }
+  .book-art { width: calc(100% + 64px); margin: 0 -32px 18px; height: 300px; }
+}
+@media print {
+  .book-pages { display: block; overflow: visible; height: auto; }
+  .book-page { overflow: visible; }
+  .book-page { break-after: page; }
+  .book-turns, .book-byline { display: none !important; }
+}

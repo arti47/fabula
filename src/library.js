@@ -1,9 +1,9 @@
 // Storytellers and the shelf of stories.
 
-import { el, add, relativeTime } from './core.js';
+import { el, add } from './core.js';
 import { icon } from './icons.js';
 import { explain, actionBar, promptModal, confirmModal, showToast, modal, cardFan, clearActionBar } from './ui.js';
-import { storyBlurb, progress, coverCard } from './derived.js';
+import { storyBlurb, coverCard } from './derived.js';
 import { EXAMPLE_STORIES, getExample } from '../data-examples.js';
 import { tellScreen } from './tell.js';
 import {
@@ -32,27 +32,20 @@ function firstRun() {
   add(screen, stage);
   add(stage, cardFan(['ing-hero', 'prompt-m', 'idea', 'beat-1', 'ing-world']));
 
+  // D58 — one button, and the first thing it does is deal. The name used to be a form between a
+  // kid and the first card; it is asked at the end now, on the cover of the book they made.
   const panel = add(stage, el('div', { class: 'first-run-panel' })).lastChild;
-  add(panel, el('h2', { text: 'Who is telling stories?' }));
-
-  const input = el('input', { type: 'text', id: 'teller-name', placeholder: 'Your name', autocomplete: 'off' });
-  add(panel, el('label', { for: 'teller-name', text: 'Your name' }), input);
-
-  const create = () => {
-    const name = input.value.trim();
-    if (!name) { input.focus(); return; }
-    addStoryteller(name, EMOJI[Math.floor(Math.random() * EMOJI.length)]);
-    location.hash = '#/stories';
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
-  };
-  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') create(); });
-
-  // Start belongs beside the field it submits. Pinned across the foot of the screen it was as far
-  // from the one thing on the screen as the layout allowed.
+  add(panel, el('h2', { text: 'Make a story with the deck' }));
   add(panel, add(
     el('div', { class: 'first-run-go' }),
-    el('button', { type: 'button', class: 'button', text: 'Start', onclick: create }),
-    el('span', { class: 'note', text: 'One tap and you are in' }),
+    el('button', {
+      type: 'button', class: 'button deal-me', text: 'Deal me a story',
+      onclick: () => {
+        addStoryteller('Storyteller', EMOJI[Math.floor(Math.random() * EMOJI.length)]);
+        createStory('Untitled story');
+        location.hash = '#/build/idea';
+      },
+    }),
   ));
   clearActionBar();
 
@@ -77,67 +70,54 @@ function shelf(teller) {
     add(screen, add(
       el('p', { class: 'empty' }),
       icon('empty-shelf', { size: 48 }),
-      document.createTextNode('Start your first story: an idea, then who is in it, then what happens. '),
-      el('a', { href: '#/tutorial', text: 'Or read how it goes, first.' }),
+      document.createTextNode('Tap New story and the deck deals you the first card. '),
+      // §6.2 — the walkthrough is linked from here while the shelf is empty.
+      el('a', { href: '#/tutorial', text: 'Or see how it goes first.' }),
     ));
   }
 
-  // Two shelves side by side on a tablet, one on a phone (D23).
-  const rows = el('div', { class: 'two-up' });
+  // D59 — a shelf of books, each wearing its cover, not a list of rows of words and numbers.
+  const books = el('div', { class: 'bookshelf' });
   for (const meta of stories) {
     const story = getStory(meta.id);
-    if (!story) continue;
-    add(rows, storyRow(story));
+    if (story) add(books, bookTile(story));
   }
-  add(screen, rows);
+  if (stories.length) add(screen, books);
 
   add(screen, exampleShelf());
 
+  // A new story is dealt straight away; it is named at the end, on its own cover (D58).
   add(screen, actionBar({
     label: 'New story',
-    context: stories.length ? `${stories.length} on the shelf` : 'Nothing on the shelf yet',
-    onClick: () => promptModal({
-      title: 'A new story',
-      label: 'What shall we call it?',
-      message: 'You can change this later — even after you know what it is about.',
-      value: '',
-      confirmLabel: 'Start it',
-      onConfirm: (title) => {
-        const story = createStory(title || 'Untitled story', teller.id);
-        location.hash = '#/build/idea';
-        showToast(`Started “${story.title}”`);
-      },
-    }),
+    onClick: () => {
+      createStory('Untitled story', teller.id);
+      location.hash = '#/build/idea';
+    },
   }));
   return screen;
 }
 
 /** The booklet's two worked stories, readable any time (D11). */
 function exampleShelf() {
-  const box = el('div');
-  add(box, el('h3', { text: 'Two stories from the book' }));
-  add(box, el('p', { class: 'note', text: 'Built with these same cards, and readable like your own. Handy when you are stuck on what a beat is supposed to do.' }));
-  const rows = el('div', { class: 'two-up' });
+  const box = el('div', { class: 'example-shelf' });
+  add(box, el('h3', { text: 'From the book' }));
+  const books = el('div', { class: 'bookshelf' });
   for (const example of EXAMPLE_STORIES) {
-    const row = el('a', { class: 'card example-row', href: `#/example/${example.id}` });
-    // A worked story wears the card its hero lives on, the same way a kid's own does on the
-    // shelf (D40): these were two text rows on a screen whose whole point is the deck.
-    const cover = coverCard(example);
-    const art = el('img', {
-      class: 'shelf-cover-img', src: `assets/cards/${cover.art}.webp`,
-      alt: '', loading: 'lazy', decoding: 'async',
-    });
-    art.addEventListener('error', () => art.parentElement?.remove());
-    add(row, add(el('div', { class: 'shelf-cover' }), art));
-    add(row, add(
-      el('div', { class: 'card-body' }),
-      el('p', { class: 'card-headline', text: example.title }),
-      el('div', { class: 'card-sub', text: example.blurb }),
-    ));
-    add(rows, row);
+    // The worked stories are books on the same shelf, wearing their covers (D40, D59).
+    const book = el('a', { class: 'book-tile example-row', href: `#/example/${example.id}` });
+    add(book, coverImage(coverCard(example)));
+    add(book, add(el('span', { class: 'book-label' }), el('span', { class: 'book-title', text: example.title })));
+    add(books, book);
   }
-  add(box, rows);
+  add(box, books);
   return box;
+}
+
+/** A book's cover: the card it wears. Gone without a word if the art is not installed (§11). */
+function coverImage(card) {
+  const art = el('img', { class: 'book-cover-img', src: `assets/cards/${card.art}.webp`, alt: '', loading: 'lazy', decoding: 'async' });
+  art.addEventListener('error', () => art.remove());
+  return art;
 }
 
 /** An example story, read-only, through the same Tell page as a kid's own (§10.9). */
@@ -247,41 +227,19 @@ function promptModalAddPerson(list) {
   });
 }
 
-function storyRow(story) {
-  const p = progress(story);
+function bookTile(story) {
   const blurb = storyBlurb(story);
-  const row = el('div', { class: 'card story-row', style: 'border-top-color: var(--group-structure)' });
-  const cover = coverCard(story);
-  add(row, add(
-    el('div', { class: 'story-cover' }),
-    el('img', { src: `assets/cards/${cover.art}.webp`, alt: '', loading: 'lazy', decoding: 'async' }),
-  ));
-  const body = el('div', { class: 'card-body' });
+  const row = el('div', { class: 'book-tile story-row' });
+  add(row, coverImage(coverCard(story)));
 
-  // S7 — the whole row opens the story. The title is the one real control; its box is stretched
-  // over the row in CSS, so the tap area is the card and a screen reader hears one button.
-  add(body, add(el('p', { class: 'card-headline' }), el('button', {
-    type: 'button', class: 'story-open', text: story.title,
+  // S7 — the whole book opens the story. The title is the one real control, stretched over the
+  // cover in CSS, so the tap area is the book and a screen reader hears one button.
+  const body = el('span', { class: 'book-label' });
+  add(body, el('button', {
+    type: 'button', class: 'story-open book-title', text: story.title,
     onclick: () => { setCurrentStoryId(story.id); location.hash = '#/build'; },
-  })));
-  if (blurb) add(body, el('div', { class: 'card-sub', text: blurb }));
-  // The three counts as the journey's own milestones, small: a dot in the group's colour filling
-  // as the step fills, and the count beside it. The words stay, for a screen reader (§6).
-  const meta = el('div', { class: 'shelf-progress' });
-  for (const [name, part, color] of [
-    ['Ingredients', p.ingredients, 'var(--group-ingredient)'],
-    ['Beats', p.beats, 'var(--group-structure)'],
-    ['Boosts', p.boosts, 'var(--group-boost)'],
-  ]) {
-    add(meta, add(
-      el('span', { class: 'shelf-count' }),
-      el('span', { class: 'shelf-dot', 'aria-hidden': 'true', style: `--stop: ${color}; --fill: ${Math.round((part.done / part.total) * 100)}%` }),
-      el('span', { class: 'visually-hidden', text: `${name} ` }),
-      document.createTextNode(`${part.done}/${part.total}`),
-    ));
-  }
-  add(meta, el('span', { class: 'shelf-when', text: relativeTime(story.updatedAt) }));
-  add(body, meta);
+  }));
+  if (blurb) add(body, el('span', { class: 'book-blurb', text: blurb }));
 
   // Rename and Delete behind one labelled button, so the destructive control is never beside
   // the one a thumb reaches for (§6.1). Delete is last in the sheet, and still confirms.
